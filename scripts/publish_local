@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+gradle clean publishToMavenLocal -x test
+sync

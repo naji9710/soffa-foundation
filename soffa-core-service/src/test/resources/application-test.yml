@@ -1,0 +1,9 @@
+spring.application.name: test
+
+app.db.links:
+  primary: h2://mem/test_${random.int}
+  T1: h2://mem/t1_${random.int}
+  T2: h2://mem/t2_${random.int}
+
+spring.config.import:
+  - classpath:application-soffa.yml

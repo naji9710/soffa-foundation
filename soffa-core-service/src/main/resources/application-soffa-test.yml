@@ -1,0 +1,3 @@
+management.health.vault.enabled: false
+db.auto-migrate: true
+
