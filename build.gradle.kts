@@ -1,8 +1,6 @@
 plugins {
-    id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
     idea
 }
-
 
 buildscript {
     repositories {
@@ -13,6 +11,7 @@ buildscript {
     }
     dependencies {
         classpath("io.soffa:soffa-gradle-plugin:2.0.2")
+        classpath("io.github.gradle-nexus:publish-plugin:1.1.0")
     }
 }
 
