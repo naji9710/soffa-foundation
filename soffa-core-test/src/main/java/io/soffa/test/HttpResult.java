@@ -5,6 +5,8 @@ import org.hamcrest.Matcher;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
 public class HttpResult {
 
     private final ResultActions result;
@@ -68,8 +70,8 @@ public class HttpResult {
     }
 
     @SneakyThrows
-    public HttpResult jsonPath(String path, Matcher<?> matcher) {
-        result.andExpect(MockMvcResultMatchers.jsonPath(path, matcher));
+    public HttpResult json(String path, Matcher<?> matcher) {
+        result.andExpect(jsonPath(path, matcher));
         return this;
     }
 }
