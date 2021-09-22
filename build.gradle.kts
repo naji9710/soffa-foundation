@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("io.soffa:soffa-gradle-plugin:2.0.1")
+        classpath("io.soffa:soffa-gradle-plugin:2.0.2")
     }
 }
 
