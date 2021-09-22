@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import org.hamcrest.Matcher;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class HttpResult {
@@ -71,7 +70,7 @@ public class HttpResult {
 
     @SneakyThrows
     public HttpResult json(String path, Matcher<?> matcher) {
-        result.andExpect(jsonPath(path, matcher));
+        result.andExpect(jsonPath(path).value(matcher));
         return this;
     }
 }

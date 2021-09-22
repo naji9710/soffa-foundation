@@ -42,9 +42,9 @@ public class TestDataSourceTest {
         final ExecutorService threads = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         Map<String, Integer> links = ImmutableMap.of(
-                "primary", RandomUtils.nextInt(100, 2000),
-                "T1", RandomUtils.nextInt(100, 3000),
-                "T2", RandomUtils.nextInt(100, 5000)
+                "primary", RandomUtils.nextInt(100, 200),
+                "T1", RandomUtils.nextInt(100, 300),
+                "T2", RandomUtils.nextInt(100, 500)
         );
 
         final CountDownLatch latch = new CountDownLatch(links.get("primary") + links.get("T1") + links.get("T2"));
