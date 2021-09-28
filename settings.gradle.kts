@@ -1,5 +1,5 @@
-rootProject.name = "soffa-platform"
+rootProject.name = "soffa-foundation"
 
-include(":soffa-core-contract")
-include(":soffa-core-service")
-include(":soffa-core-test")
+include(":soffa-foundation-contract")
+include(":soffa-foundation-service")
+include(":soffa-foundation-test")
