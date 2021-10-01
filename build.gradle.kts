@@ -28,5 +28,5 @@ subprojects {
         mavenCentral()
     }
     apply(plugin = "soffa.java8")
-    apply(plugin = "soffa.maven-publish")
+
 }

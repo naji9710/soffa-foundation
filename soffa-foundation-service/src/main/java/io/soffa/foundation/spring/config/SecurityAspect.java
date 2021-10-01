@@ -1,9 +1,9 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.RequestContext;
-import io.soffa.foundation.commons.exceptions.UnauthorizedException;
-import io.soffa.foundation.commons.exceptions.ValidationException;
-import io.soffa.foundation.commons.lang.TextUtil;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.exceptions.UnauthorizedException;
+import io.soffa.foundation.exceptions.ValidationException;
+import io.soffa.foundation.lang.TextUtil;
 import lombok.SneakyThrows;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -24,7 +24,7 @@ public class SecurityAspect {
 
 
     @SneakyThrows
-    @Before("@within(io.soffa.foundation.commons.annotations.Authenticated) || @annotation(io.soffa.foundation.commons.annotations.Authenticated)")
+    @Before("@within(io.soffa.foundation.annotations.Authenticated) || @annotation(io.soffa.foundation.annotations.Authenticated)")
     public void checkAuthenticated() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (!auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
@@ -33,7 +33,7 @@ public class SecurityAspect {
     }
 
     @SneakyThrows
-    @Before("@within(io.soffa.foundation.commons.annotations.ApplicationRequired) || @annotation(io.soffa.foundation.commons.annotations.ApplicationRequired)")
+    @Before("@within(io.soffa.foundation.annotations.ApplicationRequired) || @annotation(io.soffa.foundation.annotations.ApplicationRequired)")
     public void checkApplication() {
         RequestContext context = getRequestContext().orElseThrow(() -> ERR_APP_REQUIRED);
         if (TextUtil.isEmpty(context.getApplicationName())) {
@@ -42,7 +42,7 @@ public class SecurityAspect {
     }
 
     @SneakyThrows
-    @Before("@within(io.soffa.foundation.commons.annotations.ApplicationRequired) || @annotation(io.soffa.foundation.commons.annotations.ApplicationRequired)")
+    @Before("@within(io.soffa.foundation.annotations.ApplicationRequired) || @annotation(io.soffa.foundation.annotations.ApplicationRequired)")
     public void checkTenant() {
         RequestContext context = getRequestContext().orElseThrow(() -> ERR_TENANT_REQUIRED);
         if (context.getTenantId()==null) {

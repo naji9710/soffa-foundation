@@ -1,0 +1,18 @@
+spring.cloud.vault:
+  enabled: true
+  uri: ${app.vault.uri:http://localhost:8200}
+  token: ${app.vault.token:${VAULT_TOKEN:0000000000}}
+  kv:
+    enabled: true
+    default-context: ${app.vault.context:services/${spring.application.name}}
+    application-name: ${spring.application.name}
+  connection-timeout: 5000
+  read-timeout: 15000
+
+spring.config.import:
+  - vault://
+
+---
+
+spring.config.activate.on-profile: test
+management.health.vault.enabled: false

@@ -1,5 +1,6 @@
 plugins {
     id("soffa.project")
+    id("soffa.maven-publish")
 }
 
 dependencies {

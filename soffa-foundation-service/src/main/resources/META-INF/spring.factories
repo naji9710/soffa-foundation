@@ -1,1 +1,4 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=io.soffa.foundation.spring.AutoConfigure
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.soffa.foundation.spring.FoundationAutoConfiguration
+

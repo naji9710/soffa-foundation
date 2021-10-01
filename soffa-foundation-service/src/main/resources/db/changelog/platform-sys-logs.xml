@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
+    logicalFilePath="platform/events">
+
+    <changeSet id="202109211400_ApplicationLogs" author="gahissy.titus">
+
+        <createTable tableName="${table_prefix}sys_logs">
+            <column name="id" type="varchar">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="event" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kind" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="varchar"/>
+            <column name="value" type="float8"/>
+            <column name="error" type="varchar"/>
+            <column name="error_details" type="varchar"/>
+            <column name="application" type="varchar"/>
+            <column name="user" type="varchar"/>
+            <column name="request_id" type="varchar"/>
+            <column name="span_id" type="varchar"/>
+            <column name="trace_id" type="varchar"/>
+            <column name="duration" type="varchar"/>
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+
+        <createTable tableName="${table_prefix}sys_logs_archive">
+            <column name="id" type="varchar">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="event" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kind" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="data" type="varchar"/>
+            <column name="value" type="float8"/>
+            <column name="application" type="varchar"/>
+            <column name="user" type="varchar"/>
+            <column name="request_id" type="varchar"/>
+            <column name="span_id" type="varchar"/>
+            <column name="trace_id" type="varchar"/>
+            <column name="duration" type="varchar"/>
+            <column name="error" type="varchar"/>
+            <column name="error_details" type="varchar"/>
+            <column name="created_at" type="timestamp"/>
+        </createTable>
+
+    </changeSet>
+
+</databaseChangeLog>

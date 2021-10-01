@@ -1,0 +1,138 @@
+spring.main.banner-mode: off
+
+logging.level.ROOT: WARN
+logging.level.io.leangen: ERROR
+logging.level.org.springframework: WARN
+logging.level.liquibase: ERROR
+logging.level.io.soffa: ${PLATFORM_LOG_LEVEL:INFO}
+logging.level.foundation: ${PLATFORM_LOG_LEVEL:INFO}
+logging.level.app: ${LOG_LEVEL:INFO}
+logging.level.service: ${LOG_LEVEL:INFO}
+
+app.package: app
+
+spring.jackson:
+  default-property-inclusion: non_null
+
+spring.output.ansi.enabled: always
+
+server:
+  compression.enabled: true
+  forward-headers-strategy: framework
+
+spring.rabbitmq:
+  listener.simple.retry:
+    enabled: true
+    initial-interval: 2s
+    max-attempts: 10
+    max-interval: 30s
+    multiplier: 2
+  addresses: ${app.amqp.addresses:embedded}
+  username: ${app.amqp.username:guest}
+  password: ${app.amqp.password:guest}
+  virtual-host: ${app.amqp.vhost:/}
+  ssl.enabled: ${app.amqp.ssl.enabled:false}
+  ssl.algorithm: ${app.amqp.ssl.algorithm:TLSv1.2}
+  ssl.key-store: ${app.amqp.ssl.key-store:}
+  ssl.key-store-password: ${app.amqp.ssl.key-store-password:}
+  ssl.trust-store: ${app.amqp.ssl.trust-store:}
+  ssl.trust-store-password: ${app.amqp.ssl.trust-store-password:}
+
+management:
+  endpoints.web.exposure.include: "info,health"
+  metrics.export:
+    simple.enabled: true
+    #elastic.enabled: ${unibank.service.metrics.elastic.enabled:false}
+    #elastic.host: ${unibank.service.metrics.elastic.host:http://localhost:9200}
+    #elastic.index: ${unibank.service.metrics.elastic.index:metrics}
+    #elastic.password: ${unibank.service.metrics.elastic.password:}
+    #elastic.user-name: ${unibank.service.metrics.elastic.user-name:}
+  health.diskspace.enabled: true
+  health.db.enabled: true
+  health.rabbit.enabled: true
+  endpoint.health.enabled: true
+  endpoint:
+    health.show-details: always
+
+spring.groovy.template.check-template-location: false
+
+springdoc:
+  api-docs.enabled: true
+  show-actuator: false
+  paths-to-exclude: graphiql, /graphiql, error, /error, /oauth/*, /user/auth, /actuator/*, /healthz
+  show-login-endpoint: false
+  swagger-ui:
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+spring.cloud.consul:
+  enabled: ${app.consul.discovery:false}
+  config:
+    enabled: ${app.consul.config:false}
+  discovery:
+    enabled: ${app.consul.discovery:false}
+    register: ${app.consul.register:false}
+    healthCheckPath: ${management.server.servlet.context-path}/health
+    healthCheckInterval: 15s
+
+
+#spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration
+management.endpoint.health.group.liveness.include: livenessstate,cacheCheck
+management.endpoint.health.probes.enabled: true
+
+spring.cloud.vault:
+  enabled: false
+  kv.enabled: false
+
+app.db.migrations: classpath:db/changelog/${spring.application.name}.xml
+app.db.table-prefix:
+app.amqp:
+  enabled: false
+  exchange: app
+  routing: services
+
+app.redoc.enabled: true
+
+spring.jpa:
+  open-in-view: false
+  show-sql: false
+  properties.hibernate:
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+    jdbc.batch_size: 200
+  hibernate:
+    ddl-auto: none
+    naming:
+      #implicit-strategy:
+      physical-strategy: io.soffa.foundation.data.CustomPhysicalNamingStrategy
+
+spring.liquibase.enabled: false
+app.db.auto-migrate: true
+
+app.openapi:
+  title: ${spring.application.name}
+
+---
+
+spring.config.activate.on-profile: vault
+
+spring.cloud.vault:
+  enabled: true
+  uri: ${app.vault.uri:${VAULT_URI:http://localhost:8200}}
+  token: ${app.vault.token:${VAULT_TOKEN:0000000000}}
+  kv:
+    enabled: true
+    default-context: ${app.vault.context:${VAULT_CONTEXT:services/${spring.application.name}}}
+    application-name: ${spring.application.name}
+  connection-timeout: 5000
+  read-timeout: 15000
+
+spring.config.import:
+  - vault://
+
+#logging.config: classpath:logback-spring-json.xml
+
+---
+spring.config.activate.on-profile: test
+management.health.vault.enabled: false
+#app.amqp.embedded: true
+#app.vault.embedded: true

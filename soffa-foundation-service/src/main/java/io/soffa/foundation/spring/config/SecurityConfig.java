@@ -1,7 +1,7 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.commons.jwt.JwtDecoder;
-import io.soffa.foundation.spring.beans.RequestFilter;
+import io.soffa.foundation.jwt.JwtDecoder;
+import io.soffa.foundation.spring.RequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,8 +12,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import javax.servlet.http.HttpServletResponse;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -43,12 +41,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and().exceptionHandling()
-                .authenticationEntryPoint((request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage()))
+                //.and().exceptionHandling()
+                //.authenticationEntryPoint((request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage()))
+                .and()
+                .authorizeRequests()
+                .antMatchers("/actuator/**").permitAll()
+                .antMatchers("/**").permitAll()
                 .and().addFilterBefore(
                         new RequestFilter(jwtDecoder),
                         UsernamePasswordAuthenticationFilter.class
-                ).authorizeRequests().anyRequest().permitAll();
+                );
     }
 
 }

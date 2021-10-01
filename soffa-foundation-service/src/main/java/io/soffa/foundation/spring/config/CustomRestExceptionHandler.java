@@ -1,21 +1,25 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.commons.exceptions.*;
-import io.soffa.foundation.commons.logging.Logger;
+import io.soffa.foundation.exceptions.*;
+import io.soffa.foundation.logging.Logger;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,7 +32,16 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     private Environment environment;
     private static final Logger LOG = Logger.create(CustomRestExceptionHandler.class);
 
-    @ExceptionHandler(Throwable.class)
+    @NotNull
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(@NotNull MethodArgumentNotValidException ex,
+                                                                  @NotNull HttpHeaders headers,
+                                                                  @NotNull HttpStatus status,
+                                                                  @NotNull WebRequest request) {
+        return handleGlobalErrors(ex, null);
+    }
+
+    @ExceptionHandler({ UndeclaredThrowableException.class, Throwable.class, Exception.class, TechnicalException.class, FunctionalException.class })
     public ResponseEntity<Object> handleGlobalErrors(Throwable ex, WebRequest request) {
         boolean isProduction = environment.acceptsProfiles(Profiles.of("prod", "production"));
         Throwable error = ErrorUtil.unwrap(ex);
@@ -51,7 +64,7 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private HttpStatus deriverStatus(Throwable exception) {
-        if (exception instanceof ValidationException) {
+        if (exception instanceof ValidationException || exception instanceof  MethodArgumentNotValidException) {
             return HttpStatus.BAD_REQUEST;
         } else if (exception instanceof ConflictException) {
             return HttpStatus.CONFLICT;
