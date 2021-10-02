@@ -1,33 +1,43 @@
 package io.soffa.foundation.pubsub;
 
+import com.google.common.base.Preconditions;
+import io.soffa.foundation.context.RequestContextHolder;
+import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.support.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Optional;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class Event implements Serializable {
 
     public static final long serialVersionUID = -2355203729601016346L;
     private static final Logger LOG = Logger.create(Event.class);
+    private String id;
     private String action;
     private Object payload;
-    private RequestContext context = new RequestContext();
+    private RequestContext context;
+
+    public Event() {
+        context = RequestContextHolder.get().orElse(new RequestContext());
+        if (!TenantHolder.isEmpty() && !context.hasTenant()) {
+            context.setTenantId(new TenantId(TenantHolder.require()));
+        }
+    }
 
     public Event(String action) {
+        this();
         this.action = action;
     }
 
     public Event(String action, Object payload) {
-        this.action = action;
+        this(action);
         this.payload = payload;
     }
 
@@ -39,6 +49,7 @@ public class Event implements Serializable {
     }
 
     public <T> Optional<T> getPayloadAs(Class<T> expectedType) {
+        Preconditions.checkNotNull(expectedType, "Invalid type provided");
         if (payload == null) {
             return Optional.empty();
         }

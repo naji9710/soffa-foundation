@@ -47,7 +47,7 @@ dependencies {
     api("joda-time:joda-time:2.10.10")
     implementation("com.joestelmach:natty:0.13")
     implementation("com.aventrix.jnanoid:jnanoid:2.0.0")
-    api("org.apache.commons:commons-lang3:3.12.0")
+
     api("commons-io:commons-io:2.8.0")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.5")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.12.5")

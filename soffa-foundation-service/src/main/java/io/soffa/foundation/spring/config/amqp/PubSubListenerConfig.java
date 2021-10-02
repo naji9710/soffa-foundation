@@ -1,5 +1,6 @@
 package io.soffa.foundation.spring.config.amqp;
 
+import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.pubsub.Event;
@@ -42,6 +43,7 @@ public class PubSubListenerConfig {
             LOG.error("[amqp] null event definition received");
             return;
         }
+        RequestContextHolder.set(event.getContext());
         TenantHolder.use(event.getTenantId(), () -> {
             listener.handle(event);
         });

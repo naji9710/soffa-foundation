@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.lang.TextUtil;
+import io.soffa.foundation.logging.Logger;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
@@ -17,6 +18,12 @@ public final class TenantHolder {
     private static final ExecutorService SC = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private TenantHolder() {
+    }
+
+    public static void set(TenantId tenantId) {
+        Logger.setTenantId(tenantId);
+        Preconditions.checkNotNull(tenantId, "Tenant cannot be empty");
+        set(tenantId.getValue());
     }
 
     public static void set(String value) {
@@ -73,8 +80,9 @@ public final class TenantHolder {
             }
         }
     }
+
     @SneakyThrows
-    public static<O> O use(final TenantId tenantId, Supplier<O> supplier) {
+    public static <O> O use(final TenantId tenantId, Supplier<O> supplier) {
         if (tenantId == null) {
             return supplier.get();
         } else {

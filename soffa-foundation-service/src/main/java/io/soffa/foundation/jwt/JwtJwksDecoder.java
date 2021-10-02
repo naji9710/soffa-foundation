@@ -9,11 +9,11 @@ import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import io.soffa.foundation.lang.TextUtil;
-import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.core.model.UserProfile;
+import io.soffa.foundation.lang.TextUtil;
+import io.soffa.foundation.logging.Logger;
 import lombok.SneakyThrows;
 
 import java.net.URL;

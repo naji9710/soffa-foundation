@@ -10,63 +10,69 @@ import io.soffa.foundation.exceptions.ErrorUtil;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.pubsub.Event;
-import io.soffa.foundation.support.ClassUtil;
+import io.soffa.foundation.runtime.ExecUtil;
 import io.soffa.foundation.support.JsonUtil;
 import org.apache.commons.lang.reflect.MethodUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 public class DefaultActionDispatcher implements ActionDispatcher {
 
-    private static final Logger LOG = Logger.create("app");
+    private static final Logger LOG = Logger.create(DefaultActionDispatcher.class);
     private final Set<Action<?, ?>> registry;
     private final Set<Action0<?>> registry0;
     private final Map<String, Object> actionsMapping = new HashMap<>();
+    private final Map<String, Class<?>> inputTypes = new HashMap<>();
     private final SysLogRepository sysLogs;
 
     public DefaultActionDispatcher(Set<Action<?, ?>> registry, Set<Action0<?>> registry0, SysLogRepository sysLogs) {
-
         this.registry = registry;
         this.registry0 = registry0;
         this.sysLogs = sysLogs;
+        register(registry);
+        register(registry0);
+    }
 
-        for (Action<?, ?> action : registry) {
-            actionsMapping.put(action.getClass().getSimpleName(), action);
-            for (Class<?> intf : action.getClass().getInterfaces()) {
-                if (Action.class.isAssignableFrom(intf)) {
-                    actionsMapping.put(intf.getSimpleName(), action);
-                }
-            }
-        }
-        for (Action0<?> action : registry0) {
+    private void register(Set<?> actions) {
+        for (Object action : actions) {
             actionsMapping.put(action.getClass().getSimpleName(), action);
             for (Class<?> intf : action.getClass().getInterfaces()) {
                 if (Action0.class.isAssignableFrom(intf)) {
                     actionsMapping.put(intf.getSimpleName(), action);
+                }else if (Action.class.isAssignableFrom(intf)) {
+                    actionsMapping.put(intf.getSimpleName(), action);
+                    Method method = Arrays.stream(action.getClass().getMethods())
+                        .filter(m -> "handle".equals(m.getName()) && 2 == m.getParameterCount() && m.getParameterTypes()[1] == RequestContext.class)
+                        .findFirst().orElseThrow(() -> new TechnicalException("Invalid action definition"));
+                    inputTypes.put(intf.getSimpleName(), method.getParameterTypes()[0]);
                 }
             }
-
         }
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <I extends Validatable, O> O dispatch(Class<? extends Action<I, O>> actionClass, I request) {
+    public <I, O> O dispatch(Class<? extends Action<I, O>> actionClass, I request) {
         RequestContext context = (RequestContext) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return dispatch(actionClass, request, context);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <I extends Validatable, O> O dispatch(Class<? extends Action<I, O>> actionClass, I request, RequestContext context) {
-        request.validate();
+    public <I , O> O dispatch(Class<? extends Action<I, O>> actionClass, I request, RequestContext context) {
+        if (request instanceof Validatable) {
+            ((Validatable)request).validate();
+        }
         for (Action<?, ?> act : registry) {
             if (actionClass.isAssignableFrom(act.getClass())) {
                 Action<I, O> impl = (Action<I, O>) act;
@@ -96,19 +102,16 @@ public class DefaultActionDispatcher implements ActionDispatcher {
     }
 
     @Override
-    public void handle(Event event) throws MissingEventHandlerException {
+    public void handle(Event event) {
         Object action = actionsMapping.get(event.getAction());
         if (action == null) {
-            throw new MissingEventHandlerException();
+            LOG.error("No action handle found to event {}, dont't forget to use the action simple class name");
+            return;
         }
         if (action instanceof Action) {
-            Class<?> inputType = ClassUtil.getClassFromGenericInterface(action.getClass(), Validatable.class, 0);
+            Class<?> inputType = inputTypes.get(event.getAction());
             Object payload = event.getPayloadAs(inputType).orElse(null);
-            if (payload == null) {
-                LOG.warn("Invalid messaging payload received. Event={}", event.getPayload());
-                return;
-            }
-            logAction(action.getClass().getSimpleName(), null, event.getContext(), () -> {
+            logAction(action.getClass().getSimpleName(), payload, event.getContext(), () -> {
                 try {
                     return MethodUtils.invokeMethod(action, "handle", new Object[]{payload, event.getContext()});
                 } catch (Exception e) {
@@ -123,47 +126,32 @@ public class DefaultActionDispatcher implements ActionDispatcher {
 
     private <O> O logAction(String action, Object data, RequestContext context, Supplier<O> supplier) {
         Instant start = Instant.now();
-        Throwable error = null;
+        final AtomicReference<Throwable> error = new AtomicReference<>(null);
         try {
             return supplier.get();
         } catch (Exception e) {
             LOG.error(e, "action {0} has failed with message {1}", action, ErrorUtil.loookupOriginalMessage(e));
-            error = e;
+            error.set(e);
             throw e;
         } finally {
-            if (sysLogs != null || LOG.isInfoEnabled()) {
-                // Should be ran in background
+            if (sysLogs != null) {
                 Instant finish = Instant.now();
                 Duration timeElapsed = Duration.between(start, finish);
-                if (timeElapsed.getSeconds() >= 3) {
+                if (timeElapsed.getSeconds() >= SLOW_ACTION_THRESHOLD) {
                     LOG.warn("action {O} tooks more than {1}s", action, timeElapsed.getSeconds());
                 }
-                if (sysLogs != null) {
-                    try {
-                        SysLog log = new SysLog();
-                        log.setKind("action");
-                        log.setEvent(action);
-                        if (data != null) {
-                            log.setData(JsonUtil.serialize(data));
-                        }
-                        if (context != null) {
-                            log.setRequestId(context.getRequestId());
-                            log.setSpanId(context.getSpanId());
-                            log.setTraceId(context.getTraceId());
-                            log.setUser(context.getUsername().orElse("guest"));
-                            log.setApplication(context.getApplicationName());
-                            if (error != null) {
-                                log.setError(ErrorUtil.loookupOriginalMessage(error));
-                                log.setErrorDetails(ErrorUtil.getStacktrace(error));
-                            }
-                        }
-                        log.setDuration(timeElapsed.toMillis());
-                        sysLogs.save(log);
-
-                    } catch (Exception e) {
-                        LOG.error("failed to persist syslog", e);
+                ExecUtil.safe(() -> {
+                    SysLog log = new SysLog();
+                    log.setKind("action");
+                    log.setEvent(action);
+                    if (data != null) {
+                        log.setData(JsonUtil.serialize(data));
                     }
-                }
+                    log.setContext(context);
+                    log.setError(error.get());
+                    log.setDuration(timeElapsed.toMillis());
+                    sysLogs.save(log);
+                });
             }
         }
     }

@@ -1,14 +1,15 @@
 package io.soffa.foundation.spring;
 
-import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.context.GrantedRole;
+import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.model.Authentication;
+import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.exceptions.UnauthorizedException;
 import io.soffa.foundation.jwt.JwtDecoder;
 import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
-import io.soffa.foundation.core.model.Authentication;
-import io.soffa.foundation.core.model.TenantId;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,7 +92,7 @@ public class RequestFilter extends OncePerRequestFilter {
             TenantHolder.set(context.getTenantId().getValue());
         }
 
-        Logger.setContext(context);
+        RequestContextHolder.set(context);
         chain.doFilter(request, response);
     }
 

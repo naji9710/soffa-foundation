@@ -2,6 +2,7 @@ package io.soffa.foundation.core;
 
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
+import io.soffa.foundation.exceptions.TechnicalException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,7 +28,7 @@ public class RequestContext {
     @SneakyThrows
     public static void setServiceName(String value) {
         if (isEmpty(value)) {
-            throw new Exception("Service name cannot be empty");
+            throw new TechnicalException("Service name cannot be empty");
         }
         serviceName = value;
     }

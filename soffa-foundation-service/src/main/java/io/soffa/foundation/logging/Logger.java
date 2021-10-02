@@ -2,15 +2,18 @@ package io.soffa.foundation.logging;
 
 import com.mgnt.utils.TextUtils;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.exceptions.ErrorUtil;
 import io.soffa.foundation.lang.TextUtil;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 public class Logger {
 
     private final org.slf4j.Logger log;
     static {
-        Logger.setRelevantPackage("app");
+        Logger.setRelevantPackage("io.soffa");
     }
 
     public Logger(org.slf4j.Logger logger) {
@@ -25,8 +28,18 @@ public class Logger {
         return log.isInfoEnabled();
     }
 
-    public static void setContext(RequestContext context) {
-        org.slf4j.MDC.setContextMap(context.getContextMap());
+    public static void setContext(@Nullable RequestContext context) {
+        if (context == null) {
+            org.slf4j.MDC.clear();
+        }else {
+            org.slf4j.MDC.setContextMap(context.getContextMap());
+        }
+    }
+
+    public static void setTenantId(TenantId tenantId) {
+        if (tenantId != null) {
+            org.slf4j.MDC.put("tenant", tenantId.getValue());
+        }
     }
 
     public boolean isTraceEnabled() {

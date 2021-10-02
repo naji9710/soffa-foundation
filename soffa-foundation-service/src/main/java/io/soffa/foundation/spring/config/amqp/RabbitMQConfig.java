@@ -1,8 +1,10 @@
 package io.soffa.foundation.spring.config.amqp;
 
+import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.pubsub.Event;
 import io.soffa.foundation.pubsub.PubSubClient;
+import io.soffa.foundation.support.Generator;
 import io.soffa.foundation.support.JsonUtil;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -64,17 +66,21 @@ public class RabbitMQConfig {
 
             @Override
             public void send(String target, Event event) {
+                if (TextUtil.isEmpty(event.getId())) {
+                    event.setId(Generator.secureRandomId("evt_"));
+                }
                 rabbitTemplate.convertAndSend(exchange + ".topic", routing + "." + target, JsonUtil.serialize(event).getBytes());
-                /*if (embeddedMode) {
-                    rabbitTemplate.convertAndSend(target, JsonUtil.serialize(event).getBytes());
-                }*/
-                LOG.debug("[PUB-SUB] Message sent to {} - @action:{}", target, event.getAction());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[PUB-SUB] Message sent to {} - @action:{}", target, event.getAction());
+                }
             }
 
             @Override
             public void broadcast(Event event) {
                 rabbitTemplate.convertAndSend(exchange + ".fanout", routing + ".*", JsonUtil.serialize(event).getBytes());
-                LOG.debug("[PUB-SUB] Message broadcasted to {}.* - @action:{}", routing, event.getAction());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("[PUB-SUB] Message broadcasted to {}.* - @action:{}", routing, event.getAction());
+                }
             }
 
             @Override

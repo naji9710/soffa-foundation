@@ -8,7 +8,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 
 public final class ErrorUtil {
 
-    private static String defaultErrorPackage = "app";
+    private static String defaultErrorPackage = "io.soffa";
     private static final String ALL_PACKAGES = "*";
 
     private ErrorUtil() {

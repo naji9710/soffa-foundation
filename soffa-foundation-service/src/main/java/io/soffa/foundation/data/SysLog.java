@@ -1,5 +1,7 @@
 package io.soffa.foundation.data;
 
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.exceptions.ErrorUtil;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,5 +29,26 @@ public class SysLog {
     public SysLog(String kind, String event) {
         this.kind = kind;
         this.event = event;
+    }
+
+    public void setContext(RequestContext context) {
+        if (context != null) {
+            setRequestId(context.getRequestId());
+            setSpanId(context.getSpanId());
+            setTraceId(context.getTraceId());
+            setUser(context.getUsername().orElse("guest"));
+            setApplication(context.getApplicationName());
+        }
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public void setError(Throwable error) {
+        if (error != null) {
+            setError(ErrorUtil.loookupOriginalMessage(error));
+            setErrorDetails(ErrorUtil.getStacktrace(error));
+        }
     }
 }

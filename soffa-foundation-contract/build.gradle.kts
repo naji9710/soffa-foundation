@@ -11,5 +11,6 @@ dependencies {
     api("javax.annotation:javax.annotation-api:1.3.2")
     api("io.swagger.core.v3:swagger-annotations:2.1.10")
     api("io.swagger.core.v3:swagger-models:2.1.10")
+    api("org.apache.commons:commons-lang3:3.12.0")
 }
 

@@ -39,7 +39,7 @@ public class PlatformBeansFactory {
     }
 
     @Bean
-    public GrantedAuthorityDefaults grantedAuthorityDefaults(@Value("${app.package:app}") String defaultPackage,
+    public GrantedAuthorityDefaults grantedAuthorityDefaults(@Value("${app.package}") String defaultPackage,
                                                              @Value("${spring.application.name}") String serviceId) {
         if (TextUtil.isEmpty(defaultPackage)) {
             Logger.setRelevantPackage(defaultPackage);
