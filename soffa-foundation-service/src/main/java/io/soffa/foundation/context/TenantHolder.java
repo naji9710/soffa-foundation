@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public final class TenantHolder {
 
-    private static final ThreadLocal<String> CURRENT = new ThreadLocal<>();
+    private static final ThreadLocal<String> CURRENT = new InheritableThreadLocal<>();
     private static final ExecutorService SC = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     private TenantHolder() {

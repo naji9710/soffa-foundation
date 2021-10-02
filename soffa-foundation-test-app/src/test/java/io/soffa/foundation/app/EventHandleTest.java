@@ -4,8 +4,8 @@ import io.soffa.foundation.actions.ActionDispatcher;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.data.SysLogRepository;
+import io.soffa.foundation.events.Event;
 import io.soffa.foundation.exceptions.FakeException;
-import io.soffa.foundation.pubsub.Event;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(properties = {"app.syslogs.enabled=true"})
+@SpringBootTest(properties = {"app.sys-logs.enabled=true"})
 @ActiveProfiles("test")
 public class EventHandleTest {
 

@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(properties = {"app.syslogs.enabled=false"})
+@SpringBootTest(properties = {"app.sys-logs.enabled=false"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class ApplicationTest {

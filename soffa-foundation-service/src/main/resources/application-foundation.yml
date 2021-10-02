@@ -111,6 +111,11 @@ app.db.auto-migrate: true
 app.openapi:
   title: ${spring.application.name}
 
+org.jobrunr.background-job-server.enabled: ${app.sys-jobs.enabled:false}
+org.jobrunr.dashboard.enabled: ${app.sys-jobs.enabled:false}
+org.jobrunr.database.skip_create: true
+org.jobrunr.dashboard.port: 8000
+
 ---
 
 spring.config.activate.on-profile: vault

@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(properties = {"app.syslogs.enabled=true"})
+@SpringBootTest(properties = {"app.sys-logs.enabled=true"})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public class SysLogTests {

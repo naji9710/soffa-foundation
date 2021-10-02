@@ -1,7 +1,7 @@
 package io.soffa.foundation;
 
 import io.soffa.foundation.config.TestPubSubListener;
-import io.soffa.foundation.pubsub.Event;
+import io.soffa.foundation.events.Event;
 import io.soffa.foundation.pubsub.PubSubClient;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;

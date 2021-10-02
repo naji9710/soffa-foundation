@@ -19,9 +19,9 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(properties = {"app.syslogs.enabled=true"})
+@SpringBootTest(properties = {"app.sys-logs.enabled=true"})
 @ActiveProfiles("test")
-public class TestDataSourceTest {
+public class DataSourceTest {
 
     @Autowired
     private SysLogRepository sysLogs;
@@ -36,12 +36,11 @@ public class TestDataSourceTest {
 
 
         Map<String, Integer> links = ImmutableMap.of(
-                "primary", RandomUtils.nextInt(100, 200),
                 "T1", RandomUtils.nextInt(100, 300),
                 "T2", RandomUtils.nextInt(100, 500)
         );
 
-        final CountDownLatch latch = new CountDownLatch(links.get("primary") + links.get("T1") + links.get("T2"));
+        final CountDownLatch latch = new CountDownLatch(links.get("T1") + links.get("T2"));
 
         for (final Map.Entry<String, Integer> e : links.entrySet()) {
 
@@ -49,7 +48,7 @@ public class TestDataSourceTest {
             assertEquals(0, sysLogs.count());
 
             for (int i = 0; i < e.getValue(); i++) {
-                TenantHolder.submit(() -> {
+                TenantHolder.submit(e.getKey(), () -> {
                     sysLogs.save(new SysLog("event", Generator.shortId()));
                     latch.countDown();
                 });

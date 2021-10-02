@@ -36,7 +36,7 @@ dependencies {
 
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
-
+    api("org.jobrunr:jobrunr:4.0.0")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     implementation("com.h2database:h2:1.4.200")
     implementation("org.mockito:mockito-core:3.12.4")

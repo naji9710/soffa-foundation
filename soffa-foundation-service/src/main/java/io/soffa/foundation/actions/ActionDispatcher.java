@@ -3,7 +3,7 @@ package io.soffa.foundation.actions;
 import io.soffa.foundation.core.Action;
 import io.soffa.foundation.core.Action0;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.pubsub.Event;
+import io.soffa.foundation.events.Event;
 
 import javax.validation.Valid;
 

@@ -36,6 +36,25 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
     public static final String NONE = "NONE";
     public static final String DEFAULT = "default";
 
+    @SneakyThrows
+    public TenantAwareDatasource(final Map<String, String> links,
+                                 final String tablesPrefix,
+                                 final String appicationName) {
+
+        super();
+        this.tablesPrefix = tablesPrefix;
+        this.appicationName = appicationName;
+        setLenientFallback(false);
+        CustomPhysicalNamingStrategy.tablePrefix = tablesPrefix;
+        if (links == null || links.isEmpty()) {
+            throw new TechnicalException("No db link provided");
+        }
+        links.forEach((name, url) -> dataSources.put(name, createDataSource(DataSourceProperties.create(name, url.trim()))));
+        dataSources.put(NONE, new MockDataSource());
+        super.setTargetDataSources(dataSources);
+    }
+
+
     @Override
     protected Object determineCurrentLookupKey() {
         if (TenantHolder.isEmpty()) {
@@ -52,31 +71,21 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
         return linkId;
     }
 
+    public DataSource getDefault() {
+        boolean hasOneItem = dataSources.size() == 1;
+        if (hasOneItem) {
+            return (DataSource) dataSources.values().iterator().next();
+        }
+        if (dataSources.containsKey(DEFAULT)) {
+            return (DataSource) dataSources.get(DEFAULT);
+        }
+        throw new TechnicalException("No default datasource registered");
+    }
+
     @Override
     public void onApplicationEvent(@NotNull ContextRefreshedEvent event) {
         appicationStarted = true;
     }
-
-    @SneakyThrows
-    public TenantAwareDatasource(final Map<String, String> links,
-                                 final String tablesPrefix,
-                                 final String appicationName) {
-
-        super();
-        this.tablesPrefix = tablesPrefix;
-        this.appicationName = appicationName;
-        setLenientFallback(false);
-        CustomPhysicalNamingStrategy.tablePrefix = tablesPrefix;
-        if (links == null || links.isEmpty()) {
-            throw new TechnicalException("No db link provided");
-        }
-        links.forEach((name, url) -> {
-            dataSources.put(name, createDataSource(DataSourceProperties.create(name, url.trim())));
-        });
-        dataSources.put(NONE, new MockDataSource());
-        super.setTargetDataSources(dataSources);
-    }
-
 
     @SneakyThrows
     private DataSource createDataSource(DataSourceProperties config) {
@@ -93,7 +102,7 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
         dataSource.setMaximumPoolSize(30);
         dataSource.setMinimumIdle(3);
         dataSource.setValidationTimeout(10_000);
-        dataSource.setPoolName(appicationName + "_" + config.getName() + "__" + RandomUtils.nextInt());
+        dataSource.setPoolName(config.getName() + "__" + RandomUtils.nextInt());
 
         if (config.hasSchema()) {
             dataSource.setSchema(config.getSchema());
@@ -109,17 +118,6 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
             }
         }
     }
-
-    /*
-    public void applyMigrations(String tenant) {
-        applyMigrations(get(tenant), "/db/changelog/" + appicationName + ".xml");
-    }
-
-    public void applyMigrations(String tenant, String changeLogPath) {
-        applyMigrations(get(tenant), changeLogPath);
-    }
-
-    */
 
     public void applyMigrations(DataSource dataSource, String changeLogPath) {
         Resource res = resourceLoader.getResource(changeLogPath);
@@ -155,6 +153,11 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
     private void doApplyMigration(SpringLiquibase lqb, Map<String, String> changeLogParams, HikariDataSource ds) {
         String schema = ds.getSchema();
         String dsName = ds.getPoolName().split("__")[0];
+        if (DEFAULT.equals(dsName)) {
+            lqb.setContexts("default");
+        } else {
+            lqb.setContexts("tenant," + dsName.toLowerCase());
+        }
         if (TextUtil.isNotEmpty(schema)) {
             lqb.setDefaultSchema(schema);
             lqb.setLiquibaseSchema(schema);

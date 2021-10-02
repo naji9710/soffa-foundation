@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-@ConditionalOnProperty(value = "app.syslogs.enabled", havingValue = "true")
+@ConditionalOnProperty(value = "app.sys-logs.enabled", havingValue = "true")
 public class SysLogRepositoryImpl implements SysLogRepository {
 
     private SysLogJpaRepository repo;

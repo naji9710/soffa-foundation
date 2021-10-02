@@ -1,8 +1,8 @@
 package io.soffa.foundation.spring.config.amqp;
 
+import io.soffa.foundation.events.Event;
 import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
-import io.soffa.foundation.pubsub.Event;
 import io.soffa.foundation.pubsub.PubSubClient;
 import io.soffa.foundation.support.Generator;
 import io.soffa.foundation.support.JsonUtil;
