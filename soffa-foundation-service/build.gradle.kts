@@ -55,7 +55,7 @@ dependencies {
     implementation("org.json:json:20210307")
     implementation("com.nimbusds:nimbus-jose-jwt:9.14")
     implementation("commons-codec:commons-codec:1.15")
-    implementation("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.2")
     implementation("com.konghq:unirest-java:3.13.0")
     implementation("com.github.michaelgantman:MgntUtils:1.5.1.2")
     api("org.jdbi:jdbi3-core:3.22.0") {

@@ -33,7 +33,6 @@ public class SysLog {
 
     public void setContext(RequestContext context) {
         if (context != null) {
-            setRequestId(context.getRequestId());
             setSpanId(context.getSpanId());
             setTraceId(context.getTraceId());
             setUser(context.getUsername().orElse("guest"));

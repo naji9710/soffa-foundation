@@ -48,22 +48,22 @@ public class Logger {
 
     public void debug(String message, Object... args) {
         if (log.isDebugEnabled()) {
-            log.debug(message, args);
+            log.debug(TextUtil.format(message, args));
         }
     }
 
     public void trace(String message, Object... args) {
         if (log.isDebugEnabled()) {
-            log.trace(message, args);
+            log.trace(TextUtil.format(message, args));
         }
     }
 
     public void info(String message, Object... args) {
-        log.info(message, args);
+        log.info(TextUtil.format(message, args));
     }
 
     public void warn(String message, Object... args) {
-        log.warn(message, args);
+        log.warn(TextUtil.format(message, args));
     }
 
     public void error(Throwable e) {
@@ -80,7 +80,7 @@ public class Logger {
     }
 
     public void error(String message, Object... args) {
-        log.error(message, args);
+        log.error(TextUtil.format(message, args));
     }
 
     public static void setRelevantPackage(String pkg) {

@@ -48,7 +48,7 @@ public final class ErrorUtil {
         }
         if (error instanceof TechnicalException || error instanceof FunctionalException) {
             if (TextUtil.isEmpty(error.getMessage())) {
-                return loookupOriginalMessage(error);
+                return loookupOriginalMessage(error.getCause());
             }
             return error.getMessage();
         }

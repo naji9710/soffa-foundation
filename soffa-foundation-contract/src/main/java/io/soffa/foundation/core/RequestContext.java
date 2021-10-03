@@ -22,7 +22,6 @@ public class RequestContext {
     private String applicationName;
     private String traceId;
     private String spanId;
-    private String requestId;
     private final Map<String, Object> metas = new HashMap<>();
 
     @SneakyThrows
@@ -55,10 +54,6 @@ public class RequestContext {
 
     public void setSpanId(String spanId) {
         this.spanId = spanId;
-    }
-
-    public void setRequestId(String requestId) {
-        this.requestId = requestId;
     }
 
     public void setMeta(String key, Object value) {
@@ -99,9 +94,6 @@ public class RequestContext {
         }
         if (isNotEmpty(spanId)) {
             contextMap.put("spanId", spanId);
-        }
-        if (isNotEmpty(requestId)) {
-            contextMap.put("requestId", requestId);
         }
         if (authentication != null && isNotEmpty(authentication.getUsername())) {
             contextMap.put("user", authentication.getUsername());

@@ -10,6 +10,7 @@ import io.soffa.foundation.exceptions.UnauthorizedException;
 import io.soffa.foundation.jwt.JwtDecoder;
 import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
+import io.soffa.foundation.support.Generator;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,9 +57,8 @@ public class RequestFilter extends OncePerRequestFilter {
 
         lookupHeader(request, "X-ApplicationName", "X-ApplicationId", "X-Application", "X-App").ifPresent(context::setApplicationName);
 
-        lookupHeader(request, "X-TraceId", "X-CorrelationId").ifPresent(context::setTraceId);
-        lookupHeader(request, "X-SpanId").ifPresent(context::setSpanId);
-        lookupHeader(request, "X-RequestId").ifPresent(context::setRequestId);
+        lookupHeader(request, "X-TraceId", "X-Trace-Id", "X-RequestId", "X-Request-Id").ifPresent(context::setTraceId);
+        lookupHeader(request, "X-SpanId", "X-Span-Id", "X-CorrelationId", "X-Correlation-Id").ifPresent(context::setSpanId);
 
         SecurityContextHolder.getContext().setAuthentication(
             new AnonymousAuthenticationToken("guest", context,
@@ -68,7 +68,7 @@ public class RequestFilter extends OncePerRequestFilter {
         if (jwtDecoder != null) {
             lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(value -> {
                 String token = value.substring("bearer ".length()).trim();
-                logger.debug("Bearer authorization header found: {}", token);
+                logger.debug("Bearer authorization header found: %s", token);
                 Optional<Authentication> auth = jwtDecoder.decode(token);
                 if (!auth.isPresent()) {
                     throw new UnauthorizedException("jwt.invalid");
@@ -88,8 +88,17 @@ public class RequestFilter extends OncePerRequestFilter {
             });
         }
 
+        String prefix = "";
         if (context.getTenantId() != null) {
             TenantHolder.set(context.getTenantId().getValue());
+            prefix = context.getTenantId().getValue() + "_";
+        }
+
+        if (TextUtil.isEmpty(context.getSpanId())) {
+            context.setSpanId(Generator.shortId(prefix));
+        }
+        if (TextUtil.isEmpty(context.getTraceId())) {
+            context.setTraceId(Generator.shortId(prefix));
         }
 
         RequestContextHolder.set(context);

@@ -8,6 +8,7 @@ import io.soffa.foundation.logging.Logger;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Supplier;
@@ -64,6 +65,17 @@ public final class TenantHolder {
             TenantHolder.set(tenantId);
             runnable.run();
         });
+    }
+
+    @SneakyThrows
+    public static void run(final String tenantId, Runnable runnable) {
+        CountDownLatch latch = new CountDownLatch(1);
+        SC.submit(() -> {
+            TenantHolder.set(tenantId);
+            runnable.run();
+            latch.countDown();
+        });
+        latch.await();
     }
 
     @SneakyThrows

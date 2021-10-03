@@ -66,7 +66,7 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
         }
         String linkId = TenantHolder.get().orElseThrow(() -> new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()"));
         if (!dataSources.containsKey(linkId)) {
-            throw new DatabaseException("{0} is not a valid database link", linkId);
+            throw new DatabaseException("%s is not a valid database link", linkId);
         }
         return linkId;
     }
@@ -122,7 +122,7 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
     public void applyMigrations(DataSource dataSource, String changeLogPath) {
         Resource res = resourceLoader.getResource(changeLogPath);
         if (!res.exists()) {
-            throw new TechnicalException("Liquibase changeLog was not found: {0}", changeLogPath);
+            throw new TechnicalException("Liquibase changeLog was not found: %s", changeLogPath);
         }
         SpringLiquibase lqb = new SpringLiquibase();
         lqb.setChangeLog(changeLogPath);
@@ -165,9 +165,9 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
         lqb.setChangeLogParameters(changeLogParams);
         try {
             lqb.afterPropertiesSet(); // Run migrations
-            LOG.info("Datasource {} bootstrapped successfully", dsName);
+            LOG.info("Datasource %s bootstrapped successfully", dsName);
         } catch (LiquibaseException e) {
-            throw new DatabaseException(e, "Migration failed for {0}", schema);
+            throw new DatabaseException(e, "Migration failed for %s", schema);
         }
     }
 

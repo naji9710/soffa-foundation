@@ -79,7 +79,7 @@ public class DefaultActionDispatcher implements ActionDispatcher {
                 return logAction(actionClass.getSimpleName(), request, context, () -> impl.handle(request, context));
             }
         }
-        throw new TechnicalException("Unable to find implementation for action: {0}", actionClass.getName());
+        throw new TechnicalException("Unable to find implementation for action: %s", actionClass.getName());
     }
 
     @Override
@@ -98,14 +98,14 @@ public class DefaultActionDispatcher implements ActionDispatcher {
                 return logAction(actionClass.getSimpleName(), null, context, () -> impl.handle(context));
             }
         }
-        throw new TechnicalException("Unable to find implementation for action: {0}", actionClass.getName());
+        throw new TechnicalException("Unable to find implementation for action: %s", actionClass.getName());
     }
 
     @Override
     public void handle(Event event) {
         Object action = actionsMapping.get(event.getAction());
         if (action == null) {
-            LOG.error("No action handle found to event {}, dont't forget to use the action simple class name");
+            LOG.error("No action handle found to event %s, dont't forget to use the action simple class name");
             return;
         }
         if (action instanceof Action) {
@@ -130,7 +130,7 @@ public class DefaultActionDispatcher implements ActionDispatcher {
         try {
             return supplier.get();
         } catch (Exception e) {
-            LOG.error(e, "action {0} has failed with message {1}", action, ErrorUtil.loookupOriginalMessage(e));
+            LOG.error("action %s has failed with message %s", action, ErrorUtil.loookupOriginalMessage(e));
             error.set(e);
             throw e;
         } finally {
@@ -138,7 +138,7 @@ public class DefaultActionDispatcher implements ActionDispatcher {
                 Instant finish = Instant.now();
                 Duration timeElapsed = Duration.between(start, finish);
                 if (timeElapsed.getSeconds() >= SLOW_ACTION_THRESHOLD) {
-                    LOG.warn("action {O} tooks more than {1}s", action, timeElapsed.getSeconds());
+                    LOG.warn("action %s tooks more than %ds", action, timeElapsed.getSeconds());
                 }
                 ExecUtil.safe(() -> {
                     SysLog log = new SysLog();

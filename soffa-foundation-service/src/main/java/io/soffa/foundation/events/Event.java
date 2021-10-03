@@ -43,6 +43,12 @@ public class Event implements Serializable {
         this.payload = payload;
     }
 
+    public Event(String action, Object payload, RequestContext context) {
+        this.action = action;
+        this.payload = payload;
+        this.context = context;
+    }
+
     public TenantId getTenantId() {
         if (context == null) {
             return null;

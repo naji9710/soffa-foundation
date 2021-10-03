@@ -71,7 +71,7 @@ public class RabbitMQConfig {
                 }
                 rabbitTemplate.convertAndSend(exchange + ".topic", routing + "." + target, JsonUtil.serialize(event).getBytes());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[PUB-SUB] Message sent to {} - @action:{}", target, event.getAction());
+                    LOG.debug("[PUB-SUB] Message sent to %s - @action:%s", target, event.getAction());
                 }
             }
 
@@ -79,7 +79,7 @@ public class RabbitMQConfig {
             public void broadcast(Event event) {
                 rabbitTemplate.convertAndSend(exchange + ".fanout", routing + ".*", JsonUtil.serialize(event).getBytes());
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("[PUB-SUB] Message broadcasted to {}.* - @action:{}", routing, event.getAction());
+                    LOG.debug("[PUB-SUB] Message broadcasted to %s.* - @action:%s", routing, event.getAction());
                 }
             }
 

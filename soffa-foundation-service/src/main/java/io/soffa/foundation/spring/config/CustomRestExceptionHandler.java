@@ -1,9 +1,10 @@
 package io.soffa.foundation.spring.config;
 
+import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.exceptions.*;
 import io.soffa.foundation.logging.Logger;
-import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
@@ -23,14 +24,23 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
-@AllArgsConstructor
 class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private Environment environment;
+    private final Environment environment;
+    //private final MeterRegistry meterRegistry;
     private static final Logger LOG = Logger.create(CustomRestExceptionHandler.class);
+
+    @Autowired
+    public CustomRestExceptionHandler(Environment environment) {
+        super();
+        //@Autowired(required = false) MeterRegistry meterRegistry) {
+        //this.meterRegistry = meterRegistry;
+        this.environment = environment;
+    }
 
     @NotNull
     @Override
@@ -38,11 +48,11 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NotNull HttpHeaders headers,
                                                                   @NotNull HttpStatus status,
                                                                   @NotNull WebRequest request) {
-        return handleGlobalErrors(ex, null);
+        return handleGlobalErrors(ex);
     }
 
-    @ExceptionHandler({ UndeclaredThrowableException.class, Throwable.class, Exception.class, TechnicalException.class, FunctionalException.class })
-    public ResponseEntity<Object> handleGlobalErrors(Throwable ex, WebRequest request) {
+    @ExceptionHandler({UndeclaredThrowableException.class, Throwable.class, Exception.class, TechnicalException.class, FunctionalException.class})
+    public ResponseEntity<Object> handleGlobalErrors(Throwable ex) {
         boolean isProduction = environment.acceptsProfiles(Profiles.of("prod", "production"));
         Throwable error = ErrorUtil.unwrap(ex);
         HttpStatus status = deriverStatus(error);
@@ -55,8 +65,20 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         body.put("message", message);
         body.put("prod", isProduction);
 
-        if (!isProduction && status != HttpStatus.UNAUTHORIZED && status != HttpStatus.FORBIDDEN) {
+        RequestContextHolder.get().ifPresent(context -> {
+            body.put("traceId", context.getTraceId());
+            body.put("spanId", context.getSpanId());
+            Optional.ofNullable(context.getApplicationName()).ifPresent(s -> body.put("application", s));
+            context.getUsername().ifPresent(s -> body.put("user", s));
+            if (context.hasTenant()) {
+                body.put("tenant", context.getTenantId().getValue());
+            }
+        });
+
+        if (!(error instanceof FunctionalException) && !(error instanceof FakeException)) {
             LOG.error(error);
+        }
+        if (!isProduction && status != HttpStatus.UNAUTHORIZED && status != HttpStatus.FORBIDDEN) {
             body.put("trace", ErrorUtil.getStacktrace(error).split("\n"));
         }
 
@@ -64,7 +86,7 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private HttpStatus deriverStatus(Throwable exception) {
-        if (exception instanceof ValidationException || exception instanceof  MethodArgumentNotValidException) {
+        if (exception instanceof ValidationException || exception instanceof MethodArgumentNotValidException) {
             return HttpStatus.BAD_REQUEST;
         } else if (exception instanceof ConflictException) {
             return HttpStatus.CONFLICT;

@@ -134,6 +134,8 @@ spring.cloud.vault:
 spring.config.import:
   - vault://
 
+junit.jupiter.execution.parallel.enabled: true
+
 ---
 
 spring.config.activate.on-profile: prod | production | prd | staging | logstash | json-logs

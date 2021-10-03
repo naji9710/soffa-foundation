@@ -25,7 +25,7 @@ public class PubSubListenerConfig {
     }
 
     @SneakyThrows
-    @RabbitListener(queues = {"${spring.application.name}"})
+    @RabbitListener(queues = {"${spring.application.name}"}, ackMode="AUTO")
     public void listen(Message message) {
         if (listener == null) {
             LOG.warn("No event listener registered");

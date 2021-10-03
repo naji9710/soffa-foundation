@@ -43,8 +43,26 @@ public class ApplicationTest {
     }
 
     @Test
+    public void testCustomRestExceptionHandler() {
+        HttpExpect test = new HttpExpect(mvc);
+        test.get("/ping").
+            header("X-Application", "TestApp").
+            header("X-TenantId", "T2").
+            header("X-TraceId", Generator.shortId("trace-")).
+            header("X-SpanId", Generator.shortId("span-")).
+            expect().is5xxServerError().
+            hasJson("$.timestamp").
+            hasJson("$.kind").
+            hasJson("$.status").
+            hasJson("$.message").
+            hasJson("$.prod").
+            hasJson("$.traceId").
+            hasJson("$.spanId").
+            hasJson("$.application");
+    }
+
+    @Test
     public void testConfig() {
-        //TenantHolder.set("T1");
         assertEquals(0L, messages.count());
         TenantHolder.set("T1");
         assertEquals(0L, messages.count());

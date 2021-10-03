@@ -14,15 +14,15 @@ public class JobManager implements JobRequestHandler<Job> {
     private ActionDispatcher dispatcher;
     private JobRunrConfiguration.JobRunrConfigurationResult jobRunr;
 
-    public void enqueue(String description, Event event) {
-        jobRunr.getJobRequestScheduler().enqueue(new Job(
-            Generator.secureRandomId("job_"), description, event
-        ));
+    public Job enqueue(String description, Event event) {
+        Job job = new Job(Generator.secureRandomId("job_"), event.getTenantId(), description, event);
+        jobRunr.getJobRequestScheduler().enqueue(job);
+        return job;
     }
 
     @Override
-    public void run(Job job) throws Exception {
-        TenantHolder.set(job.getEvent().getTenantId());
+    public void run(Job job)   {
+        TenantHolder.set(job.getTenant());
         dispatcher.handle(job.getEvent());
     }
 

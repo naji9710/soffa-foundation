@@ -17,7 +17,7 @@ public class PingActionImpl implements PingAction {
         if (!context.hasTenant() || context.getTenantId().equals(T1)) {
             return "PONG";
         } else {
-            throw new FakeException("Controlled error triggered");
+            throw new FakeException("Controlled error triggered (%s)", context.getTenantId());
         }
     }
 

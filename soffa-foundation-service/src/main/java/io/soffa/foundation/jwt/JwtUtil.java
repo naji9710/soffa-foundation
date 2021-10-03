@@ -56,7 +56,7 @@ public final class JwtUtil {
     public static String fromJwks(final InputStream jwkSource, final String issuer, final String subject, final Map<String, Serializable> claims) {
         String jwkString = IOUtil.toString(jwkSource).orElseThrow(() -> new TechnicalException("INVALID_JWK_SOURCE"));
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Using JWK: {}", jwkString);
+            LOG.trace("Using JWK: %s", jwkString);
         }
         JSONObject json = new JSONObject(jwkString);
         if (json.has("keys")) {

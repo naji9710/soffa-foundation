@@ -26,16 +26,19 @@ public class SysLogTests {
 
     @Test
     public void testSysAction() {
-        HttpExpect test = new HttpExpect(mvc);
         TenantHolder.set("T1");
+        HttpExpect test = new HttpExpect(mvc);
+
         long initialCount = sysLogs.count();
         test.get("/ping").expect().isOK().contentIs("PONG");
+
         assertEquals(initialCount + 1, sysLogs.count());
 
         test.get("/ping").
             header(ApiHeaders.TENANT_ID, "T1").
             header(ApiHeaders.APPLICATION, "Demo").
             expect().isOK().contentIs("PONG");
+
         assertEquals(initialCount + 2, sysLogs.count());
     }
 

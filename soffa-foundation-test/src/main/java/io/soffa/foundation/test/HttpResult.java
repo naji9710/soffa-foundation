@@ -1,5 +1,9 @@
 package io.soffa.foundation.test;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.SneakyThrows;
 import org.hamcrest.Matcher;
 import org.springframework.test.web.servlet.ResultActions;
@@ -10,7 +14,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class HttpResult {
 
     private final ResultActions result;
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
+    static {
+        SimpleModule simpleModule = new SimpleModule();
+        MAPPER.registerModule(simpleModule);
+    }
     HttpResult(ResultActions result) {
         this.result = result;
     }
@@ -72,6 +83,16 @@ public class HttpResult {
     @SneakyThrows
     public HttpResult json(String path, Matcher<?> matcher) {
         result.andExpect(jsonPath(path).value(matcher));
+        return this;
+    }
+    @SneakyThrows
+    public <T> T read(Class<T> expectedClass) {
+        return MAPPER.readValue(result.andReturn().getResponse().getContentAsString(), expectedClass);
+    }
+
+    @SneakyThrows
+    public HttpResult hasJson(String path) {
+        result.andExpect(jsonPath(path).exists());
         return this;
     }
 
