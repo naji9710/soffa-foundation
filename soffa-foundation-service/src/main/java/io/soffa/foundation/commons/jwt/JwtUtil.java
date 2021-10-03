@@ -1,4 +1,4 @@
-package io.soffa.foundation.jwt;
+package io.soffa.foundation.commons.jwt;
 
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.DirectEncrypter;
@@ -7,10 +7,10 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.soffa.foundation.commons.DateUtil;
+import io.soffa.foundation.commons.IOUtil;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.logging.Logger;
-import io.soffa.foundation.support.DateUtil;
-import io.soffa.foundation.support.IOUtil;
 import lombok.SneakyThrows;
 import org.json.JSONObject;
 

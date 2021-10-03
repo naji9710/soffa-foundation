@@ -1,8 +1,8 @@
 package io.soffa.foundation.data.entities;
 
+import io.soffa.foundation.commons.IDs;
 import io.soffa.foundation.data.SysLog;
 import io.soffa.foundation.lang.TextUtil;
-import io.soffa.foundation.support.Generator;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
@@ -34,7 +34,7 @@ public class SysLogEntity {
     @PrePersist
     public void onPrePersist() {
         if (TextUtil.isEmpty(id)) {
-            id = Generator.shortId("slog_");
+            id = IDs.shortUUID("slog_");
         }
         if (createdAt == null) {
             createdAt = new Date();

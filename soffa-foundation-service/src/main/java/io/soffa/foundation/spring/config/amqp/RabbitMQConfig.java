@@ -1,11 +1,11 @@
 package io.soffa.foundation.spring.config.amqp;
 
+import io.soffa.foundation.commons.IDs;
+import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.events.Event;
 import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.pubsub.PubSubClient;
-import io.soffa.foundation.support.Generator;
-import io.soffa.foundation.support.JsonUtil;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +67,7 @@ public class RabbitMQConfig {
             @Override
             public void send(String target, Event event) {
                 if (TextUtil.isEmpty(event.getId())) {
-                    event.setId(Generator.secureRandomId("evt_"));
+                    event.setId(IDs.secureRandomId("evt_"));
                 }
                 rabbitTemplate.convertAndSend(exchange + ".topic", routing + "." + target, JsonUtil.serialize(event).getBytes());
                 if (LOG.isDebugEnabled()) {

@@ -1,11 +1,11 @@
 package io.soffa.foundation.spring.config.amqp;
 
+import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.events.Event;
 import io.soffa.foundation.logging.Logger;
 import io.soffa.foundation.pubsub.PubSubListener;
-import io.soffa.foundation.support.JsonUtil;
 import lombok.SneakyThrows;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;

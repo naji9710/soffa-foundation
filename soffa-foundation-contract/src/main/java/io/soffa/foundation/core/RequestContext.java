@@ -32,6 +32,13 @@ public class RequestContext {
         serviceName = value;
     }
 
+    public String getTenant() {
+        if (tenantId == null) {
+            return null;
+        }
+        return tenantId.getValue();
+    }
+
     public boolean hasTenant() {
         return tenantId != null;
     }
@@ -106,7 +113,7 @@ public class RequestContext {
         return !isEmpty(value);
     }
 
-    private static  boolean isEmpty(String value) {
+    private static boolean isEmpty(String value) {
         return value == null || value.isEmpty();
     }
 

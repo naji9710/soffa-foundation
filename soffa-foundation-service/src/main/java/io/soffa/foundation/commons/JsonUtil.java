@@ -1,4 +1,4 @@
-package io.soffa.foundation.support;
+package io.soffa.foundation.commons;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -1,5 +1,7 @@
 package io.soffa.foundation.spring;
 
+import io.soffa.foundation.commons.IDs;
+import io.soffa.foundation.commons.jwt.JwtDecoder;
 import io.soffa.foundation.context.GrantedRole;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
@@ -7,10 +9,8 @@ import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.exceptions.UnauthorizedException;
-import io.soffa.foundation.jwt.JwtDecoder;
 import io.soffa.foundation.lang.TextUtil;
 import io.soffa.foundation.logging.Logger;
-import io.soffa.foundation.support.Generator;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ public class RequestFilter extends OncePerRequestFilter {
             context.setTenantId(new TenantId(value));
         });
 
-        lookupHeader(request, "X-ApplicationName", "X-ApplicationId", "X-Application", "X-App").ifPresent(context::setApplicationName);
+        lookupHeader(request, "X-Application", "X-ApplicationName", "X-ApplicationId", "X-App").ifPresent(context::setApplicationName);
 
         lookupHeader(request, "X-TraceId", "X-Trace-Id", "X-RequestId", "X-Request-Id").ifPresent(context::setTraceId);
         lookupHeader(request, "X-SpanId", "X-Span-Id", "X-CorrelationId", "X-Correlation-Id").ifPresent(context::setSpanId);
@@ -95,10 +95,10 @@ public class RequestFilter extends OncePerRequestFilter {
         }
 
         if (TextUtil.isEmpty(context.getSpanId())) {
-            context.setSpanId(Generator.shortId(prefix));
+            context.setSpanId(IDs.shortUUID(prefix));
         }
         if (TextUtil.isEmpty(context.getTraceId())) {
-            context.setTraceId(Generator.shortId(prefix));
+            context.setTraceId(IDs.shortUUID(prefix));
         }
 
         RequestContextHolder.set(context);

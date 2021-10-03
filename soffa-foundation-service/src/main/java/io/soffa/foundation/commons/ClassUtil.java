@@ -1,4 +1,4 @@
-package io.soffa.foundation.support;
+package io.soffa.foundation.commons;
 
 
 import io.soffa.foundation.exceptions.TechnicalException;

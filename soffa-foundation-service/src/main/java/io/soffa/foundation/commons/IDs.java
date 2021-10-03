@@ -1,4 +1,4 @@
-package io.soffa.foundation.support;
+package io.soffa.foundation.commons;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -6,16 +6,16 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-public final class Generator {
+public final class IDs {
 
-    private Generator() {
+    private IDs() {
     }
 
-    public static String shortId() {
-        return shortId("");
+    public static String shortUUID() {
+        return shortUUID("");
     }
 
-    public static String shortId(String prefix) {
+    public static String shortUUID(String prefix) {
         UUID uuid = UUID.randomUUID();
         long l = ByteBuffer.wrap(uuid.toString().getBytes()).getLong();
         return prefix(Long.toString(l, Character.MAX_RADIX), prefix);

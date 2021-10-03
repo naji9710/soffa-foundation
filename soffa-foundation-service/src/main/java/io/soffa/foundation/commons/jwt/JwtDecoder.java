@@ -1,4 +1,4 @@
-package io.soffa.foundation.jwt;
+package io.soffa.foundation.commons.jwt;
 
 import io.soffa.foundation.core.model.Authentication;
 

@@ -1,7 +1,7 @@
 package io.soffa.foundation;
 
 import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.jwt.JwtUtil;
+import io.soffa.foundation.commons.jwt.JwtUtil;
 import io.soffa.foundation.test.HttpExpect;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

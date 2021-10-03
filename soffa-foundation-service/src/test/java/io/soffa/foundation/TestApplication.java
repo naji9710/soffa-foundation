@@ -1,7 +1,7 @@
 package io.soffa.foundation;
 
-import io.soffa.foundation.jwt.JwtDecoder;
-import io.soffa.foundation.jwt.JwtJwksDecoder;
+import io.soffa.foundation.commons.jwt.JwtDecoder;
+import io.soffa.foundation.commons.jwt.JwtJwksDecoder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

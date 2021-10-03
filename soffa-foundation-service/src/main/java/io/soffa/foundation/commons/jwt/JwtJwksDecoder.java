@@ -1,4 +1,4 @@
-package io.soffa.foundation.jwt;
+package io.soffa.foundation.commons.jwt;
 
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
