@@ -43,7 +43,6 @@ public class OpenAPIDesc {
     @Data
     @NoArgsConstructor
     public static class Parameter {
-        private String ref;
         private String name;
         private String in;
         private String description;

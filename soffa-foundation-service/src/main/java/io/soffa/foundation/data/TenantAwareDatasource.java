@@ -1,5 +1,6 @@
 package io.soffa.foundation.data;
 
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.exceptions.DatabaseException;
@@ -11,7 +12,6 @@ import liquibase.integration.spring.SpringLiquibase;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -90,24 +90,22 @@ public class TenantAwareDatasource extends AbstractRoutingDataSource implements 
     @SneakyThrows
     private DataSource createDataSource(DataSourceProperties config) {
 
-        HikariDataSource dataSource = (HikariDataSource) DataSourceBuilder
-            .create().driverClassName(config.getDriverClassName())
-            .username(config.getUsername())
-            .password(config.getPassword())
-            .url(config.getUrl())
-            .build();
+        HikariConfig hc = new HikariConfig();
 
-        dataSource.setConnectionTestQuery("select 1");
-        dataSource.setIdleTimeout(60_000);
-        dataSource.setMaximumPoolSize(30);
-        dataSource.setMinimumIdle(3);
-        dataSource.setValidationTimeout(10_000);
-        dataSource.setPoolName(config.getName() + "__" + RandomUtils.nextInt());
-
+        hc.setDriverClassName(config.getDriverClassName());
+        hc.setUsername(config.getUsername());
+        hc.setPassword(config.getPassword());
+        hc.setJdbcUrl(config.getUrl());
+        hc.setPoolName(config.getName() + "__" + RandomUtils.nextInt());
+        hc.setConnectionTestQuery("select 1");
+        hc.setIdleTimeout(60_000);
+        hc.setMaximumPoolSize(30);
+        hc.setMinimumIdle(3);
+        hc.setValidationTimeout(10_000);
         if (config.hasSchema()) {
-            dataSource.setSchema(config.getSchema());
+            hc.setSchema(config.getSchema());
         }
-        return dataSource;
+        return new HikariDataSource(hc);
     }
 
     public void applyMigrations() {

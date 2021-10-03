@@ -98,8 +98,7 @@ public class OpenApiBuilder {
         }
 
         for(OpenAPIDesc.Parameter param : desc.getParameters()) {
-            String ref = Optional.ofNullable(param.getRef()).orElse(param.getName());
-            String name = Optional.ofNullable(param.getName()).orElse(param.getRef());
+            String name = param.getName();
 
             Preconditions.checkArgument(TextUtil.isNotEmpty(name), "openapi parameter name or ref is required");
             Preconditions.checkArgument(TextUtil.isNotEmpty(param.getIn()), "openapi parameter.in is required");
@@ -108,7 +107,6 @@ public class OpenApiBuilder {
             parameter.setIn(param.getIn().toUpperCase());
             parameter.setDescription(param.getDescription());
             parameter.setName(name);
-            parameter.set$ref(ref);
             parameter.setAllowEmptyValue(param.isNullable());
             parameter.setRequired(!param.isNullable());
 
@@ -124,7 +122,7 @@ public class OpenApiBuilder {
                 schema.setDefault(param.getValue());
             }
             parameter.setSchema(schema);
-            components.addParameters(ref, parameter);
+            components.addParameters(name, parameter);
         }
 
     }

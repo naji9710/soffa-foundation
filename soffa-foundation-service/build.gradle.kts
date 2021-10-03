@@ -36,9 +36,11 @@ dependencies {
 
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
-    api("org.jobrunr:jobrunr:4.0.0")
+    api("org.jobrunr:jobrunr:4.0.0"){
+        exclude(group="com.zaxxer")
+    }
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
-    implementation("com.h2database:h2:1.4.200")
+    api("com.h2database:h2:1.4.200")
     implementation("org.mockito:mockito-core:3.12.4")
     implementation("io.micrometer:micrometer-registry-prometheus")
     api("org.springdoc:springdoc-openapi-ui:1.5.10")

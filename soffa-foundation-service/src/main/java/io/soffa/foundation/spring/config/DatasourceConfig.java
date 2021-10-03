@@ -20,10 +20,11 @@ public class DatasourceConfig {
     @Bean
     @Primary
     public DataSource createDatasource(
-            DbConfig dbConfig,
-            @Value("${spring.application.name}") String applicationName) {
+        DbConfig dbConfig,
+        @Value("${spring.application.name}") String applicationName) {
 
-        if (dbConfig.getLinks()==null || dbConfig.getLinks().isEmpty()) {
+        if (dbConfig.getLinks() == null || dbConfig.getLinks().isEmpty()) {
+            LOG.info("No database configured for this service.");
             return new MockDataSource();
         }
 
@@ -31,13 +32,11 @@ public class DatasourceConfig {
         TenantAwareDatasource ds = new TenantAwareDatasource(dbConfig.getLinks(), tablePrefix, applicationName);
         if (dbConfig.isAutoMigrate()) {
             ds.applyMigrations();
-        }else {
+        } else {
             LOG.warn("Automatic database migration is disable for this instance (app.db.auto-migrate=false)");
         }
         return ds;
     }
-
-
 
 
 }

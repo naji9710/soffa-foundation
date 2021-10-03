@@ -15,8 +15,7 @@ dependencies {
     api("com.google.guava:guava:30.1.1-jre")
     api("commons-io:commons-io:2.8.0")
     api("org.awaitility:awaitility:4.1.0")
-    implementation("org.mock-server:mockserver-netty:5.11.2")
-
+    // implementation("org.mock-server:mockserver-netty:5.11.2")
     testImplementation("org.springframework.boot:spring-boot-starter-web")
 }
 
