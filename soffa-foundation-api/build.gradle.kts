@@ -8,6 +8,9 @@ plugins {
 dependencies {
     api("io.github.openfeign:feign-core:11.8")
     api("javax.validation:validation-api:2.0.1.Final")
+    api("org.checkerframework:checker-qual:3.21.1")
+    api("org.checkerframework:checker:3.21.1")
+    api("org.checkerframework:jdk8:3.3.0")
     api("javax.inject:javax.inject:1")
     api("javax.annotation:javax.annotation-api:1.3.2")
     api("io.swagger.core.v3:swagger-annotations:2.1.12")

@@ -1,8 +1,7 @@
 package io.soffa.foundation.actions;
 
 import io.soffa.foundation.core.RequestContext;
-
-import javax.validation.constraints.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * @param <I>
@@ -10,6 +9,6 @@ import javax.validation.constraints.NotNull;
  */
 public interface Action<I, O> {
 
-    O handle(@NotNull I input, @NotNull RequestContext context);
+    O handle(@NonNull I input, @NonNull RequestContext context);
 
 }

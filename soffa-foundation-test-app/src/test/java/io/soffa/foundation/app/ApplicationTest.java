@@ -77,7 +77,41 @@ public class ApplicationTest {
         HttpExpect test = new HttpExpect(mvc);
         test.post("/check").
             expect().isBadRequest();
-        test.post("/check").withJson(ImmutableMap.of("username", "john.doe")).
+
+        test.post("/check").
+            withJson(ImmutableMap.of("username", "john.doe")).
+            expect().isBadRequest();
+
+        test.post("/check").
+            withJson(ImmutableMap.of("username", "")).
+            expect().isBadRequest();
+
+
+        test.post("/check").
+            withJson(ImmutableMap.of("password", "P4ssw0rd")).
+            expect().isBadRequest();
+
+
+        test.post("/check").
+            withJson(ImmutableMap.of("password", "")).
+            expect().isBadRequest();
+
+        test.post("/check").withJson(ImmutableMap.of(
+                "username", "john.doe",
+                "password", ""
+            )).
+            expect().isBadRequest();
+
+        test.post("/check").withJson(ImmutableMap.of(
+                "username", "",
+                "password", "P4ssw0rd"
+            )).
+            expect().isBadRequest();
+
+        test.post("/check").withJson(ImmutableMap.of(
+                "username", "john.doe",
+                "password", "P4ssw0rd"
+            )).
             expect().isOK();
     }
 

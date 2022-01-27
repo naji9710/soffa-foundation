@@ -8,6 +8,7 @@ import io.soffa.foundation.app.core.model.InputData;
 import io.soffa.foundation.core.RequestContext;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -15,6 +16,7 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
+@Validated
 public class AppController implements API {
 
     private final ActionDispatcher dispatcher;
