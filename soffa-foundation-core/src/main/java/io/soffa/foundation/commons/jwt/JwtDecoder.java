@@ -6,15 +6,25 @@ import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.core.model.UserProfile;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public interface JwtDecoder {
 
-    Optional<Authentication> decode(String jwt);
+    default Optional<Authentication> decode(String jwt) {
+        return decode(jwt, new ClaimsExtractor() {
+            @Override
+            public Authentication extractInfo(Jwt jwt) {
+                return JwtDecoder.this.extractInfo(jwt);
+            }
+        });
+    }
+
+    Optional<Authentication> decode(String jwt, ClaimsExtractor extractor);
 
     default Authentication extractInfo(Jwt jwt) {
-        TenantId tenant = jwt.lookupClaim("tenant").map(TenantId::new).orElse(null);
+        TenantId tenant = jwt.lookupClaim("tenant", "tenantId").map(TenantId::new).orElse(null);
 
         UserProfile profile = new UserProfile();
 
@@ -48,6 +58,7 @@ public interface JwtDecoder {
 
         return Authentication.builder().
             claims(jwt.getClaims()).
+            liveMode(Objects.equals(jwt.lookupClaim("liveMode").orElse(null), "true")).
             username(jwt.getSubject()).
             tenantId(tenant).
             application(jwt.lookupClaim("applicationName", "application", "applicationId", "app").orElse(null)).

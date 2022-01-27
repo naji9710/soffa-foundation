@@ -22,6 +22,8 @@ public class Authentication {
     private Set<String> groups;
     private Set<String> permissions;
     private Map<String, Object> claims;
+    private Map<String, Object> originalClaims;
     private Object principal;
+    private boolean liveMode;
 
 }

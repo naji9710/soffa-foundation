@@ -14,12 +14,11 @@ dependencies {
 
     compileOnly("org.springframework.boot:spring-boot-starter-web")
     @Suppress("GradlePackageUpdate")
-    api("com.h2database:h2:1.4.200")
+    api("com.h2database:h2:2.1.210")
     api("com.google.guava:guava:31.0.1-jre")
     @Suppress("GradlePackageUpdate")
     api("commons-io:commons-io:2.8.0")
     api("org.awaitility:awaitility:4.1.1")
-    api("com.github.javafaker:javafaker:1.0.2")
     api("com.github.javafaker:javafaker:1.0.2")
 
     // implementation("org.mock-server:mockserver-netty:5.11.2")

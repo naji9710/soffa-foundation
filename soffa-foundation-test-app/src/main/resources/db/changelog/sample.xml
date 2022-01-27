@@ -17,6 +17,7 @@
             <column name="status" type="varchar(32)">
                 <constraints nullable="false"/>
             </column>
+            <column name="value" type="varchar(32)" />
             <column name="report" type="TEXT"/>
             <column name="date" type="timestamp">
                 <constraints nullable="false"/>

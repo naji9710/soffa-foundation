@@ -56,8 +56,8 @@ public class HttpRequest {
         return this;
     }
 
-    public HttpRequest bearerAuth(String jwt) {
-        header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+    public HttpRequest bearerAuth(String token) {
+        header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
         return this;
     }
 

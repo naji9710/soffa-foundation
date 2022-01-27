@@ -38,8 +38,10 @@ public class DefaultJwtProcessor implements JwtEncoder, JwtDecoder {
         return new Jwt(token, subjet, claims, ttl);
     }
 
+
+
     @Override
-    public Optional<Authentication> decode(String token) {
+    public Optional<Authentication> decode(String token, ClaimsExtractor claimsExtractor) {
         try {
 
             Algorithm algorithm = Algorithm.HMAC256(config.getSecret());
@@ -55,7 +57,7 @@ public class DefaultJwtProcessor implements JwtEncoder, JwtDecoder {
                 claims.put(entry.getKey(), entry.getValue().asString());
             }
 
-            return Optional.of(extractInfo(new Jwt(token, jwt.getSubject(), claims)));
+            return Optional.of(claimsExtractor.extractInfo(new Jwt(token, jwt.getSubject(), claims)));
 
         } catch (Exception e) {
             LOG.error(e);

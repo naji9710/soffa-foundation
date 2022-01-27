@@ -13,6 +13,7 @@ dependencies {
     runtimeOnly("org.springframework.boot:spring-boot-starter-undertow")
     // implementation(platform("org.apache.logging.log4j:log4j-bom:2.16.0"))
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    api("org.springframework.boot:spring-boot-starter-validation")
     api("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
@@ -25,7 +26,10 @@ dependencies {
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
     api("org.jobrunr:jobrunr:4.0.6") {
         exclude(group = "com.zaxxer")
+        exclude(group = "com.h2database")
+
     }
+    implementation("org.jdbi:jdbi3-core:3.27.1")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.postgresql:postgresql:42.3.1")
     api("org.springdoc:springdoc-openapi-ui:1.6.3"){

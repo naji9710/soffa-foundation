@@ -41,7 +41,10 @@ public class Jwt {
         for (String claim : claims.keySet()) {
             for (String candidate : candidates) {
                 if (claim.equalsIgnoreCase(candidate)) {
-                    return Optional.ofNullable(claims.get(claim).toString());
+                    Object value = claims.get(claim);
+                    if (value!=null) {
+                        return Optional.of(value.toString());
+                    }
                 }
             }
         }

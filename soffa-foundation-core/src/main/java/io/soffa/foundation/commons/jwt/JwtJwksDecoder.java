@@ -39,10 +39,10 @@ public class JwtJwksDecoder implements JwtDecoder {
     }
 
     @Override
-    public Optional<Authentication> decode(String token) {
+    public Optional<Authentication> decode(String token, ClaimsExtractor extractor) {
         try {
             JWTClaimsSet claimsSet = jwtProcessor.process(token, null);
-            return Optional.of(extractInfo(new Jwt(token, claimsSet.getSubject(), claimsSet.getClaims())));
+            return Optional.of(extractor.extractInfo(new Jwt(token, claimsSet.getSubject(), claimsSet.getClaims())));
         } catch (ParseException | JOSEException | BadJOSEException e) {
             LOG.error(e.getMessage());
             return Optional.empty();

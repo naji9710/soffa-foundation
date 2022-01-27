@@ -33,7 +33,7 @@ public class JobRunnerTest {
             long initialCount = sysLogs.count();
             Job job = jobs.enqueue("testPing", new Event("PingAction").withTenant(t1));
             jobs.run(job);
-            TestUtil.awaitUntil(5, () -> initialCount + 1 == sysLogs.count());
+            TestUtil.awaitUntil(5, () -> sysLogs.count() > initialCount);
         });
     }
 

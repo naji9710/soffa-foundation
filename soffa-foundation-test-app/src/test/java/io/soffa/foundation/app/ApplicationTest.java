@@ -1,5 +1,6 @@
 package io.soffa.foundation.app;
 
+import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.app.gateway.MessageRepository;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.context.TenantHolder;
@@ -69,6 +70,15 @@ public class ApplicationTest {
             hasJson("$.traceId").
             hasJson("$.spanId").
             hasJson("$.application");
+    }
+
+    @Test
+    public void testValidation() {
+        HttpExpect test = new HttpExpect(mvc);
+        test.post("/check").
+            expect().isBadRequest();
+        test.post("/check").withJson(ImmutableMap.of("username", "john.doe")).
+            expect().isOK();
     }
 
     @Test
