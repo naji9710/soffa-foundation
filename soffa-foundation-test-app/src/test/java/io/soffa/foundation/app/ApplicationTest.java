@@ -19,6 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 public class ApplicationTest {
 
+    public static final String F_USERNAME = "username";
+    public static final String F_PASSWORD = "password";
+    public static final String CHECK_URI = "/check";
+    
     @Autowired
     private MockMvc mvc;
 
@@ -76,44 +80,42 @@ public class ApplicationTest {
     public void testValidation() {
         HttpExpect test = new HttpExpect(mvc);
 
-        final String checkUri = "/check" ;
-
-        test.post(checkUri).
+        test.post(CHECK_URI).
             expect().isBadRequest();
 
-        test.post(checkUri).
-            withJson(ImmutableMap.of("username", "john.doe")).
+        test.post(CHECK_URI).
+            withJson(ImmutableMap.of(F_USERNAME, "john.doe")).
             expect().isBadRequest();
 
-        test.post(checkUri).
-            withJson(ImmutableMap.of("username", "")).
-            expect().isBadRequest();
-
-
-        test.post(checkUri).
-            withJson(ImmutableMap.of("password", "P4ssw0rd")).
+        test.post(CHECK_URI).
+            withJson(ImmutableMap.of(F_USERNAME, "")).
             expect().isBadRequest();
 
 
-        test.post(checkUri).
-            withJson(ImmutableMap.of("password", "")).
+        test.post(CHECK_URI).
+            withJson(ImmutableMap.of(F_PASSWORD, "P4ssw0rd")).
             expect().isBadRequest();
 
-        test.post(checkUri).withJson(ImmutableMap.of(
-                "username", "john.doe",
-                "password", ""
+
+        test.post(CHECK_URI).
+            withJson(ImmutableMap.of(F_PASSWORD, "")).
+            expect().isBadRequest();
+
+        test.post(CHECK_URI).withJson(ImmutableMap.of(
+                F_USERNAME, "john.doe",
+                F_PASSWORD, ""
             )).
             expect().isBadRequest();
 
-        test.post(checkUri).withJson(ImmutableMap.of(
-                "username", "",
-                "password", "P4ssw0rd"
+        test.post(CHECK_URI).withJson(ImmutableMap.of(
+                F_USERNAME, "",
+                F_PASSWORD, "P4ssw0rd"
             )).
             expect().isBadRequest();
 
-        test.post(checkUri).withJson(ImmutableMap.of(
-                "username", "john.doe",
-                "password", "P4ssw0rd"
+        test.post(CHECK_URI).withJson(ImmutableMap.of(
+                F_USERNAME, "john.doe",
+                F_PASSWORD, "P4ssw0rd"
             )).
             expect().isOK();
     }
