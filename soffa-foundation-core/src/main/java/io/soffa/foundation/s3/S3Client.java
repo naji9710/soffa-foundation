@@ -54,7 +54,7 @@ public class S3Client implements ObjectStorageClient {
 				config.setProxyUsername(proxyConfig.getProxyUsername());
 				config.setProxyPassword(proxyConfig.getProxyPassword());
 			}*/
-            LOG.info("S3 Endpoint is: {}", endpoint);
+            LOG.info("S3 Endpoint is: %s", endpoint);
             client = AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(
                     new AwsClientBuilder.EndpointConfiguration(endpoint, Regions.US_EAST_1.name()))

@@ -69,7 +69,7 @@ public final class HttpUtil {
         }
 
         if (TextUtil.isNotEmpty(proxy)) {
-            LOG.info("Using http proxy: {}", proxy);
+            LOG.info("Using http proxy: %s", proxy);
             URL parsedUrl = new URL(proxy);
             Proxy p = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(parsedUrl.getHost(), parsedUrl.getPort()));
             String userInfo = parsedUrl.getUserInfo();
