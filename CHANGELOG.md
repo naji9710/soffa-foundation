@@ -1,4 +1,8 @@
-## 1.2.9 (January 12, 2022)
+## 1.2.11 (January 27, 2022)
+
+IMPROVEMENTS:
+
+* Validation fixed (conflict between HibernateValidator and CheckerFramework).
 
 IMPROVEMENTS:
 

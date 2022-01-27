@@ -75,40 +75,43 @@ public class ApplicationTest {
     @Test
     public void testValidation() {
         HttpExpect test = new HttpExpect(mvc);
-        test.post("/check").
+
+        final String checkUri = "/check" ;
+
+        test.post(checkUri).
             expect().isBadRequest();
 
-        test.post("/check").
+        test.post(checkUri).
             withJson(ImmutableMap.of("username", "john.doe")).
             expect().isBadRequest();
 
-        test.post("/check").
+        test.post(checkUri).
             withJson(ImmutableMap.of("username", "")).
             expect().isBadRequest();
 
 
-        test.post("/check").
+        test.post(checkUri).
             withJson(ImmutableMap.of("password", "P4ssw0rd")).
             expect().isBadRequest();
 
 
-        test.post("/check").
+        test.post(checkUri).
             withJson(ImmutableMap.of("password", "")).
             expect().isBadRequest();
 
-        test.post("/check").withJson(ImmutableMap.of(
+        test.post(checkUri).withJson(ImmutableMap.of(
                 "username", "john.doe",
                 "password", ""
             )).
             expect().isBadRequest();
 
-        test.post("/check").withJson(ImmutableMap.of(
+        test.post(checkUri).withJson(ImmutableMap.of(
                 "username", "",
                 "password", "P4ssw0rd"
             )).
             expect().isBadRequest();
 
-        test.post("/check").withJson(ImmutableMap.of(
+        test.post(checkUri).withJson(ImmutableMap.of(
                 "username", "john.doe",
                 "password", "P4ssw0rd"
             )).

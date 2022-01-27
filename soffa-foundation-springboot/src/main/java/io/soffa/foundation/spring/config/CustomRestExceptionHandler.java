@@ -48,6 +48,7 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
                                                                   @NonNull HttpHeaders headers,
                                                                   @NonNull HttpStatus status,
                                                                   @NonNull WebRequest request) {
+
         return handleGlobalErrors(ex);
     }
 
@@ -77,7 +78,11 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         });
 
         if (!(error instanceof FunctionalException) && !(error instanceof FakeException)) {
-            LOG.error(error);
+            if (error instanceof MethodArgumentNotValidException) {
+                LOG.error(error.getMessage());
+            }else {
+                LOG.error(error);
+            }
         }
         if (!isProduction && status != HttpStatus.UNAUTHORIZED && status != HttpStatus.FORBIDDEN) {
             body.put("trace", ErrorUtil.getStacktrace(error).split("\n"));
