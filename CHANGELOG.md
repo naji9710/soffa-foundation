@@ -1,8 +1,8 @@
-## 1.3.0 (February 01, 2022)
+## 1.3.0 (February 02, 2022)
 
 BREAKING CHANGES:
 
-* Database link structure has changed to:
+* Datasources config structure:
 ```
 app.db:
   tables-prefix: 

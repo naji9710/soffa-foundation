@@ -121,6 +121,15 @@ public class RequestFilter extends OncePerRequestFilter {
             }
             return;
         }
+
+        context.setAuthentication(auth.get());
+        context.setAuthorization(value);
+        List<GrantedAuthority> permissions = createPermissions(context, auth.get());
+        UsernamePasswordAuthenticationToken authz = new UsernamePasswordAuthenticationToken(context, null, permissions);
+        SecurityContextHolder.getContext().setAuthentication(authz);
+    }
+
+    private List<GrantedAuthority> createPermissions(RequestContext context, Authentication auth) {
         List<GrantedAuthority> permissions = new ArrayList<>();
         permissions.add(new SimpleGrantedAuthority(GrantedRole.USER));
         permissions.add(new SimpleGrantedAuthority(GrantedRole.AUTHENTICATED));
@@ -130,24 +139,21 @@ public class RequestFilter extends OncePerRequestFilter {
         if (context.getTenantId() != null) {
             permissions.add(new SimpleGrantedAuthority(GrantedRole.HAS_TENANT_ID));
         }
-        if (auth.get().getRoles() != null) {
-            for (String role : auth.get().getRoles()) {
+        if (auth.getRoles() != null) {
+            for (String role : auth.getRoles()) {
                 if (TextUtil.isNotEmpty(role)) {
                     permissions.add(new SimpleGrantedAuthority(role.trim()));
                 }
             }
         }
-        if (auth.get().getPermissions() != null) {
-            for (String permission : auth.get().getPermissions()) {
+        if (auth.getPermissions() != null) {
+            for (String permission : auth.getPermissions()) {
                 if (TextUtil.isNotEmpty(permission)) {
                     permissions.add(new SimpleGrantedAuthority(permission.trim()));
                 }
             }
         }
-        context.setAuthentication(auth.get());
-        context.setAuthorization(value);
-        UsernamePasswordAuthenticationToken authz = new UsernamePasswordAuthenticationToken(context, null, permissions);
-        SecurityContextHolder.getContext().setAuthentication(authz);
+        return permissions;
     }
 
     @Override

@@ -37,6 +37,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
     private boolean appicationStarted;
     private final TenantsProvider tenantsProvider;
     private static final String TENANT_PLACEHOLDER = "__TENANT__";
+    private static final String TENANT_WILDCARD = "__TENANT__";
     private static final String DEFAULT_DS = "default";
     private final DbConfig dbConfig;
     private static final Map<String, Boolean> MIGRATED = new ConcurrentHashMap<>();
@@ -64,7 +65,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             throw new TechnicalException("No db link provided");
         }
         for (Map.Entry<String, DataSourceConfig> dbLink : dbConfig.getDatasources().entrySet()) {
-            if (!TENANT_PLACEHOLDER.equalsIgnoreCase(dbLink.getKey())) {
+            if (!TENANT_WILDCARD.equals(dbLink.getKey())) {
                 registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
             }
         }
@@ -87,7 +88,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
     }
 
     private void registerDatasource(String id, DataSourceConfig link, boolean migrate) {
-        if (dataSources.containsKey(id)){
+        if (dataSources.containsKey(id)) {
             LOG.warn("Datasource with id {} is already registered", id);
             return;
         }
@@ -122,8 +123,8 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             }
             throw new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
         }
-        if (!dataSources.containsKey(linkId) && dbConfig.getDatasources().containsKey(TENANT_PLACEHOLDER.toLowerCase())) {
-            registerDatasource(linkId, dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase()), true);
+        if (!dataSources.containsKey(linkId) && dbConfig.getDatasources().containsKey(TENANT_WILDCARD)) {
+            registerDatasource(linkId, dbConfig.getDatasources().get(TENANT_WILDCARD), true);
             super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         }
         return linkId;
@@ -181,14 +182,18 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             return;
         }
         if (!autoMigrate || link.isAutomigrate()) {
-            String changelogPath = null;
-            if ("true".equals(link.getMigration())) {
-                changelogPath = "/db/changelog/" + appicationName + ".xml";
-            } else if (!"false".equalsIgnoreCase(link.getMigration())) {
-                changelogPath = "/db/changelog/" + link.getMigration() + ".xml";
-            }
-            if (TextUtil.isNotEmpty(changelogPath)) {
-                DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
+            String changelogPath;
+            boolean isMigrationDisabled = "false".equalsIgnoreCase(link.getMigration());
+            if (!isMigrationDisabled) {
+                boolean isDefaultMigration = "true".equalsIgnoreCase(link.getMigration());
+                if (isDefaultMigration) {
+                    changelogPath = "/db/changelog/" + appicationName + ".xml";
+                } else {
+                    changelogPath = "/db/changelog/" + link.getMigration() + ".xml";
+                }
+                if (TextUtil.isNotEmpty(changelogPath)) {
+                    DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
+                }
             }
             MIGRATED.put(appicationName + "." + link.getName(), true);
         }
@@ -207,7 +212,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             applyMigrations((DataSource) entry.getValue(), true);
         }
 
-        DataSourceConfig tenantDs = dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase());
+        DataSourceConfig tenantDs = dbConfig.getDatasources().get(TENANT_WILDCARD);
         boolean hasTenantDs = tenantDs != null;
         final Set<String> tenants = new HashSet<>();
         if (hasTenantDs) {
@@ -230,8 +235,8 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
                 tenants.addAll(tenantsProvider.getTenantList(null));
             }
             for (String tenant : tenants) {
-                if (!DEFAULT_DS.equalsIgnoreCase(tenant) && !TENANT_PLACEHOLDER.equalsIgnoreCase(tenant)) {
-                    registerDatasource(tenant, dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase()), true);
+                if (!DEFAULT_DS.equalsIgnoreCase(tenant) && !TENANT_WILDCARD.equalsIgnoreCase(tenant)) {
+                    registerDatasource(tenant, dbConfig.getDatasources().get(TENANT_WILDCARD), true);
                 }
             }
         }
