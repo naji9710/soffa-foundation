@@ -26,7 +26,7 @@ dependencies {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
     }
-    compileOnly("org.jdbi:jdbi3-core:3.27.0") {
+    compileOnly("org.jdbi:jdbi3-core:3.27.1") {
         exclude(group = "com.github.ben-manes.caffeine")
     }
     @Suppress("GradlePackageUpdate")
