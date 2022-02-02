@@ -80,9 +80,6 @@ spring.cloud.vault:
   enabled: false
   kv.enabled: false
 
-app.db.migrations: classpath:db/changelog/${spring.application.name}.xml
-app.db.table-prefix:
-
 app.redoc.enabled: true
 
 spring.jpa:
@@ -99,7 +96,6 @@ spring.jpa:
       physical-strategy: io.soffa.foundation.spring.data.CustomPhysicalNamingStrategy
 
 spring.liquibase.enabled: false
-app.db.auto-migrate: true
 
 app.openapi:
   title: ${spring.application.name}

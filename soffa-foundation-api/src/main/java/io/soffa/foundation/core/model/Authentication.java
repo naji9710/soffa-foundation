@@ -26,4 +26,8 @@ public class Authentication {
     private Object principal;
     private boolean liveMode;
 
+    public boolean hasPermission(String id) {
+        return permissions != null && permissions.contains(id);
+    }
+
 }

@@ -1,6 +1,6 @@
 package io.soffa.foundation.spring.config.jobs;
 
-import io.soffa.foundation.actions.ActionDispatcher;
+import io.soffa.foundation.actions.EventHandler;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.events.Event;
@@ -11,7 +11,7 @@ import org.jobrunr.jobs.lambdas.JobRequestHandler;
 @AllArgsConstructor
 public class JobManager implements JobRequestHandler<Job> {
 
-    private ActionDispatcher dispatcher;
+    private EventHandler hander;
     private JobRunrConfiguration.JobRunrConfigurationResult jobRunr;
 
     public Job enqueue(String description, Event event) {
@@ -23,7 +23,7 @@ public class JobManager implements JobRequestHandler<Job> {
     @Override
     public void run(Job job) {
         TenantHolder.set(job.getTenant());
-        dispatcher.handle(job.getEvent());
+        hander.handle(job.getEvent());
     }
 
 }

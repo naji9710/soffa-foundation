@@ -132,12 +132,16 @@ public class RequestFilter extends OncePerRequestFilter {
         }
         if (auth.get().getRoles() != null) {
             for (String role : auth.get().getRoles()) {
-                permissions.add(new SimpleGrantedAuthority(role));
+                if (TextUtil.isNotEmpty(role)) {
+                    permissions.add(new SimpleGrantedAuthority(role.trim()));
+                }
             }
         }
         if (auth.get().getPermissions() != null) {
             for (String permission : auth.get().getPermissions()) {
-                permissions.add(new SimpleGrantedAuthority(permission));
+                if (TextUtil.isNotEmpty(permission)) {
+                    permissions.add(new SimpleGrantedAuthority(permission.trim()));
+                }
             }
         }
         context.setAuthentication(auth.get());

@@ -28,17 +28,22 @@ public class OpenApiBuilder {
     }
 
     public OpenAPI build() {
-        String version = Optional.ofNullable(desc.getVersion()).orElse("3.0.1");
-        OpenAPI api = new OpenAPI().openapi(version);
-        api.setInfo(buildInfo());
-        if (desc.getSecurity() != null) {
-            buildOAuthSchemes();
-            buildBearerScheme();
-            buildBasicAuthScheme();
+        String version = "3.0.1";
+        OpenAPI api;
+        if (desc != null) {
+            version = Optional.ofNullable(desc.getVersion()).orElse(version);
+            api = new OpenAPI().openapi(version);
+            if (desc.getSecurity() != null) {
+                buildOAuthSchemes();
+                buildBearerScheme();
+                buildBasicAuthScheme();
+            }
+            api.setInfo(buildInfo());
+            buildParameters();
+        } else {
+            api = new OpenAPI().openapi(version);
         }
-        buildParameters();
         api.setComponents(components);
-
         return api;
     }
 

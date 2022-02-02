@@ -1,9 +1,12 @@
-app.sys-logs.enabled: false
-
-app.db.links:
-  #default: pg://postgres:postgres@localhost/test_default
-  #T1: pg://postgres:postgres@localhost/test_t1
-  #T2: pg://postgres:postgres@localhost/test_t2
-  default: h2://mem/default
-  T1: h2://mem/tenant1
-  T2: h2://mem/tenant2
+app.db:
+  tables-prefix: test
+  datasources:
+    default:
+      url: h2://mem/default
+      migration: true # will use application name as the migration filename
+    T1:
+      url: h2://mem/tenant1
+      migration: sample
+    T2:
+      url: h2://mem/tenant2
+      migration: sample

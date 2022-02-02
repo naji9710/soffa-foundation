@@ -30,6 +30,7 @@ public class DataSourceProperties {
     private String password;
     private String driverClassName;
     private String schema;
+    private List<String> migrations;
 
     @SneakyThrows
     public static DataSourceProperties create(final String name, final String datasourceUrl) {
@@ -49,6 +50,7 @@ public class DataSourceProperties {
 
         List<NameValuePair> params = URLEncodedUtils.parse(url.toURI(), StandardCharsets.UTF_8);
         String schema = null;
+
         for (NameValuePair param : params) {
             if ("schema".equalsIgnoreCase(param.getName())) {
                 schema = TextUtil.trimToEmpty(param.getValue());
@@ -57,7 +59,7 @@ public class DataSourceProperties {
         }
 
         JdbcInfo jdbcInfo = createJdbcUrl(provider, url, schema, databaseUrl);
-        if (schema!=null && jdbcInfo.getUrl().startsWith("jdbc:h2")) {
+        if (schema != null && jdbcInfo.getUrl().startsWith("jdbc:h2")) {
             schema = schema.toUpperCase();
         }
         return DataSourceProperties.builder()
@@ -71,11 +73,11 @@ public class DataSourceProperties {
     }
 
     @SneakyThrows
-    private static JdbcInfo createJdbcUrl( String provider,  URL url,  String schema, String initialUrl) {
+    private static JdbcInfo createJdbcUrl(String provider, URL url, String schema, String initialUrl) {
         UrlInfo urlInfo = UrlInfo.parse(url);
         if (TextUtil.isEmpty(urlInfo.getUsername())) {
             LOG.warn("No username found in database url: %s", initialUrl);
-        }else if (TextUtil.isEmpty(urlInfo.getPassword())) {
+        } else if (TextUtil.isEmpty(urlInfo.getPassword())) {
             LOG.warn("No password found in database url: %s", initialUrl);
         }
         StringBuilder jdbcUrl = new StringBuilder();
@@ -85,7 +87,7 @@ public class DataSourceProperties {
         String sc = schema;
         if (H2.equals(provider)) {
             jdbcDriver = H2_DRIVER;
-            jdbcUrl.append(String.format("jdbc:h2:%1$s:%2$s;MODE=PostgreSQL", hostname, path));
+            jdbcUrl.append(String.format("jdbc:h2:%1$s:%2$s;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE", hostname, path));
             if (TextUtil.isNotEmpty(schema)) {
                 sc = schema.toUpperCase();
                 jdbcUrl.append(";INIT=CREATE SCHEMA IF NOT EXISTS ").append(sc);
@@ -113,7 +115,7 @@ public class DataSourceProperties {
         Jdbi jdbi;
         if (username != null) {
             jdbi = Jdbi.create(jdbcUrl, username, password);
-        }else {
+        } else {
             jdbi = Jdbi.create(jdbcUrl);
         }
         jdbi.inTransaction(handle -> {

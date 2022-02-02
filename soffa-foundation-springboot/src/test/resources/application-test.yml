@@ -1,10 +1,18 @@
 spring.application.name: test
 
 app.package: io.soffa
-app.db.links:
-  default: h2://mem/test_${random.int}
-  T1: h2://mem/t1_${random.int}
-  T2: h2://mem/t2_${random.int}
+app.db:
+  tables-prefix:
+  datasources:
+    default:
+      url: h2://mem/default_${random.int}
+      migration: true
+    T1:
+      url: h2://mem/t1_${random.int}
+      migration: true
+    T2:
+      url: h2://mem/t2_${random.int}
+      migration: true
 
 spring.config.import:
   - classpath:application-foundation.yml

@@ -1,11 +1,24 @@
+## 1.3.0 (February 01, 2022)
+
+BREAKING CHANGES:
+
+* Database link structure has changed to:
+```
+app.db:
+  tables-prefix: 
+  datasources:
+    default:
+      url: h2://mem/test_default
+      migration: true | or filename
+      syslog: true|false
+```
+* Example: soffa-foundation-test-app/src/test/resources/application-test.yml
+
 ## 1.2.11 (January 27, 2022)
 
 IMPROVEMENTS:
 
 * Validation fixed (conflict between HibernateValidator and CheckerFramework).
-
-IMPROVEMENTS:
-
 * Basic auth security scheme added
 * `RandomUtil` classes added
 

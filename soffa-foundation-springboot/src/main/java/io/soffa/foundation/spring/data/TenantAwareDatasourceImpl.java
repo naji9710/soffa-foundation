@@ -1,77 +1,115 @@
 package io.soffa.foundation.spring.data;
 
 import com.google.common.collect.ImmutableMap;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.soffa.foundation.commons.IdGenerator;
+import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.config.DataSourceConfig;
+import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.data.DataSourceProperties;
-import io.soffa.foundation.data.DbMigration;
 import io.soffa.foundation.data.TenantAwareDatasource;
+import io.soffa.foundation.data.TenantsProvider;
 import io.soffa.foundation.exceptions.DatabaseException;
 import io.soffa.foundation.exceptions.TechnicalException;
-import liquibase.exception.LiquibaseException;
-import liquibase.integration.spring.SpringLiquibase;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jdbi.v3.core.Jdbi;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.io.DefaultResourceLoader;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-public class TenantAwareDatasourceImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, TenantAwareDatasource {
+public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, TenantAwareDatasource {
 
     public static final String NONE = "NONE";
     private static final Logger LOG = Logger.get(TenantAwareDatasourceImpl.class);
-    private final Map<String, Object> dataSources = new ConcurrentHashMap<>();
-    private final ResourceLoader resourceLoader = new DefaultResourceLoader();
+    private final Map<Object, Object> dataSources = new ConcurrentHashMap<>();
     private String tablesPrefix;
     private final String appicationName;
     private boolean appicationStarted;
+    private final TenantsProvider tenantsProvider;
+    private static final String TENANT_PLACEHOLDER = "__TENANT__";
+    private static final String DEFAULT_DS = "default";
+    private final DbConfig dbConfig;
+    private static final Map<String, Boolean> MIGRATED = new ConcurrentHashMap<>();
+
 
     @SneakyThrows
-    public TenantAwareDatasourceImpl(final Map<String, String> links,
-                                     final String tablesPrefix,
+    public TenantAwareDatasourceImpl(final TenantsProvider tenantsProvider,
+                                     final DbConfig dbConfig,
                                      final String appicationName) {
 
         super();
-
-
-        if (TextUtil.isNotEmpty(tablesPrefix)) {
-            this.tablesPrefix = TextUtil.trimToEmpty(tablesPrefix)
-                .replaceAll("[^a-zA-Z0-9]", "_")
-                .replaceAll("_+$", "_");
-
-            if (!this.tablesPrefix.endsWith("_")) {
-                this.tablesPrefix += "_";
-            }
-        }
-
+        this.tenantsProvider = tenantsProvider;
+        this.dbConfig = dbConfig;
         this.appicationName = appicationName;
+        setTablesPrefix(dbConfig.getTablesPrefix());
         setLenientFallback(false);
-        CustomPhysicalNamingStrategy.tablePrefix = tablesPrefix;
-        if (links == null || links.isEmpty()) {
-            throw new TechnicalException("No db link provided");
-        }
-        links.forEach((name, url) -> dataSources.put(name, createDataSource(DataSourceProperties.create(name, url.trim()))));
-        dataSources.put(NONE, new MockDataSource());
-        TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
 
+        createDatasources();
+        TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
         super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
     }
 
+    private void createDatasources() {
+        if (dbConfig.getDatasources().isEmpty()) {
+            throw new TechnicalException("No db link provided");
+        }
+        for (Map.Entry<String, DataSourceConfig> dbLink : dbConfig.getDatasources().entrySet()) {
+            if (!TENANT_PLACEHOLDER.equalsIgnoreCase(dbLink.getKey())) {
+                registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
+            }
+        }
+        dataSources.put(NONE, new MockDataSource());
+    }
+
+    private void setTablesPrefix(String tablesPrefix) {
+        if (TextUtil.isNotEmpty(tablesPrefix)) {
+
+            String value = TextUtil.trimToEmpty(tablesPrefix)
+                .replaceAll("[^a-zA-Z0-9]", "_")
+                .replaceAll("_+$", "_").trim();
+
+            if (!value.endsWith("_")) {
+                value += "_";
+            }
+            this.tablesPrefix = value;
+            CustomPhysicalNamingStrategy.tablePrefix = value;
+        }
+    }
+
+    private void registerDatasource(String id, DataSourceConfig link, boolean migrate) {
+        if (dataSources.containsKey(id)){
+            LOG.warn("Datasource with id {} is already registered", id);
+            return;
+        }
+        tenantsProvider.setProperty(id, TenantsProvider.P_AUTOMIGRATE, link.isAutomigrate());
+        String url = link.getUrl();
+        if (url.contains(TENANT_PLACEHOLDER)) {
+            url = url.replace(TENANT_PLACEHOLDER, id);
+        }
+        DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(id, url), link);
+        dataSources.put(id, ds);
+        applyMigrations(ds, migrate);
+    }
+
+    @NotNull
+    @Override
+    protected DataSource determineTargetDataSource() {
+        Object lookupKey = determineCurrentLookupKey();
+        if (!dataSources.containsKey(lookupKey)) {
+            throw new DatabaseException("%s is not a valid database link", lookupKey);
+        }
+        return (DataSource) dataSources.get(lookupKey);
+    }
 
     @Override
     protected Object determineCurrentLookupKey() {
@@ -84,8 +122,9 @@ public class TenantAwareDatasourceImpl extends AbstractRoutingDataSource impleme
             }
             throw new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
         }
-        if (!dataSources.containsKey(linkId)) {
-            throw new DatabaseException("%s is not a valid database link", linkId);
+        if (!dataSources.containsKey(linkId) && dbConfig.getDatasources().containsKey(TENANT_PLACEHOLDER.toLowerCase())) {
+            registerDatasource(linkId, dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase()), true);
+            super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         }
         return linkId;
     }
@@ -106,103 +145,55 @@ public class TenantAwareDatasourceImpl extends AbstractRoutingDataSource impleme
         appicationStarted = true;
     }
 
-    @SneakyThrows
-    private DataSource createDataSource(DataSourceProperties config) {
-
-        HikariConfig hc = new HikariConfig();
-
-        hc.setDriverClassName(config.getDriverClassName());
-        hc.setUsername(config.getUsername());
-        hc.setPassword(config.getPassword());
-        hc.setJdbcUrl(config.getUrl());
-        hc.setPoolName(IdGenerator.shortUUID(config.getName() + "_"));
-        hc.setConnectionTestQuery("select 1");
-        hc.setIdleTimeout(30_000);
-        hc.setMaximumPoolSize(20);
-        hc.setMinimumIdle(5);
-        hc.setMaxLifetime(2_000_000);
-        hc.setConnectionTimeout(30_000);
-        hc.setValidationTimeout(10_000);
-        if (config.hasSchema()) {
-            hc.setSchema(config.getSchema());
-        }
-        return new HikariDataSource(hc);
-    }
-
     @Override
     public void createSchema(String tenantId, String schema) {
-        Jdbi jdbi = Jdbi.create(get(tenantId));
+        DataSource ds = get(tenantId);
+        if (ds == null) {
+            throw new TechnicalException("Datasource not registered: " + tenantId);
+        }
+        Jdbi jdbi = Jdbi.create(ds);
         jdbi.useHandle(handle -> {
             handle.execute("CREATE SCHEMA IF NOT EXISTS " + schema);
         });
         LOG.info("New schema created: %s", schema);
     }
 
-    @Override
-    public void applyMigrations(String tenantId, String changeLogPath) {
-        applyMigrations(get(tenantId), changeLogPath);
-    }
-
-
-    public void applyMigrations(DbMigration source) {
-        for (String changeLogPath : source.getSources()) {
-            Resource res = resourceLoader.getResource(changeLogPath);
-            if (!res.exists()) {
-                throw new TechnicalException("Liquibase changeLog was not found: %s", changeLogPath);
-            }
-            for (Object value : dataSources.values()) {
-                if (value instanceof HikariDataSource) {
-                    applyMigrations((DataSource) value, changeLogPath);
-                }
-            }
+    public void applyMigrations(boolean autoMigrate) {
+        for (Map.Entry<Object, Object> entry : dataSources.entrySet()) {
+            applyMigrations((DataSource) entry.getValue(), autoMigrate);
         }
     }
 
-    public void applyMigrations(DataSource dataSource, String changeLogPath) {
-        SpringLiquibase lqb = new SpringLiquibase();
-        lqb.setChangeLog(changeLogPath);
-        lqb.setDropFirst(false);
-        lqb.setDataSource(dataSource);
-        lqb.setResourceLoader(resourceLoader);
-        Map<String, String> changeLogParams = new HashMap<>();
-
-        changeLogParams.put("table_prefix", "");
-        changeLogParams.put("tablePrefix", "");
-
-        if (TextUtil.isNotEmpty(tablesPrefix)) {
-            changeLogParams.put("table_prefix", tablesPrefix);
-            changeLogParams.put("tablePrefix", tablesPrefix);
-
-            lqb.setDatabaseChangeLogLockTable(tablesPrefix + "changelog_lock");
-            lqb.setDatabaseChangeLogTable(tablesPrefix + "changelog");
+    private void applyMigrations(DataSource dataSource, boolean autoMigrate) {
+        if (dataSource instanceof MockDataSource) {
+            return;
         }
-        if (TextUtil.isNotEmpty(appicationName)) {
-            changeLogParams.put("application", appicationName);
-            changeLogParams.put("applicationName", appicationName);
-            changeLogParams.put("application_name", appicationName);
-        }
-
-        doApplyMigration(lqb, changeLogParams, (HikariDataSource) dataSource);
-    }
-
-    private void doApplyMigration(SpringLiquibase lqb, Map<String, String> changeLogParams, HikariDataSource ds) {
-        String schema = ds.getSchema();
-        String dsName = ds.getPoolName().split("__")[0];
-        if (TenantId.DEFAULT_VALUE.equals(dsName)) {
-            lqb.setContexts(TenantId.DEFAULT_VALUE);
+        if (dataSource instanceof HikariDataSource) {
+            applyMigrations((HikariDataSource) dataSource, autoMigrate);
         } else {
-            lqb.setContexts("tenant," + dsName.toLowerCase());
+            throw new TechnicalException("Non HikariDatasource migrations  not supported");
         }
-        if (TextUtil.isNotEmpty(schema)) {
-            lqb.setDefaultSchema(schema);
-            lqb.setLiquibaseSchema(schema);
+    }
+
+    private void applyMigrations(HikariDataSource dataSource, boolean autoMigrate) {
+        DataSourceConfig link = (DataSourceConfig) dataSource.getDataSourceProperties().get("__link");
+        if (MIGRATED.containsKey(appicationName + "." + link.getName())) {
+            return;
         }
-        lqb.setChangeLogParameters(changeLogParams);
-        try {
-            lqb.afterPropertiesSet(); // Run migrations
-            LOG.info("[datasource:%s] migration '%s' successfully applied", dsName, lqb.getChangeLog());
-        } catch (LiquibaseException e) {
-            throw new DatabaseException(e, "Migration failed for %s", schema);
+        if (!autoMigrate || link.isAutomigrate()) {
+            String changelogPath = null;
+            if ("true".equals(link.getMigration())) {
+                changelogPath = "/db/changelog/" + appicationName + ".xml";
+            } else if (!"false".equalsIgnoreCase(link.getMigration())) {
+                changelogPath = "/db/changelog/" + link.getMigration() + ".xml";
+            }
+            if (TextUtil.isNotEmpty(changelogPath)) {
+                DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
+            }
+            MIGRATED.put(appicationName + "." + link.getName(), true);
+        }
+        if (autoMigrate && !link.isAutomigrate()) {
+            LOG.warn("Automigrate is disabled for datasource: %s", link.getName());
         }
     }
 
@@ -210,5 +201,39 @@ public class TenantAwareDatasourceImpl extends AbstractRoutingDataSource impleme
         return Objects.requireNonNull((DataSource) dataSources.get(tenant));
     }
 
+    public void configure() {
+        // Migrate static tenants
+        for (Map.Entry<Object, Object> entry : dataSources.entrySet()) {
+            applyMigrations((DataSource) entry.getValue(), true);
+        }
 
+        DataSourceConfig tenantDs = dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase());
+        boolean hasTenantDs = tenantDs != null;
+        final Set<String> tenants = new HashSet<>();
+        if (hasTenantDs) {
+            DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
+            if (defaultDs != null) {
+                Jdbi jdbi = Jdbi.create(defaultDs);
+                jdbi.useHandle(handle -> {
+                    String query = dbConfig.getTenantListQuery();
+                    if (TextUtil.isNotEmpty(query)) {
+                        LOG.info("Loading tenants from query: %s", query);
+                        List<String> results = handle.createQuery(query).mapTo(String.class).collect(Collectors.toList());
+                        if (CollectionUtil.isNotEmpty(results)) {
+                            tenants.addAll(results);
+                        }
+                    } else {
+                        tenants.addAll(tenantsProvider.getTenantList(handle));
+                    }
+                });
+            } else {
+                tenants.addAll(tenantsProvider.getTenantList(null));
+            }
+            for (String tenant : tenants) {
+                if (!DEFAULT_DS.equalsIgnoreCase(tenant) && !TENANT_PLACEHOLDER.equalsIgnoreCase(tenant)) {
+                    registerDatasource(tenant, dbConfig.getDatasources().get(TENANT_PLACEHOLDER.toLowerCase()), true);
+                }
+            }
+        }
+    }
 }

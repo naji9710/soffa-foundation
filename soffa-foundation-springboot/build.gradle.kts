@@ -32,7 +32,7 @@ dependencies {
     implementation("org.jdbi:jdbi3-core:3.27.1")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.postgresql:postgresql:42.3.1")
-    api("org.springdoc:springdoc-openapi-ui:1.6.3"){
+    api("org.springdoc:springdoc-openapi-ui:1.6.4"){
         exclude(group = "io.github.classgraph")
     }
     implementation("org.springdoc:springdoc-openapi-security:1.6.3"){

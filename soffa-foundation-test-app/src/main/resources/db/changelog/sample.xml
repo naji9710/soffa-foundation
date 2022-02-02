@@ -5,11 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd"
     logicalFilePath="foundation-test">
 
+    <include file="/db/changelog/platform-sys-logs.xml" />
 
     <changeSet id="20210921_Messages" author="gahissy.titus">
-        <createTable tableName="messages">
+        <createTable tableName="${table_prefix}messages">
             <column name="id" type="varchar(64)">
-                <constraints primaryKey="true" nullable="false" />
+                <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="request_id" type="varchar(64)">
                 <constraints nullable="false" unique="true"/>
@@ -17,7 +18,7 @@
             <column name="status" type="varchar(32)">
                 <constraints nullable="false"/>
             </column>
-            <column name="value" type="varchar(32)" />
+            <column name="value" type="varchar(32)"/>
             <column name="report" type="TEXT"/>
             <column name="date" type="timestamp">
                 <constraints nullable="false"/>

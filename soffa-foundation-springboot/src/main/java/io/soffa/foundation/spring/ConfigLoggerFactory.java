@@ -24,13 +24,6 @@ public class ConfigLoggerFactory {
                 LOG.info("AMQP is NOT enabled on this poject");
             }
 
-            boolean isSysLogEnabled = env.getProperty("app.sys-logs.enabled", Boolean.class, false);
-            if (isSysLogEnabled) {
-                LOG.info("SysLog is enabled for this project");
-            } else {
-                LOG.info("SysLog is NOT enabled on this poject");
-            }
-
         }
         return new BeansFactoryStateModel();
     }

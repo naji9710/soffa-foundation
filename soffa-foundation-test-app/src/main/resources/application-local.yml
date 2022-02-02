@@ -1,4 +1,0 @@
-app.db.links:
-  default: h2://mem/default
-  T1: h2://mem/tenant1
-  T2: h2://mem/tenant2

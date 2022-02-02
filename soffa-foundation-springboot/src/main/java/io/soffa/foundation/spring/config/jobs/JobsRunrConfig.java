@@ -1,6 +1,6 @@
 package io.soffa.foundation.spring.config.jobs;
 
-import io.soffa.foundation.actions.ActionDispatcher;
+import io.soffa.foundation.actions.EventHandler;
 import io.soffa.foundation.spring.data.TenantAwareDatasourceImpl;
 import org.jobrunr.configuration.JobRunr;
 import org.jobrunr.configuration.JobRunrConfiguration;
@@ -21,7 +21,7 @@ public class JobsRunrConfig {
 
     @Bean
     @Primary
-    public JobManager createJobManager(DataSource ds, ActionDispatcher actionDispatcher,
+    public JobManager createJobManager(DataSource ds, EventHandler eventsHandler,
                                        ApplicationContext applicationContext,
                                        @Value("${app.sys-jobs.retries:10}") int retries) {
         DataSource target = ds;
@@ -37,6 +37,6 @@ public class JobsRunrConfig {
             .useJmxExtensions()
             .useDashboard()
             .initialize();
-        return new JobManager(actionDispatcher, config);
+        return new JobManager(eventsHandler, config);
     }
 }

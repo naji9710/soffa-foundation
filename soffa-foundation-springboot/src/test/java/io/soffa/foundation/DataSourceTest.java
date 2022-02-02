@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(properties = {"app.sys-logs.enabled=true"})
+@SpringBootTest
 @ActiveProfiles("test")
 public class DataSourceTest {
 
@@ -32,10 +32,7 @@ public class DataSourceTest {
     @Test
     public void testDataSource() {
         TenantHolder.set("T3");
-        Assertions.assertThrows(Exception.class, () -> {
-            sysLogs.count();
-        });
-
+        Assertions.assertThrows(Exception.class, () -> sysLogs.count());
 
         final int t1Count = RandomUtils.nextInt(10, 50);
         final int t2Count = RandomUtils.nextInt(10, 50);
