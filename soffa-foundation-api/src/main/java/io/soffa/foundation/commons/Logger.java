@@ -12,9 +12,15 @@ public class Logger {
     }
 
     private final org.slf4j.Logger log;
+    private String tag = null;
 
     public Logger(org.slf4j.Logger logger) {
         this.log = logger;
+    }
+    
+    public Logger(org.slf4j.Logger logger, String tag) {
+        this(logger);
+        this.tag = tag;
     }
 
     public static void setContext(RequestContext context) {
@@ -49,6 +55,10 @@ public class Logger {
         return new Logger(LoggerFactory.getLogger(name));
     }
 
+    public static Logger get(String name, String tag) {
+        return new Logger(LoggerFactory.getLogger(name), tag);
+    }
+
     public boolean isDebugEnabled() {
         return log.isDebugEnabled();
     }
@@ -63,22 +73,29 @@ public class Logger {
 
     public void debug(String message, Object... args) {
         if (log.isDebugEnabled()) {
-            log.debug(TextUtil.format(message, args));
+            log.debug(formatMessage(message, args));
         }
     }
 
     public void trace(String message, Object... args) {
         if (log.isDebugEnabled()) {
-            log.trace(TextUtil.format(message, args));
+            log.trace(formatMessage(message, args));
         }
     }
 
     public void info(String message, Object... args) {
-        log.info(TextUtil.format(message, args));
+        log.info(formatMessage(message, args));
+    }
+    
+    private String formatMessage(String message, Object... args) {
+        if (TextUtil.isEmpty(tag)) {
+            return TextUtil.format(message, args);
+        }
+        return "["+tag+"] " + TextUtil.format(message, args);
     }
 
     public void warn(String message, Object... args) {
-        log.warn(TextUtil.format(message, args));
+        log.warn(formatMessage(message, args));
     }
 
     public void error(Throwable e) {
@@ -86,7 +103,7 @@ public class Logger {
     }
 
     public void error(Throwable error, String message, Object... args) {
-        error(TextUtil.format(message, args), error);
+        error(formatMessage(message, args), error);
     }
 
     public void error(String message, Throwable e) {
@@ -95,7 +112,7 @@ public class Logger {
     }
 
     public void error(String message, Object... args) {
-        log.error(TextUtil.format(message, args));
+        log.error(formatMessage(message, args));
     }
 
 }

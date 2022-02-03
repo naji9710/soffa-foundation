@@ -22,7 +22,6 @@ public class RabbitMQConnectionFactory {
     @Bean
     @ConfigurationProperties(prefix = "app.amqp")
     public RabbitMQProperties properties() {
-        LOG.info("app.amqp is enabled");
         return new RabbitMQProperties();
     }
 

@@ -11,7 +11,7 @@ dependencies {
         exclude(module = "spring-boot-starter-tomcat")
     }
     runtimeOnly("org.springframework.boot:spring-boot-starter-undertow")
-    // implementation(platform("org.apache.logging.log4j:log4j-bom:2.16.0"))
+    implementation("org.springframework.cloud:spring-cloud-starter-consul-discovery")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     api("org.springframework.boot:spring-boot-starter-validation")
     api("org.springframework.boot:spring-boot-starter-security")
@@ -26,6 +26,7 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
+    @Suppress("GradlePackageUpdate")
     implementation("com.zaxxer:HikariCP:4.0.3")
     api("org.jobrunr:jobrunr:4.0.6") {
         exclude(group = "com.zaxxer")

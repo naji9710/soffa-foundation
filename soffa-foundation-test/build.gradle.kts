@@ -11,6 +11,7 @@ dependencies {
         exclude(group = "com.vaadin.external.google")
     }
 
+    api("com.pszymczyk.consul:embedded-consul:2.2.1")
 
     compileOnly("org.springframework.boot:spring-boot-starter-web")
     @Suppress("GradlePackageUpdate")
