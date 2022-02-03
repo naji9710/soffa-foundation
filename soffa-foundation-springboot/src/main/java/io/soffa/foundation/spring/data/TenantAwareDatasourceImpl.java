@@ -41,6 +41,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
     private static final String DEFAULT_DS = "default";
     private final DbConfig dbConfig;
     private static final Map<String, Boolean> MIGRATED = new ConcurrentHashMap<>();
+    private final Map<DataSource, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
 
 
     @SneakyThrows
@@ -98,6 +99,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             url = url.replace(TENANT_PLACEHOLDER, id);
         }
         DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(id, url), link);
+        dsConfigs.put(ds, link);
         dataSources.put(id, ds);
         applyMigrations(ds, migrate);
     }
@@ -177,7 +179,7 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
     }
 
     private void applyMigrations(HikariDataSource dataSource, boolean autoMigrate) {
-        DataSourceConfig link = (DataSourceConfig) dataSource.getDataSourceProperties().get("__link");
+        DataSourceConfig link = dsConfigs.get(dataSource);
         if (MIGRATED.containsKey(appicationName + "." + link.getName())) {
             return;
         }

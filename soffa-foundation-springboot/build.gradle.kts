@@ -18,12 +18,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
     implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
-    api("org.springframework.boot:spring-boot-starter-data-jpa")
+    api("org.springframework.boot:spring-boot-starter-data-jpa") {
+        exclude(group = "com.zaxxer")
+    }
     implementation("org.springframework.boot:spring-boot-starter-amqp")
     api("org.springframework.cloud:spring-cloud-starter-vault-config")
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
+    implementation("com.zaxxer:HikariCP:5.0.1")
     api("org.jobrunr:jobrunr:4.0.6") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
@@ -33,7 +36,7 @@ dependencies {
         exclude(group = "com.github.ben-manes.caffeine")
     }
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.postgresql:postgresql:42.3.1")
+    implementation("org.postgresql:postgresql:42.3.2")
     api("org.springdoc:springdoc-openapi-ui:1.6.4"){
         exclude(group = "io.github.classgraph")
     }

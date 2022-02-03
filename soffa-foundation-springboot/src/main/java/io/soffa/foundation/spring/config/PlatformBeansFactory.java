@@ -2,8 +2,6 @@ package io.soffa.foundation.spring.config;
 
 import io.soffa.foundation.actions.Action;
 import io.soffa.foundation.actions.Action0;
-import io.soffa.foundation.actions.ActionDispatcher;
-import io.soffa.foundation.actions.EventHandler;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
@@ -11,7 +9,7 @@ import io.soffa.foundation.config.AppConfig;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import io.soffa.foundation.metrics.NoopMetricsRegistryImpl;
-import io.soffa.foundation.spring.DefaultActionDispatcher;
+import io.soffa.foundation.spring.ActionsMapping;
 import io.soffa.foundation.web.OpenApiBuilder;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,19 +33,10 @@ public class PlatformBeansFactory {
         return new RestTemplate();
     }
 
-
     @Bean
-    @ConditionalOnMissingBean(ActionDispatcher.class)
-    public ActionDispatcher createActionDispatcher(Set<Action<?, ?>> actionHandlers,
-                                                   Set<Action0<?>> action0Handlers) {
-        return new DefaultActionDispatcher(actionHandlers, action0Handlers);
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(ActionDispatcher.class)
-    public EventHandler createDefaultEventsHandler(Set<Action<?, ?>> actionHandlers,
-                                                   Set<Action0<?>> action0Handlers) {
-        return new DefaultActionDispatcher(actionHandlers, action0Handlers);
+    public ActionsMapping createActionsMapping(Set<Action<?, ?>> actionHandlers,
+                                               Set<Action0<?>> action0Handlers) {
+        return new ActionsMapping(actionHandlers, action0Handlers);
     }
 
     @Bean

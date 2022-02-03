@@ -45,11 +45,12 @@ public final class DbHelper {
         hc.setMaxLifetime(2_000_000);
         hc.setConnectionTimeout(30_000);
         hc.setValidationTimeout(10_000);
+        hc.addDataSourceProperty("ignore_startup_parameters", "search_path");
         if (config.hasSchema()) {
             hc.setSchema(config.getSchema());
         }
         link.setName(config.getName());
-        hc.addDataSourceProperty("__link", link);
+        //hc.addDataSourceProperty("__link", link);
         return new HikariDataSource(hc);
     }
 
