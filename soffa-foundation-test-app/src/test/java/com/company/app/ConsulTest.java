@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @AutoConfigureMockMvc
 public class ConsulTest {
 
-    private static ConsulProcess consul = null;
+    private static ConsulProcess consul;
 
     @Autowired
     private MockMvc mvc;

@@ -1,6 +1,5 @@
 package ext.springboot;
 
-import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.spring.config.amqp.model.RabbitMQProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
@@ -16,8 +15,6 @@ import org.springframework.core.Ordered;
 @Import(RabbitAutoConfiguration.class)
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 public class RabbitMQConnectionFactory {
-
-    private static final Logger LOG = Logger.get(RabbitMQConnectionFactory.class);
 
     @Bean
     @ConfigurationProperties(prefix = "app.amqp")

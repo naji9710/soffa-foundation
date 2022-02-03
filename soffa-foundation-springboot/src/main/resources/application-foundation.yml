@@ -68,10 +68,11 @@ spring.cloud.consul:
   config:
     enabled: ${app.consul.config:false}
   discovery:
+    tags: ${app.consul.tags:}
     enabled: ${app.consul.discovery:${CONSUL_ENABLED:false}}
     register: ${app.consul.register:true}
     #healthCheckPath: ${management.server.servlet.context-path}/health
-    healthCheckInterval: 10s
+    healthCheckInterval: ${CONSUL_HEALTH_CHECK_INTERVAL:10s}
     instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
 
 spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration

@@ -12,7 +12,7 @@ public class Logger {
     }
 
     private final org.slf4j.Logger log;
-    private String tag = null;
+    private String tag;
 
     public Logger(org.slf4j.Logger logger) {
         this.log = logger;

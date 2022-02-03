@@ -1,10 +1,16 @@
+## 1.3.2 (February 03, 2022)
+
+IMPROVEMENTS:
+
+* Consul integration
+* Improvements and stability
+ 
 ## 1.3.1 (February 03, 2022)
 
 IMPROVEMENTS:
 
 * Dependencies updates
 * Improvements and stability
-
 
 ## 1.3.0 (February 02, 2022)
 
