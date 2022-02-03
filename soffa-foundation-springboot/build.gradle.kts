@@ -26,7 +26,7 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
-    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("com.zaxxer:HikariCP:4.0.3")
     api("org.jobrunr:jobrunr:4.0.6") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
