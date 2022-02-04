@@ -1,3 +1,10 @@
+## 1.3.4 (February 04, 2022)
+
+IMPROVEMENTS:
+
+* Expose `actuator/prometheus` endpoint.
+* Dependencies update
+
 ## 1.3.3 (February 04, 2022)
 
 IMPROVEMENTS:
