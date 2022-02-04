@@ -42,7 +42,7 @@ server:
 app.amqp.enabled: false
 
 management:
-  endpoints.web.exposure.include: "info,health"
+  endpoints.web.exposure.include: "info,health,prometheus,metrics,refresh"
   metrics.export:
     simple.enabled: true
   health.diskspace.enabled: true

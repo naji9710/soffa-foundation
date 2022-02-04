@@ -28,7 +28,7 @@ dependencies {
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
     @Suppress("GradlePackageUpdate")
     implementation("com.zaxxer:HikariCP:4.0.3")
-    api("org.jobrunr:jobrunr:4.0.6") {
+    api("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
 
@@ -38,10 +38,10 @@ dependencies {
     }
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.postgresql:postgresql:42.3.2")
-    api("org.springdoc:springdoc-openapi-ui:1.6.4"){
+    api("org.springdoc:springdoc-openapi-ui:1.6.5"){
         exclude(group = "io.github.classgraph")
     }
-    implementation("org.springdoc:springdoc-openapi-security:1.6.3"){
+    implementation("org.springdoc:springdoc-openapi-security:1.6.5"){
         exclude(group = "io.github.classgraph")
     }
     implementation("io.github.classgraph:classgraph:4.8.138")
