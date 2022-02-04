@@ -1,4 +1,11 @@
-## 1.3.2 (February 03, 2022)
+## 1.3.3 (February 04, 2022)
+
+IMPROVEMENTS:
+
+* Json is enabled only with active profile "json-logs"
+* Env variable `LOGGING_FILE_NAME` is now available to customize the log file name (when enabled)
+
+ ## 1.3.2 (February 03, 2022)
 
 IMPROVEMENTS:
 

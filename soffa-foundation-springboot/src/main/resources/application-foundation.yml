@@ -10,6 +10,8 @@ logging.level.foundation: ${PLATFORM_LOG_LEVEL:INFO}
 logging.level.app: ${LOG_LEVEL:INFO}
 logging.level.service: ${LOG_LEVEL:INFO}
 
+logging.file.name: ${LOGGING_FILE_NAME:${spring.application.name}.log}
+
 spring.jackson:
   default-property-inclusion: non_null
 
@@ -122,13 +124,13 @@ spring.cloud.vault:
     default-context: ${app.vault.context:${VAULT_CONTEXT:services/${spring.application.name}}}
     application-name: ${spring.application.name}
   connection-timeout: 5000
-  read-timeout: 15000
+  read-timeout: 3000
 
 spring.config.import:
   - vault://
 
 ---
-spring.config.activate.on-profile: prod | production | prd | staging | logstash | json-logs
+spring.config.activate.on-profile: json-logs
 logging.config: classpath:logback-spring-json.xml
 
 ---
