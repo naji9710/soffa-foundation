@@ -1,3 +1,10 @@
+## 1.3.5 (February 07, 2022)
+
+IMPROVEMENTS:
+
+* Improvements and stability
+
+ 
 ## 1.3.4 (February 04, 2022)
 
 IMPROVEMENTS:

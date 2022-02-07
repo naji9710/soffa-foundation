@@ -22,7 +22,7 @@ public class ApplicationTest {
     public static final String F_USERNAME = "username";
     public static final String F_PASSWORD = "password";
     public static final String CHECK_URI = "/check";
-    
+
     @Autowired
     private MockMvc mvc;
 
@@ -36,6 +36,12 @@ public class ApplicationTest {
             .header("Access-Control-Request-Method", "GET")
             .header("Origin", "https://www.someurl.com")
             .expect().isOK().json("$.status", "UP");
+
+        test.get("/actuator/info")
+            .expect().isOK();
+
+        test.get("/actuator/metrics")
+            .expect().isOK();
 
     }
 

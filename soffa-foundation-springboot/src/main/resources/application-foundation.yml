@@ -10,7 +10,6 @@ logging.level.foundation: ${PLATFORM_LOG_LEVEL:INFO}
 logging.level.app: ${LOG_LEVEL:INFO}
 logging.level.service: ${LOG_LEVEL:INFO}
 
-logging.file.name: ${LOGGING_FILE_NAME:${spring.application.name}.log}
 
 spring.jackson:
   default-property-inclusion: non_null
@@ -132,6 +131,7 @@ spring.config.import:
 ---
 spring.config.activate.on-profile: json-logs
 logging.config: classpath:logback-spring-json.xml
+logging.file.name: ${LOGGING_FILE_NAME:${spring.application.name}.log}
 
 ---
 spring.config.activate.on-profile: test
