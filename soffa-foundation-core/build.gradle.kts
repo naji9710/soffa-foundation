@@ -22,7 +22,7 @@ dependencies {
     // api("commons-validator:commons-validator:1.7")
     implementation("com.auth0:java-jwt:3.18.3")
     api("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")
-    compileOnly("org.jobrunr:jobrunr:4.0.6") {
+    compileOnly("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
     }
