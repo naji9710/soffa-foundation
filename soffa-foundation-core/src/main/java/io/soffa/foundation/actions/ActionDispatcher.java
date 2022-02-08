@@ -14,4 +14,5 @@ public interface ActionDispatcher {
 
     <O> O dispatch(Class<? extends Action0<O>> actionClass);
 
+
 }

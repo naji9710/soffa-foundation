@@ -49,6 +49,12 @@ public class PubSubListenerConfig {
             return;
         }
         try {
+
+            if (!listener.accept(event.getAction())){
+                LOG.error("[amqp] unsupported event %s), skipping.", event.getAction());
+                return;
+            }
+
             RequestContextHolder.set(event.getContext());
             listener.handle(event);
             channel.basicAck(tag, false);

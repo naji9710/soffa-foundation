@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd"
     logicalFilePath="foundation-test">
 
-    <include file="/db/changelog/platform-sys-logs.xml" />
+    <include file="/db/changelog/platform-logs.xml" />
 
     <changeSet id="20210921_Messages" author="gahissy.titus">
         <createTable tableName="${table_prefix}messages">

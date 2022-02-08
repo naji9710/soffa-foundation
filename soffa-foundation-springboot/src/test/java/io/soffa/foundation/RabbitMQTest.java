@@ -5,13 +5,14 @@ import io.soffa.foundation.events.Event;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.pubsub.PubSubClient;
 import lombok.SneakyThrows;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.concurrent.TimeUnit;
 
 @ActiveProfiles({"test", "foundation-amqp"})
 @SpringBootTest(properties = {
@@ -29,9 +30,9 @@ public class RabbitMQTest {
         Assertions.assertNotNull(pubSubClient);
         pubSubClient.sendInternal(new Event("HELLO"));
         pubSubClient.sendInternal(new Event("HELLO1"));
-        Thread.sleep(1000 * 2);
-        assertEquals(1, TestPubSubListener.TICK.intValue());
-
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+            return 1 == TestPubSubListener.TICK.intValue();
+        });
         Assertions.assertThrowsExactly(TechnicalException.class, () -> {
             pubSubClient.send("t1", "exchange1", "routing1", new Event("HELLO2"));
         });

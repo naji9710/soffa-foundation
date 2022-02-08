@@ -1,4 +1,4 @@
-package io.soffa.foundation.data;
+package io.soffa.foundation.data.entities;
 
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.core.RequestContext;

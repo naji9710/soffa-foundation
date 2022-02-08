@@ -6,10 +6,10 @@ spring.rabbitmq:
     max-attempts: 30
     max-interval: 300s
     multiplier: 2
-  addresses: ${app.amqp.addresses}
-  username: ${app.amqp.username:}
-  password: ${app.amqp.password:}
-  virtual-host: ${app.amqp.vhost:/}
+  addresses: ${AMQP_ADDRESSES:${app.amqp.addresses}}
+  username: ${AMQP_USERNAME:${app.amqp.username:}}
+  password: ${AMQP_PASSWORD:${app.amqp.password:}}
+  virtual-host: ${app.amqp.vhost:${AMQP_VHOST:/}}
   ssl.enabled: ${app.amqp.ssl.enabled:false}
   ssl.algorithm: ${app.amqp.ssl.algorithm:TLSv1.2}
   ssl.key-store: ${app.amqp.ssl.key-store:}

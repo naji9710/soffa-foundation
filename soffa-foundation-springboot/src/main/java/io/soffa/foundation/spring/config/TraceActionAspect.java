@@ -115,7 +115,7 @@ public class TraceActionAspect {
     private void doLogAction(String tenantId, RequestContext context, String action, Object data, Duration timeElapsed, Throwable error) {
         TenantHolder.use(tenantId, () -> {
             try {
-                final io.soffa.foundation.data.SysLog log = new io.soffa.foundation.data.SysLog();
+                final io.soffa.foundation.data.entities.SysLog log = new io.soffa.foundation.data.entities.SysLog();
                 log.setKind("action");
                 log.setEvent(action);
                 if (data != null) {

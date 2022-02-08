@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.ExecutorHelper;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.data.SysLog;
+import io.soffa.foundation.data.MetricRepository;
 import io.soffa.foundation.data.SysLogRepository;
+import io.soffa.foundation.data.entities.Metric;
+import io.soffa.foundation.data.entities.SysLog;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
@@ -28,9 +30,17 @@ public class DataSourceTest {
     @Autowired
     private SysLogRepository sysLogs;
 
+    @Autowired
+    private MetricRepository metricsRepo;
+
     @SneakyThrows
     @Test
     public void testDataSource() {
+        TenantHolder.set("T2");
+        assertEquals(0, metricsRepo.count());
+        metricsRepo.save(new Metric("metric.test.001", 1.0));
+        assertEquals(1, metricsRepo.count());
+
         TenantHolder.set("T3");
         Assertions.assertThrows(Exception.class, () -> sysLogs.count());
 

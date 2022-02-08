@@ -6,6 +6,7 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
     logicalFilePath="platform/test">
 
-    <include file="/db/changelog/platform-sys-logs.xml" context="tenant"/>
+    <include file="/db/changelog/platform-logs.xml" context="tenant"/>
+    <include file="/db/changelog/platform-metrics.xml" context="tenant"/>
 
 </databaseChangeLog>
