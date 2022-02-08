@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @NoArgsConstructor
 public class RequestFilter extends OncePerRequestFilter {
@@ -63,13 +64,19 @@ public class RequestFilter extends OncePerRequestFilter {
                 Collections.singletonList(new SimpleGrantedAuthority("guest")))
         );
         processTracing(context);
+        AtomicBoolean isAuthValid = new AtomicBoolean(true);
         lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(value -> {
             if (authManager == null) {
                 LOG.warn("Authorization header received but not authManager provided");
             } else {
-                processAuthentication(context, value, response);
+                isAuthValid.set(processAuthentication(context, value, response));
             }
         });
+
+        if (!isAuthValid.get()) {
+            return;
+        }
+
         try {
             RequestContextHolder.set(context);
             chain.doFilter(request, response);
@@ -94,7 +101,7 @@ public class RequestFilter extends OncePerRequestFilter {
         }
     }
 
-    private void processAuthentication(RequestContext context, String value, HttpServletResponse response) {
+    private boolean processAuthentication(RequestContext context, String value, HttpServletResponse response) {
         Optional<Authentication> auth = Optional.empty();
 
         if (value.toLowerCase().startsWith("bearer ")) {
@@ -119,7 +126,7 @@ public class RequestFilter extends OncePerRequestFilter {
             } catch (IOException e) {
                 LOG.error(e, e.getMessage());
             }
-            return;
+            return false;
         }
 
         context.setAuthentication(auth.get());
@@ -127,6 +134,7 @@ public class RequestFilter extends OncePerRequestFilter {
         List<GrantedAuthority> permissions = createPermissions(context, auth.get());
         UsernamePasswordAuthenticationToken authz = new UsernamePasswordAuthenticationToken(context, null, permissions);
         SecurityContextHolder.getContext().setAuthentication(authz);
+        return true;
     }
 
     private List<GrantedAuthority> createPermissions(RequestContext context, Authentication auth) {
