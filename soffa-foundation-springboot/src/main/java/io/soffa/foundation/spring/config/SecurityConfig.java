@@ -5,6 +5,7 @@ import io.soffa.foundation.security.AuthManager;
 import io.soffa.foundation.security.DefaultAuthorizationManager;
 import io.soffa.foundation.spring.RequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,12 +21,15 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private AuthManager authManager;
+    private final String openApiAccess;
 
     public SecurityConfig(
+        @Value("${app.openapi.access:permitAll}") String openApiAccess,
         @Autowired(required = false) AuthManager authManager,
         @Autowired(required = false) JwtDecoder jwtDecoder) {
         super();
         this.authManager = authManager;
+        this.openApiAccess = openApiAccess;
         if (authManager == null && jwtDecoder != null) {
             this.authManager = new DefaultAuthorizationManager(jwtDecoder);
         }
@@ -53,6 +57,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             //.authenticationEntryPoint((request, response, ex) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getMessage()))
             .and()
             .authorizeRequests()
+            .antMatchers("/v3/api-docs").access(openApiAccess)
+            .antMatchers("/swagger/*").access(openApiAccess)
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/**").permitAll()
             .and().addFilterBefore(

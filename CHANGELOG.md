@@ -1,19 +1,17 @@
-## 1.3.6 (February 08, 2022)
+## 1.3.8 (February 08, 2022)
 
-BUGS FIXES:
+* `app.openapi.access` added to change the security level of the swagger endpoints
+* `/health` alias added 
+
+## 1.3.6 (February 08, 2022)
 
 * Request should stop when authorization token is invalid
  
 ## 1.3.5 (February 07, 2022)
 
-IMPROVEMENTS:
-
 * Improvements and stability
-
  
 ## 1.3.4 (February 04, 2022)
-
-IMPROVEMENTS:
 
 * Expose `actuator/prometheus` endpoint.
 * Dependencies update

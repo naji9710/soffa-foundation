@@ -37,6 +37,9 @@ public class ApplicationTest {
             .header("Origin", "https://www.someurl.com")
             .expect().isOK().json("$.status", "UP");
 
+        test.get("/health")
+            .expect().isOK();
+
         test.get("/actuator/info")
             .expect().isOK();
 
@@ -60,6 +63,20 @@ public class ApplicationTest {
             .basicAuth("foo", "bar")
             .header("X-Application", "TestApp")
             .header("X-TenantId", "T1")
+            .expect().isOK();
+    }
+
+    @Test
+    public void testOpenAPI() {
+        HttpExpect test = new HttpExpect(mvc);
+        test.get("/v3/api-docs")
+            .expect().isOK();
+    }
+
+    @Test
+    public void testRedocController() {
+        HttpExpect test = new HttpExpect(mvc);
+        test.get("/")
             .expect().isOK();
     }
 

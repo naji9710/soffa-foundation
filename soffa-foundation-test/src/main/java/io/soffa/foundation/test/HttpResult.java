@@ -108,7 +108,7 @@ public class HttpResult {
 
     @SneakyThrows
     public HttpResult json(String path, String value) {
-        result.andExpect(jsonPath(path).value(Matchers.equalTo(value)));
+        result.andExpect(jsonPath(path).isNotEmpty()).andExpect(jsonPath(path).value(Matchers.equalTo(value)));
         return this;
     }
 

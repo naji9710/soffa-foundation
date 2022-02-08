@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 
 @Hidden
 @Controller
-@ConditionalOnProperty(value = "app.redoc.enabled", havingValue = "true")
+@ConditionalOnProperty(value = {"app.redoc.enabled", "app.openapi.enabled"}, havingValue = "true")
 public class RedocController {
 
     @GetMapping("/")

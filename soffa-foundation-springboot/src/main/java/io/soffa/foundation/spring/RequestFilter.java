@@ -67,7 +67,7 @@ public class RequestFilter extends OncePerRequestFilter {
         AtomicBoolean isAuthValid = new AtomicBoolean(true);
         lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(value -> {
             if (authManager == null) {
-                LOG.warn("Authorization header received but not authManager provided");
+                LOG.warn("Authorization header received but no authManager provided");
             } else {
                 isAuthValid.set(processAuthentication(context, value, response));
             }
