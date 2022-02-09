@@ -1,9 +1,9 @@
 package com.company.app.events;
 
-import io.soffa.foundation.actions.EventHandler;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.data.SysLogRepository;
-import io.soffa.foundation.events.Event;
+import io.soffa.foundation.core.actions.MessageHandler;
+import io.soffa.foundation.core.data.SysLogRepository;
+import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.exceptions.FakeException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class EventHandleTest {
 
     @Autowired
-    private EventHandler eventHandler;
+    private MessageHandler messageHandler;
 
     @Autowired
     private SysLogRepository sysLogs;
@@ -34,9 +34,9 @@ public class EventHandleTest {
 
         TenantHolder.use("T1", (t1) -> {
             long initialCount = sysLogs.count();
-            eventHandler.handle(new Event(actionName)); // automatic tenant
-            eventHandler.handle(new Event("EchoAction", "Hello"));
-            eventHandler.handle(new Event(actionName).withTenant(t1)); // explicit tenant
+            messageHandler.onMessage(new Message(actionName)); // automatic tenant
+            messageHandler.onMessage(new Message("EchoAction", "Hello"));
+            messageHandler.onMessage(new Message(actionName).withTenant(t1)); // explicit tenant
             Awaitility.await().atMost(500, TimeUnit.MILLISECONDS).until(() -> sysLogs.count() == initialCount + 3);
         });
 
@@ -44,7 +44,7 @@ public class EventHandleTest {
 
         TenantHolder.use("T2", (t2) -> {
             t2InitialCount.set(sysLogs.count());
-            Assertions.assertThrows(FakeException.class, () -> eventHandler.handle(new Event(actionName)));
+            Assertions.assertThrows(FakeException.class, () -> messageHandler.onMessage(new Message(actionName)));
         });
 
         TenantHolder.use("T2", () -> {

@@ -1,5 +1,6 @@
 package io.soffa.foundation.core;
 
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
 import lombok.Getter;
@@ -29,7 +30,9 @@ public class RequestContext {
 
     public static RequestContext create(String tenantId) {
         RequestContext ctx = new RequestContext();
-        ctx.setTenantId(new TenantId(tenantId));
+        if (TextUtil.isNotEmpty(tenantId)) {
+            ctx.setTenantId(new TenantId(tenantId));
+        }
         return ctx;
     }
 

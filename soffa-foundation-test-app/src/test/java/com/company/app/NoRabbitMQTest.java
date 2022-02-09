@@ -1,7 +1,7 @@
 package com.company.app;
 
-import io.soffa.foundation.events.EventDispatcher;
-import io.soffa.foundation.pubsub.PubSubClient;
+import io.soffa.foundation.core.messages.AmqpClient;
+import io.soffa.foundation.core.messages.MessageDispatcher;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,16 +14,16 @@ import org.springframework.test.context.ActiveProfiles;
 public class NoRabbitMQTest {
 
     @Autowired(required = false)
-    private PubSubClient pubSubClient;
+    private AmqpClient amqpClient;
 
     @Autowired(required = false)
-    private EventDispatcher eventDispatcher;
+    private MessageDispatcher messageDispatcher;
 
     @SneakyThrows
     @Test
     public void testNoRabbitMQ() {
-        Assertions.assertNull(pubSubClient);
-        Assertions.assertNull(eventDispatcher);
+        Assertions.assertNull(amqpClient);
+        Assertions.assertNull(messageDispatcher);
     }
 
 }

@@ -1,8 +1,11 @@
 package com.company.app.gateways;
 
+import com.company.app.core.EchoAction;
+import com.company.app.core.PingAction;
 import com.company.app.core.PingResponse;
 import io.soffa.foundation.core.ApiHeaders;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.annotations.ActionBind;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +25,7 @@ public interface API {
         parameters = {@Parameter(ref = ApiHeaders.TENANT_ID)}
     )
     @Path("/ping")
+    @ActionBind(PingAction.class)
     PingResponse ping(@Parameter(hidden = true) RequestContext context);
 
     @Operation(
@@ -31,6 +35,7 @@ public interface API {
         parameters = {@Parameter(ref = ApiHeaders.TENANT_ID)}
     )
     @Path("/echo")
+    @ActionBind(EchoAction.class)
     String echo(String input, @Parameter(hidden = true) RequestContext context);
 
 }

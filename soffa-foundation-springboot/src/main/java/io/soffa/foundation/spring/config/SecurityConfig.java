@@ -1,8 +1,8 @@
 package io.soffa.foundation.spring.config;
 
 import io.soffa.foundation.commons.jwt.JwtDecoder;
-import io.soffa.foundation.security.AuthManager;
-import io.soffa.foundation.security.DefaultAuthorizationManager;
+import io.soffa.foundation.core.security.AuthManager;
+import io.soffa.foundation.core.security.DefaultAuthorizationManager;
 import io.soffa.foundation.spring.RequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

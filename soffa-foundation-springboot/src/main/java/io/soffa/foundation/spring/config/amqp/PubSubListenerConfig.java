@@ -4,10 +4,9 @@ import com.rabbitmq.client.Channel;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContextHolder;
-import io.soffa.foundation.events.Event;
-import io.soffa.foundation.pubsub.PubSubListener;
+import io.soffa.foundation.core.messages.AmqpListener;
+import io.soffa.foundation.core.messages.Message;
 import lombok.SneakyThrows;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -20,15 +19,15 @@ import java.nio.charset.StandardCharsets;
 public class PubSubListenerConfig {
 
     private static final Logger LOG = Logger.get(PubSubListenerConfig.class);
-    private final PubSubListener listener;
+    private final AmqpListener listener;
 
-    public PubSubListenerConfig(@Autowired(required = false) PubSubListener listener) {
+    public PubSubListenerConfig(@Autowired(required = false) AmqpListener listener) {
         this.listener = listener;
     }
 
     @SneakyThrows
     @RabbitListener(queues = {"${spring.application.name}"}, ackMode = "MANUAL")
-    public void listen(Message message, Channel channel) {
+    public void listen(org.springframework.amqp.core.Message message, Channel channel) {
         final long tag = message.getMessageProperties().getDeliveryTag();
         if (listener == null) {
             LOG.warn("No event listener registered");
@@ -36,11 +35,11 @@ public class PubSubListenerConfig {
             return;
         }
         String rawString = new String(message.getBody(), StandardCharsets.UTF_8);
-        Event event;
+        Message event;
         try {
-            event = JsonUtil.deserialize(rawString, Event.class);
+            event = JsonUtil.deserialize(rawString, Message.class);
         } catch (Exception e) {
-            LOG.error("[amqp] Invalid Event received", e);
+            LOG.error("[amqp] Invalid Message received", e);
             channel.basicNack(tag, false, false);
             return;
         }

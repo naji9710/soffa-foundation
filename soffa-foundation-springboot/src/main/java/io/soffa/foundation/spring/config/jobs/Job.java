@@ -1,7 +1,7 @@
 package io.soffa.foundation.spring.config.jobs;
 
+import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.model.TenantId;
-import io.soffa.foundation.events.Event;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ public class Job implements JobRequest {
     private String id;
     private TenantId tenant;
     private String description;
-    private Event event;
+    private Message event;
 
     @Override
     public Class<JobManager> getJobRequestHandler() {

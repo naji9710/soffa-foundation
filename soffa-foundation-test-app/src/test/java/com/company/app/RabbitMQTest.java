@@ -1,8 +1,8 @@
 package com.company.app;
 
-import io.soffa.foundation.events.Event;
-import io.soffa.foundation.events.EventDispatcher;
-import io.soffa.foundation.pubsub.PubSubClient;
+import io.soffa.foundation.core.messages.AmqpClient;
+import io.soffa.foundation.core.messages.Message;
+import io.soffa.foundation.core.messages.MessageDispatcher;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,20 +21,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class RabbitMQTest {
 
     @Autowired
-    private PubSubClient pubSubClient;
+    private AmqpClient amqpClient;
 
     @Autowired
-    private EventDispatcher eventDispatcher;
+    private MessageDispatcher messageDispatcher;
 
     @SneakyThrows
     @Test
     public void testRabbitMQ() {
-        Assertions.assertNotNull(eventDispatcher);
-        Assertions.assertNotNull(pubSubClient);
-        pubSubClient.sendInternal(new Event("HELLO1"));
-        pubSubClient.broadcast(new Event("HELLO2"));
-        TestPubSubListener.LATCH.await();
-        assertEquals(0, TestPubSubListener.LATCH.getCount());
+        Assertions.assertNotNull(messageDispatcher);
+        Assertions.assertNotNull(amqpClient);
+        amqpClient.sendInternal(new Message("HELLO1"));
+        amqpClient.broadcast(new Message("HELLO2"));
+        TestAmqpListener.LATCH.await();
+        assertEquals(0, TestAmqpListener.LATCH.getCount());
     }
 
 }

@@ -1,8 +1,8 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.s3.ObjectStorageClient;
-import io.soffa.foundation.s3.S3Client;
-import io.soffa.foundation.s3.S3config;
+import io.soffa.foundation.core.data.s3.ObjectStorageClient;
+import io.soffa.foundation.core.data.s3.S3Client;
+import io.soffa.foundation.core.data.s3.S3config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;

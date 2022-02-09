@@ -1,7 +1,7 @@
 package io.soffa.foundation.spring.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 

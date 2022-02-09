@@ -1,8 +1,8 @@
 package io.soffa.foundation.spring;
 
-import io.soffa.foundation.actions.Action;
-import io.soffa.foundation.actions.Action0;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.actions.Action;
+import io.soffa.foundation.core.actions.Action0;
 import io.soffa.foundation.exceptions.TechnicalException;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -36,15 +36,19 @@ public class ActionsMapping {
                 targetClass = Objects.requireNonNull(target).getClass();
             }
             internal.put(targetClass.getSimpleName(), action);
+            internal.put(targetClass.getName(), action);
             for (Class<?> intf : targetClass.getInterfaces()) {
                 if (Action0.class.isAssignableFrom(intf)) {
                     internal.put(intf.getSimpleName(), action);
+                    internal.put(intf.getName(), action);
                 } else if (Action.class.isAssignableFrom(intf)) {
                     internal.put(intf.getSimpleName(), action);
+                    internal.put(intf.getName(), action);
                     Method method = Arrays.stream(action.getClass().getMethods())
                         .filter(m -> "handle".equals(m.getName()) && 2 == m.getParameterCount() && m.getParameterTypes()[1] == RequestContext.class)
                         .findFirst().orElseThrow(() -> new TechnicalException("Invalid action definition"));
                     inputTypes.put(intf.getSimpleName(), method.getParameterTypes()[0]);
+                    inputTypes.put(intf.getName(), method.getParameterTypes()[0]);
                 }
             }
         }

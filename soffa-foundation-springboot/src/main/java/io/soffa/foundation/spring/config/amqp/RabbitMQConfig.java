@@ -5,9 +5,9 @@ import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.events.Event;
+import io.soffa.foundation.core.messages.AmqpClient;
+import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.pubsub.PubSubClient;
 import io.soffa.foundation.spring.config.amqp.model.RabbitMQProperties;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.*;
@@ -89,15 +89,15 @@ public class RabbitMQConfig {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Primary
     @Bean
-    PubSubClient createPubSubClient(RabbitMQProperties rabbitMQProperties) {
+    AmqpClient createPubSubClient(RabbitMQProperties rabbitMQProperties) {
 
-        LOG.info("Creating PubSubClient");
+        LOG.info("Creating AmqpClient");
         RabbitMQClientPool clients = new RabbitMQClientPool(rabbitMQProperties);
 
-        return new PubSubClient() {
+        return new AmqpClient() {
 
             @Override
-            public void send(final String client, String exchange, String routingKey, Event event) {
+            public void send(final String client, String exchange, String routingKey, Message event) {
                 RabbitTemplate tpl;
                 String clientId = client;
                 if (client == null) {
@@ -123,12 +123,12 @@ public class RabbitMQConfig {
             }
 
             @Override
-            public void send(String target, Event event) {
+            public void send(String target, Message event) {
                 send(null, exchange + TOPIC, routing + "." + target, event);
             }
 
             @Override
-            public void broadcast(Event event) {
+            public void broadcast(Message event) {
                 rabbitTemplate.convertAndSend(exchange + FANOUT, routing + ".*", JsonUtil.serialize(event).getBytes());
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[PUB-SUB] Message broadcasted to %s.* - @action:%s", routing, event.getAction());
@@ -136,7 +136,7 @@ public class RabbitMQConfig {
             }
 
             @Override
-            public Object exchange(Event event) {
+            public Object request(Message event) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("[PUB-SUB] Exchanging message with to %s.* - @action:%s", routing, event.getAction());
                 }
@@ -144,12 +144,12 @@ public class RabbitMQConfig {
             }
 
             @Override
-            public <T> T exchange(Event event, Class<T> kind) {
-                return JsonUtil.convert(exchange(event), kind);
+            public <T> T request(Message event, Class<T> kind) {
+                return JsonUtil.convert(request(event), kind);
             }
 
             @Override
-            public void sendInternal(Event event) {
+            public void sendInternal(Message event) {
                 send(applicationName, event);
             }
         };

@@ -1,9 +1,9 @@
 package io.soffa.foundation;
 
-import io.soffa.foundation.config.TestPubSubListener;
-import io.soffa.foundation.events.Event;
+import io.soffa.foundation.config.TestAmqpListener;
+import io.soffa.foundation.core.messages.AmqpClient;
+import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.pubsub.PubSubClient;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
@@ -22,19 +22,19 @@ import java.util.concurrent.TimeUnit;
 public class RabbitMQTest {
 
     @Autowired
-    private PubSubClient pubSubClient;
+    private AmqpClient amqpClient;
 
     @SneakyThrows
     @Test
     public void testRabbitMQ() {
-        Assertions.assertNotNull(pubSubClient);
-        pubSubClient.sendInternal(new Event("HELLO"));
-        pubSubClient.sendInternal(new Event("HELLO1"));
+        Assertions.assertNotNull(amqpClient);
+        amqpClient.sendInternal(new Message("HELLO"));
+        amqpClient.sendInternal(new Message("HELLO1"));
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
-            return 1 == TestPubSubListener.TICK.intValue();
+            return 1 == TestAmqpListener.TICK.intValue();
         });
         Assertions.assertThrowsExactly(TechnicalException.class, () -> {
-            pubSubClient.send("t1", "exchange1", "routing1", new Event("HELLO2"));
+            amqpClient.send("t1", "exchange1", "routing1", new Message("HELLO2"));
         });
 
     }

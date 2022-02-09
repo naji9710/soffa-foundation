@@ -1,16 +1,16 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.actions.Action;
-import io.soffa.foundation.actions.Action0;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.config.AppConfig;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.metrics.MetricsRegistry;
-import io.soffa.foundation.metrics.NoopMetricsRegistryImpl;
+import io.soffa.foundation.core.actions.Action;
+import io.soffa.foundation.core.actions.Action0;
+import io.soffa.foundation.core.application.AppConfig;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.metrics.NoopMetricsRegistryImpl;
+import io.soffa.foundation.core.web.OpenApiBuilder;
 import io.soffa.foundation.spring.ActionsMapping;
-import io.soffa.foundation.web.OpenApiBuilder;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

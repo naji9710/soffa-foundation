@@ -1,8 +1,8 @@
 package com.company.app.events;
 
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.data.SysLogRepository;
-import io.soffa.foundation.events.Event;
+import io.soffa.foundation.core.data.SysLogRepository;
+import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.spring.config.jobs.Job;
 import io.soffa.foundation.spring.config.jobs.JobManager;
 import io.soffa.foundation.test.TestUtil;
@@ -31,7 +31,7 @@ public class JobRunnerTest {
         assertNotNull(jobs);
         TenantHolder.use("T1", (t1) -> {
             long initialCount = sysLogs.count();
-            Job job = jobs.enqueue("testPing", new Event("PingAction").withTenant(t1));
+            Job job = jobs.enqueue("testPing", new Message("PingAction").withTenant(t1));
             jobs.run(job);
             TestUtil.awaitUntil(5, () -> sysLogs.count() > initialCount);
         });

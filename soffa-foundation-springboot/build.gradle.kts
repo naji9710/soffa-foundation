@@ -29,6 +29,7 @@ dependencies {
     @Suppress("GradlePackageUpdate")
     implementation("com.zaxxer:HikariCP:4.0.3")
     implementation("io.nats:jnats:2.13.2")
+
     api("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
@@ -47,5 +48,7 @@ dependencies {
     }
     implementation("io.github.classgraph:classgraph:4.8.138")
     testImplementation(project(":soffa-foundation-test"))
+//     testImplementation("io.nats:jnats-server-runner:1.0.8")
+
 }
 

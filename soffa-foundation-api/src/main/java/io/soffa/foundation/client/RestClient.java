@@ -2,7 +2,6 @@ package io.soffa.foundation.client;
 
 
 import io.soffa.foundation.commons.JsonUtil;
-import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.commons.http.HttpClient;
 import io.soffa.foundation.commons.http.HttpRequest;
 import io.soffa.foundation.commons.http.HttpResponse;
@@ -11,37 +10,21 @@ import io.soffa.foundation.exceptions.ForbiddenException;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.exceptions.UnauthorizedException;
-import io.swagger.v3.oas.annotations.Operation;
 
-import javax.ws.rs.Path;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class RestClient implements InvocationHandler {
 
     private final HttpClient client;
     private final String baseUrl;
-    private final Map<String, ApiInfo> infos = new HashMap<>();
+    private final Map<String, ApiInfo> infos;
 
     private RestClient(HttpClient client, String baseUrl, Class<?> clientInterface) {
         this.client = client;
         this.baseUrl = baseUrl.replaceAll("/+$", "");
-        for (Method method : clientInterface.getMethods()) {
-            Path path = method.getAnnotation(Path.class);
-            Operation operation = method.getAnnotation(Operation.class);
-            if (path == null || operation == null) {
-                throw new TechnicalException("Method '%s' should be annotated with @Path and @Operation", method.getName());
-            }
-            if (TextUtil.isEmpty(path.value())) {
-                throw new TechnicalException("@Path value is required on methid '%s'", method.getName());
-            }
-            if (TextUtil.isEmpty(operation.method())) {
-                throw new TechnicalException("@Operationd.method is required on methid '%s'", method.getName());
-            }
-            infos.put(method.getName(), new ApiInfo(operation.method(), "/" + path.value().replaceAll("^/+", "")));
-        }
+        this.infos = ApiInfo.of(clientInterface);
     }
 
     @SuppressWarnings("unchecked")

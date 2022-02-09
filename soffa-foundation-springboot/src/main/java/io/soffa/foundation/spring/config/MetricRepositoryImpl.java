@@ -1,7 +1,7 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.data.MetricRepository;
-import io.soffa.foundation.data.entities.Metric;
+import io.soffa.foundation.core.data.MetricRepository;
+import io.soffa.foundation.core.data.entities.Metric;
 import io.soffa.foundation.spring.MetricJpaRepository;
 import io.soffa.foundation.spring.data.entities.MetricEntity;
 import lombok.AllArgsConstructor;

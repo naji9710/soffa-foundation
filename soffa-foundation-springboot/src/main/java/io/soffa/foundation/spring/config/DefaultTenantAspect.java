@@ -2,8 +2,8 @@ package io.soffa.foundation.spring.config;
 
 import io.soffa.foundation.annotations.DefaultTenant;
 import io.soffa.foundation.context.TenantHolder;
+import io.soffa.foundation.core.data.SysLogRepository;
 import io.soffa.foundation.core.model.TenantId;
-import io.soffa.foundation.data.SysLogRepository;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;

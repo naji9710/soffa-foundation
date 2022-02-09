@@ -1,7 +1,7 @@
 package io.soffa.foundation;
 
-import io.soffa.foundation.support.mail.EmailSender;
-import io.soffa.foundation.support.mail.adapters.MailerConfig;
+import io.soffa.foundation.core.messages.mail.EmailSender;
+import io.soffa.foundation.core.messages.mail.adapters.MailerConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

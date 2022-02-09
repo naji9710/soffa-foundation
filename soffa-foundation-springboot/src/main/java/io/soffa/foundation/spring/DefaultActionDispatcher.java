@@ -1,10 +1,10 @@
 package io.soffa.foundation.spring;
 
-import io.soffa.foundation.actions.Action;
-import io.soffa.foundation.actions.Action0;
-import io.soffa.foundation.actions.ActionDispatcher;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.actions.Action;
+import io.soffa.foundation.core.actions.Action0;
+import io.soffa.foundation.core.actions.ActionDispatcher;
 import io.soffa.foundation.core.model.Validatable;
 import io.soffa.foundation.exceptions.TechnicalException;
 import lombok.AllArgsConstructor;

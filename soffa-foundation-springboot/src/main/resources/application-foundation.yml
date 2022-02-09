@@ -54,6 +54,11 @@ management:
 
 spring.groovy.template.check-template-location: false
 
+app.nats:
+  enbaled: ${NATS_ENABLED:false}
+  url: ${NATS_URL:nats://localhost:4222}
+  binding: ${spring.application.name}
+
 springdoc:
   api-docs.enabled: true
   show-actuator: false

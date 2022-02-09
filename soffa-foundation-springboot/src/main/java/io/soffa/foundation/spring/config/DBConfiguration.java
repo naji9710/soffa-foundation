@@ -1,10 +1,10 @@
 package io.soffa.foundation.spring.config;
 
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.config.AppConfig;
-import io.soffa.foundation.data.DefaultTenantsProvider;
-import io.soffa.foundation.data.NoTenantsProvider;
-import io.soffa.foundation.data.TenantsProvider;
+import io.soffa.foundation.core.application.AppConfig;
+import io.soffa.foundation.core.data.DefaultTenantsProvider;
+import io.soffa.foundation.core.data.NoTenantsProvider;
+import io.soffa.foundation.core.data.TenantsProvider;
 import io.soffa.foundation.spring.data.MockDataSource;
 import io.soffa.foundation.spring.data.TenantAwareDatasourceImpl;
 import org.springframework.beans.factory.annotation.Value;

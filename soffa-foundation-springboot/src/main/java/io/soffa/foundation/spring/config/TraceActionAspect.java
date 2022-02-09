@@ -7,7 +7,7 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.data.SysLogRepository;
+import io.soffa.foundation.core.data.SysLogRepository;
 import io.soffa.foundation.exceptions.ManagedException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.models.commons.Pair;
@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static io.soffa.foundation.actions.ActionDispatcher.SLOW_ACTION_THRESHOLD;
+import static io.soffa.foundation.core.actions.ActionDispatcher.SLOW_ACTION_THRESHOLD;
 
 @Aspect
 @Component
@@ -115,7 +115,7 @@ public class TraceActionAspect {
     private void doLogAction(String tenantId, RequestContext context, String action, Object data, Duration timeElapsed, Throwable error) {
         TenantHolder.use(tenantId, () -> {
             try {
-                final io.soffa.foundation.data.entities.SysLog log = new io.soffa.foundation.data.entities.SysLog();
+                final io.soffa.foundation.core.data.entities.SysLog log = new io.soffa.foundation.core.data.entities.SysLog();
                 log.setKind("action");
                 log.setEvent(action);
                 if (data != null) {

@@ -3,7 +3,7 @@ package io.soffa.foundation.spring.data.entities;
 import io.soffa.foundation.commons.BeanUtil;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.data.entities.Metric;
+import io.soffa.foundation.core.data.entities.Metric;
 import lombok.Data;
 import lombok.SneakyThrows;
 

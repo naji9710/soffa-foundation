@@ -1,7 +1,7 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.data.SysLogRepository;
-import io.soffa.foundation.data.entities.SysLog;
+import io.soffa.foundation.core.data.SysLogRepository;
+import io.soffa.foundation.core.data.entities.SysLog;
 import io.soffa.foundation.spring.SysLogJpaRepository;
 import io.soffa.foundation.spring.data.entities.SysLogEntity;
 import lombok.AllArgsConstructor;
