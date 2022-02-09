@@ -2,6 +2,8 @@ package io.soffa.foundation.actions;
 
 import io.soffa.foundation.events.Event;
 
+import java.util.Optional;
+
 public interface EventHandler {
 
     /**
@@ -9,5 +11,5 @@ public interface EventHandler {
      *
      * @param event The event to handle
      */
-    void handle(Event event);
+    Optional<Object> handle(Event event);
 }

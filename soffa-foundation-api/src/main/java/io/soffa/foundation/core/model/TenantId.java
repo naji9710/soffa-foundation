@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import io.soffa.foundation.commons.TextUtil;
 import lombok.Value;
 
+import java.io.Serializable;
+
 @Value
-public class TenantId {
+public class TenantId implements Serializable {
 
     public static final String DEFAULT_VALUE = "default";
     public static final TenantId DEFAULT = new TenantId(DEFAULT_VALUE);

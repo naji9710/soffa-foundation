@@ -28,6 +28,7 @@ dependencies {
     api("com.github.fridujo:rabbitmq-mock:1.1.1")
     @Suppress("GradlePackageUpdate")
     implementation("com.zaxxer:HikariCP:4.0.3")
+    implementation("io.nats:jnats:2.13.2")
     api("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")

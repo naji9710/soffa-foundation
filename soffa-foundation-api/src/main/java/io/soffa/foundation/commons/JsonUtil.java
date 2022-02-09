@@ -9,6 +9,7 @@ import org.json.XML;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,11 @@ public final class JsonUtil {
     @SneakyThrows
     public static <T> T deserialize(String jsonString, Class<T> type) {
         return ObjectFactory.deserialize(MAPPER, jsonString, type);
+    }
+
+    @SneakyThrows
+    public static <T> T deserialize(byte[] data, Class<T> type) {
+        return ObjectFactory.deserialize(MAPPER, new String(data, StandardCharsets.UTF_8), type);
     }
 
     public static <T> T convert(Object input, Class<T> type) {

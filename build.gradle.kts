@@ -15,16 +15,10 @@ buildscript {
     }
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        setUrl("https://plugins.gradle.org/m2/")
-    }
-}
 
 apply(plugin = "soffa.sonatype-publish")
 
-subprojects {
+allprojects {
     repositories {
         mavenCentral()
     }

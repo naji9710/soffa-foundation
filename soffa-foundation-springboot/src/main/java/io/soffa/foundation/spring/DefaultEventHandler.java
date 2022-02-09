@@ -10,6 +10,8 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang.reflect.MethodUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @AllArgsConstructor
 public class DefaultEventHandler implements EventHandler {
@@ -19,21 +21,20 @@ public class DefaultEventHandler implements EventHandler {
 
     @SneakyThrows
     @Override
-    public void handle(Event event) {
+    public Optional<Object> handle(Event event) {
         Object action = mapping.getInternal().get(event.getAction());
         if (action == null) {
-            LOG.error("No action handle found to event %s, dont't forget to use the action simple class name");
-            return;
+            LOG.error("No handler found for event %s, dont't forget to use the action simple class name", event.getAction());
+            return Optional.empty();
         }
         if (action instanceof Action) {
             Class<?> inputType = mapping.getInputTypes().get(event.getAction());
             Object payload = event.getPayloadAs(inputType).orElse(null);
-            MethodUtils.invokeMethod(action, "handle", new Object[]{payload, event.getContext()});
+            return Optional.ofNullable(MethodUtils.invokeMethod(action, "handle", new Object[]{payload, event.getContext()}));
         } else {
-            ((Action0<?>) action).handle(event.getContext());
+            return Optional.ofNullable(((Action0<?>) action).handle(event.getContext()));
         }
     }
-
 
 
 }
