@@ -4,8 +4,7 @@ import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.core.actions.Action;
-import io.soffa.foundation.core.actions.Action0;
+import io.soffa.foundation.core.actions.*;
 import io.soffa.foundation.core.application.AppConfig;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.metrics.NoopMetricsRegistryImpl;
@@ -23,6 +22,7 @@ import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -37,6 +37,17 @@ public class PlatformBeansFactory {
     public ActionsMapping createActionsMapping(Set<Action<?, ?>> actionHandlers,
                                                Set<Action0<?>> action0Handlers) {
         return new ActionsMapping(actionHandlers, action0Handlers);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(MessageHandler.class)
+    public MessageHandler createDefaultNoopMessageHandler() {
+        return new NoopMessageHandler();
+    }
+
+    @Bean
+    public MessagesHandler createMessageHandlers(List<MessageHandler> handlers) {
+        return  MessagesHandler.of(handlers);
     }
 
     @Bean

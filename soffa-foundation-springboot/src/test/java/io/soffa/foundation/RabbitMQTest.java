@@ -1,6 +1,6 @@
 package io.soffa.foundation;
 
-import io.soffa.foundation.config.TestAmqpListener;
+import io.soffa.foundation.config.TestLocalMessageHandler;
 import io.soffa.foundation.core.messages.AmqpClient;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.exceptions.TechnicalException;
@@ -31,7 +31,7 @@ public class RabbitMQTest {
         amqpClient.sendInternal(new Message("HELLO"));
         amqpClient.sendInternal(new Message("HELLO1"));
         Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
-            return 1 == TestAmqpListener.TICK.intValue();
+            return 1 == TestLocalMessageHandler.TICK.intValue();
         });
         Assertions.assertThrowsExactly(TechnicalException.class, () -> {
             amqpClient.send("t1", "exchange1", "routing1", new Message("HELLO2"));

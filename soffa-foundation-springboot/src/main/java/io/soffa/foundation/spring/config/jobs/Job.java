@@ -16,7 +16,7 @@ public class Job implements JobRequest {
     private String id;
     private TenantId tenant;
     private String description;
-    private Message event;
+    private Message message;
 
     @Override
     public Class<JobManager> getJobRequestHandler() {

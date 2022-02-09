@@ -11,7 +11,7 @@ import org.jobrunr.jobs.lambdas.JobRequestHandler;
 @AllArgsConstructor
 public class JobManager implements JobRequestHandler<Job> {
 
-    private MessageHandler hander;
+    private MessageHandler handler;
     private JobRunrConfiguration.JobRunrConfigurationResult jobRunr;
 
     public Job enqueue(String description, Message event) {
@@ -23,7 +23,7 @@ public class JobManager implements JobRequestHandler<Job> {
     @Override
     public void run(Job job) {
         TenantHolder.set(job.getTenant());
-        hander.onMessage(job.getEvent());
+        handler.onMessage(job.getMessage());
     }
 
 }

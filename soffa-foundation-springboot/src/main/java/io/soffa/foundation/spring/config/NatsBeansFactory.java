@@ -1,6 +1,6 @@
 package io.soffa.foundation.spring.config;
 
-import io.soffa.foundation.core.actions.MessageHandler;
+import io.soffa.foundation.core.actions.MessagesHandler;
 import io.soffa.foundation.core.messages.BinaryClient;
 import io.soffa.foundation.core.messages.NatsClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,11 +14,11 @@ public class NatsBeansFactory {
 
     @Bean
     public BinaryClient createNatsClient(
-        MessageHandler messageHandler,
         @Value("${spring.application.name}") String applicationName,
         @Value("${app.nats.queue:}") String queue,
-        @Value("${app.nats.url}") String natsUrl) {
-        return new NatsClient(messageHandler, applicationName, queue, natsUrl);
+        @Value("${app.nats.url}") String natsUrl,
+        MessagesHandler messagesHandler) {
+        return new NatsClient(applicationName, queue, natsUrl, messagesHandler);
     }
 
 }

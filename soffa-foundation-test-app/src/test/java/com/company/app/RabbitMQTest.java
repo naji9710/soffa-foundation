@@ -33,8 +33,8 @@ public class RabbitMQTest {
         Assertions.assertNotNull(amqpClient);
         amqpClient.sendInternal(new Message("HELLO1"));
         amqpClient.broadcast(new Message("HELLO2"));
-        TestAmqpListener.LATCH.await();
-        assertEquals(0, TestAmqpListener.LATCH.getCount());
+        LocalMessagehandler.LATCH.await();
+        assertEquals(0, LocalMessagehandler.LATCH.getCount());
     }
 
 }

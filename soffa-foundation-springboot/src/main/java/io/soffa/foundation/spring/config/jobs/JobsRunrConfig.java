@@ -1,6 +1,7 @@
 package io.soffa.foundation.spring.config.jobs;
 
 import io.soffa.foundation.core.actions.MessageHandler;
+import io.soffa.foundation.core.actions.MessagesHandler;
 import io.soffa.foundation.spring.data.TenantAwareDatasourceImpl;
 import org.jobrunr.configuration.JobRunr;
 import org.jobrunr.configuration.JobRunrConfiguration;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Configuration
 @ConditionalOnProperty(value = "app.sys-jobs.enabled", havingValue = "true")
@@ -21,7 +23,7 @@ public class JobsRunrConfig {
 
     @Bean
     @Primary
-    public JobManager createJobManager(DataSource ds, MessageHandler eventsHandler,
+    public JobManager createJobManager(DataSource ds, List<MessageHandler> eventsHandler,
                                        ApplicationContext applicationContext,
                                        @Value("${app.sys-jobs.retries:10}") int retries) {
         DataSource target = ds;
@@ -37,6 +39,6 @@ public class JobsRunrConfig {
             .useJmxExtensions()
             .useDashboard()
             .initialize();
-        return new JobManager(eventsHandler, config);
+        return new JobManager(MessagesHandler.of(eventsHandler), config);
     }
 }

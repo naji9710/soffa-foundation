@@ -27,11 +27,7 @@ public class NatsClient implements BinaryClient {
     private final String broadcastSubject;
     //private final ExecutorService executor = Executors.newFixedThreadPool(6);
 
-    public NatsClient(
-        MessageHandler messageHandler,
-        String applicationName,
-        String broadcastSubject,
-        String url) {
+    public NatsClient(String applicationName, String broadcastSubject, String url, MessageHandler handler) {
 
         this.broadcastSubject = broadcastSubject;
         Options o = new Options.Builder().servers(url.split(",")).maxReconnects(-1).build();
@@ -49,7 +45,7 @@ public class NatsClient implements BinaryClient {
                 JetStreamManagement jsm = client.jetStreamManagement();
                 jsm.addStream(sc);
             }
-            this.subsribe(applicationName, broadcastSubject, messageHandler);
+            this.subsribe(applicationName, broadcastSubject, handler);
             LOG.info("Connected to NATS server: %s", url);
         } catch (Exception e) {
             throw new TechnicalException("Unable to connect to NATS @ " + url, e);

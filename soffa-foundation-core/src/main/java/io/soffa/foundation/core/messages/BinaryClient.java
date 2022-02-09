@@ -76,7 +76,7 @@ public interface BinaryClient extends MessageDispatcher {
             });
     }
 
-    default Message createMessage(String actionName, Object[] args) {
+    default Message createMessage(String actionName, Object... args) {
         RequestContext context = null;
         Object input = null;
         for (Object arg : args) {

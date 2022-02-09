@@ -4,7 +4,6 @@ import com.company.app.actions.SendEmailHandler;
 import com.company.app.core.PingAction;
 import com.company.app.core.PingResponse;
 import com.company.app.gateways.API;
-import io.soffa.foundation.client.RestClient;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.messages.BinaryClient;

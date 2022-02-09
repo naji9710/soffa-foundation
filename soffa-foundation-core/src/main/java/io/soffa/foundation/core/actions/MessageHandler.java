@@ -12,4 +12,11 @@ public interface MessageHandler {
      * @param message The message to handle
      */
     Optional<Object> onMessage(Message message);
+
+    default boolean accept(String action) {
+        return true;
+    }
+
+
+
 }

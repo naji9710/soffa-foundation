@@ -9,7 +9,6 @@ import io.soffa.foundation.core.messages.Message;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.reflect.MethodUtils;
-import org.bouncycastle.cert.ocsp.Req;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -20,6 +19,11 @@ public class DefaultMessageHandler implements MessageHandler {
 
     private static final Logger LOG = Logger.get(DefaultMessageHandler.class);
     private final ActionsMapping mapping;
+
+    @Override
+    public boolean accept(String action) {
+        return mapping.getInternal().containsKey(action);
+    }
 
     @SneakyThrows
     @Override
