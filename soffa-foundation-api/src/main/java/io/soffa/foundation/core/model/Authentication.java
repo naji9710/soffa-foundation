@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +12,7 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Builder
-public class Authentication implements Serializable {
+public class Authentication   {
 
     private String application;
     private String username;

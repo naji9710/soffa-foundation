@@ -5,14 +5,13 @@ import io.soffa.foundation.core.model.TenantId;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Getter
-public class RequestContext implements Serializable {
+public class RequestContext {
 
     private static String serviceName = "app";
     private final Map<String, Object> metas = new HashMap<>();

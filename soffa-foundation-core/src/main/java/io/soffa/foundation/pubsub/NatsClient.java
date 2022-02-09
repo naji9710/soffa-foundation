@@ -10,7 +10,7 @@ import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.events.Event;
-import io.soffa.foundation.exceptions.ManagedException;
+import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
 
 import javax.annotation.PreDestroy;
@@ -43,6 +43,7 @@ public class NatsClient implements BinaryClient {
             throw new TechnicalException(e.getMessage(), e);
         }
     }
+
     @Override
     public <T> CompletableFuture<T> request(String subject, Event event, Class<T> responseClass) {
         try {
@@ -65,6 +66,7 @@ public class NatsClient implements BinaryClient {
         return new NatsMessage(subject, replyTo, JsonUtil.serialize(event).getBytes(StandardCharsets.UTF_8));
     }
 
+    @Override
     public void subsribe(String subject, BinaryMessageHandler handler) {
         client.createDispatcher(msg -> {
             try {
@@ -76,13 +78,11 @@ public class NatsClient implements BinaryClient {
                 } else {
                     msg.ack();
                 }
+            } catch (FunctionalException e) {
+                msg.ack();
             } catch (Exception e) {
                 LOG.error("Nats avent handling failed with error", e);
-                if (e instanceof ManagedException) {
-                    msg.ack();
-                } else {
-                    msg.nak();
-                }
+                msg.nak();
             }
         }).subscribe(subject);
     }

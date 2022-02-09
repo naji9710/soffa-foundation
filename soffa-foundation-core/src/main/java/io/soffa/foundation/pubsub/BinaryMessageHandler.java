@@ -6,6 +6,6 @@ import java.util.Optional;
 
 public interface BinaryMessageHandler {
 
-    Optional<Object> onMessage(Event msg);
+    Optional<Object> onMessage(Event msg)  ;
 
 }

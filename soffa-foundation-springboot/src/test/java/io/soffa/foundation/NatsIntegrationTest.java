@@ -1,5 +1,6 @@
 package io.soffa.foundation;
 
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.events.Event;
 import io.soffa.foundation.models.mail.Email;
 import io.soffa.foundation.models.mail.EmailAddress;
@@ -10,25 +11,37 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-@SpringBootTest(properties = {
-    "spring.application.name=test",
-    "app.nats.enabled=true",
-    "app.nats.url=${NATS_URL}"
-})
+@SpringBootTest()
 @ActiveProfiles("test")
 public class NatsIntegrationTest {
+
+    static {
+        String natsUrl = System.getenv("NATS_URL");
+        if (TextUtil.isNotEmpty(System.getenv("NATS_URL"))) {
+            System.setProperty("app.nats.enabled", "true");
+            System.setProperty("app.nats.url", natsUrl);
+        }
+    }
+
+    @Autowired
+    private ApplicationContext context;
 
     @Autowired(required = false)
     private BinaryClient binaryClient;
 
     @Test
+    public void testContext() {
+        assertNotNull(context);
+    }
+
     @SneakyThrows
+    @Test
     @EnabledIfEnvironmentVariable(named = "NATS_URL", matches = ".+")
     public void testNatsIntegration() {
         assertNotNull(binaryClient);
