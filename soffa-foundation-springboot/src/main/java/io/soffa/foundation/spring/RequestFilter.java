@@ -7,6 +7,7 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.RequestContextUtil;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
@@ -84,7 +85,7 @@ public class RequestFilter extends OncePerRequestFilter {
         }
 
         //noinspection Convert2Lambda
-        metricsRegistry.timed(HTTP_REQUEST, context.tags(ImmutableMap.of("uri", request.getRequestURI())),
+        metricsRegistry.timed(HTTP_REQUEST, RequestContextUtil.tagify(context, ImmutableMap.of("uri", request.getRequestURI())),
             new Runnable() {
                 @SneakyThrows
                 @Override

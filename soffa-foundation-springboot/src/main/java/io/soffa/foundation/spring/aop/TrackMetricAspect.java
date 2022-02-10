@@ -3,6 +3,7 @@ package io.soffa.foundation.spring.aop;
 import io.soffa.foundation.annotations.TrackMetric;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.RequestContextUtil;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,7 +27,7 @@ public class TrackMetricAspect {
     public Object handle(ProceedingJoinPoint pjp, TrackMetric arg) {
         RequestContext context = RequestContextHolder.get().orElse(new RequestContext());
         //noinspection Convert2Lambda
-        return metricsRegistry.track(arg.value(), context.tags(), new Supplier<Object>() {
+        return metricsRegistry.track(arg.value(), RequestContextUtil.tagify(context), new Supplier<Object>() {
             @Override
             @SneakyThrows
             public Object get() {

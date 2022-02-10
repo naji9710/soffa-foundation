@@ -159,37 +159,4 @@ public class RequestContext {
         return headers;
     }
 
-    public Map<String, Object> tags() {
-        return tags(null);
-    }
-
-    public Map<String, Object> tags(Map<String, Object> more) {
-        Map<String, Object> tags = createTags("ctx_authenticated", this.isAuthenticated(),
-            "ctx_tenant", this.getTenant(),
-            "ctx_span_id", this.getSpanId(),
-            "ctx_trace_id", this.getTraceId(),
-            "ctx_application", this.getApplicationName(),
-            "ctx_username", this.getUsername()
-        );
-        if (more != null) {
-            tags.putAll(more);
-        }
-        return tags;
-    }
-
-    @SuppressWarnings("DuplicatedCode")
-    private static Map<String, Object> createTags(Object... args) {
-        if (args.length % 2 != 0) {
-            throw new IllegalArgumentException("MapUtil.create() requires an even number of arguments");
-        }
-        Map<String, Object> result = new HashMap<>();
-        for (int i = 0; i < args.length; i += 2) {
-            if (!(args[i] instanceof String)) {
-                throw new IllegalArgumentException("MapUtil.create() requires String keys");
-            }
-            result.put(args[i].toString(), args[i + 1]);
-        }
-        return result;
-    }
-
 }
