@@ -1,6 +1,7 @@
 package io.soffa.foundation.spring.config;
 
 import io.soffa.foundation.commons.jwt.JwtDecoder;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.security.AuthManager;
 import io.soffa.foundation.core.security.DefaultAuthorizationManager;
 import io.soffa.foundation.spring.RequestFilter;
@@ -21,13 +22,16 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private AuthManager authManager;
+    private final MetricsRegistry metricsRegistry;
     private final String openApiAccess;
 
     public SecurityConfig(
+        MetricsRegistry metricsRegistry,
         @Value("${app.openapi.access:permitAll}") String openApiAccess,
         @Autowired(required = false) AuthManager authManager,
         @Autowired(required = false) JwtDecoder jwtDecoder) {
         super();
+        this.metricsRegistry = metricsRegistry;
         this.authManager = authManager;
         this.openApiAccess = openApiAccess;
         if (authManager == null && jwtDecoder != null) {
@@ -62,7 +66,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/**").permitAll()
             .and().addFilterBefore(
-                new RequestFilter(authManager),
+                new RequestFilter(authManager, metricsRegistry),
                 UsernamePasswordAuthenticationFilter.class
             );
     }

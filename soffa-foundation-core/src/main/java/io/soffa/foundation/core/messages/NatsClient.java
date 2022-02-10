@@ -2,21 +2,28 @@ package io.soffa.foundation.core.messages;
 
 import io.nats.client.*;
 import io.nats.client.api.PublishAck;
-import io.nats.client.api.StorageType;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.NatsMessage;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.actions.MessageHandler;
+import io.soffa.foundation.core.metrics.CoreMetrics;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
+import lombok.SneakyThrows;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import static io.soffa.foundation.core.metrics.CoreMetrics.*;
 
 public class NatsClient implements BinaryClient {
 
@@ -25,11 +32,12 @@ public class NatsClient implements BinaryClient {
     private final JetStream stream;
     private final String applicationName;
     private final String broadcastSubject;
-    //private final ExecutorService executor = Executors.newFixedThreadPool(6);
+    private final MetricsRegistry metricsRegistry;
 
-    public NatsClient(String applicationName, String broadcastSubject, String url, MessageHandler handler) {
-
+    public NatsClient(String applicationName, String broadcastSubject, String url, MessageHandler handler,
+                      MetricsRegistry metricsRegistry) {
         this.broadcastSubject = broadcastSubject;
+        this.metricsRegistry = metricsRegistry;
         Options o = new Options.Builder().servers(url.split(",")).maxReconnects(-1).build();
         try {
             this.applicationName = applicationName;
@@ -40,7 +48,6 @@ public class NatsClient implements BinaryClient {
             if (TextUtil.isNotEmpty(broadcastSubject)) {
                 StreamConfiguration sc = StreamConfiguration.builder()
                     .name(applicationName)
-                    .storageType(StorageType.File)
                     .subjects(broadcastSubject).build();
                 JetStreamManagement jsm = client.jetStreamManagement();
                 jsm.addStream(sc);
@@ -52,48 +59,63 @@ public class NatsClient implements BinaryClient {
         }
     }
 
-    @Override
-    public CompletableFuture<byte[]> request(String subject, Message event) {
-        try {
-            return client.request(createNatsMessage(subject, event))
-                .thenApply(io.nats.client.Message::getData);
-        } catch (Exception e) {
-            throw new TechnicalException(e.getMessage(), e);
+    private Map<String, Object> createTags(@Nullable String subject, Message message) {
+        Map<String, Object> tags = new HashMap<>();
+        if (subject != null) {
+            tags.put("action", message.getAction());
         }
+        tags.put("action", message.getAction());
+        return tags;
     }
 
     @Override
-    public <T> CompletableFuture<T> request(String subject, Message event, Class<T> responseClass) {
-        try {
-            return client.request(createNatsMessage(subject, event))
-                .thenApply(message -> JsonUtil.deserialize(message.getData(), responseClass));
-        } catch (Exception e) {
-            throw new TechnicalException(e.getMessage(), e);
-        }
+    public CompletableFuture<byte[]> request(String subject, Message message) {
+        return metricsRegistry.track(
+            NATS_REQUEST,
+            createTags(subject, message),
+            () -> {
+                //EL
+                return client.request(createNatsMessage(subject, message))
+                    .thenApply(io.nats.client.Message::getData);
+            });
     }
 
     @Override
-    public void publish(String subject, Message event) {
-        try {
-            PublishAck ack = stream.publish(createNatsMessage(subject, event));
-            if (ack.hasError()) {
-                throw new TechnicalException(ack.getError());
-            }
-        } catch (JetStreamApiException | IOException e) {
-            throw new TechnicalException(e.getMessage(), e);
-        }
+    public <T> CompletableFuture<T> request(String subject, Message message, Class<T> responseClass) {
+        return metricsRegistry.track(NATS_REQUEST,
+            createTags(subject, message),
+            () -> {
+                //EL
+                return client.request(createNatsMessage(subject, message))
+                    .thenApply(msg -> JsonUtil.deserialize(msg.getData(), responseClass));
+            });
     }
 
     @Override
-    public void broadcast(Message event) {
-        try {
-            PublishAck ack = stream.publish(createNatsMessage(broadcastSubject, event));
-            if (ack.hasError()) {
-                throw new TechnicalException(ack.getError());
-            }
-        } catch (JetStreamApiException | IOException e) {
-            throw new TechnicalException(e.getMessage(), e);
-        }
+    public void publish(String subject, Message message) {
+        metricsRegistry.track(
+            NATS_PUBLISH,
+            createTags(subject, message),
+            () -> client.publish(createNatsMessage(subject, message))
+        );
+    }
+
+    @Override
+    public void broadcast(Message message) {
+        //noinspection Convert2Lambda
+        metricsRegistry.track(
+            NATS_BROADCAST,
+            createTags(null, message),
+            new Runnable() {
+                @SneakyThrows
+                @Override
+                public void run() {
+                    PublishAck ack = stream.publish(createNatsMessage(broadcastSubject, message));
+                    if (ack.hasError()) {
+                        throw new TechnicalException(ack.getError());
+                    }
+                }
+            });
     }
 
     private NatsMessage createNatsMessage(String subject, Message message) {
@@ -113,11 +135,15 @@ public class NatsClient implements BinaryClient {
                 } else {
                     msg.ack();
                 }
+                metricsRegistry.increment(CoreMetrics.NATS_EVENT_PROCESSED);
             } catch (FunctionalException e) {
+                LOG.warn(TextUtil.format("Message %s was skipped due to a functionnal error", msg.getSID()), e);
                 msg.ack();
+                metricsRegistry.increment(CoreMetrics.NATS_EVENT_SKIPPED);
             } catch (Exception e) {
                 LOG.error("Nats avent handling failed with error", e);
                 msg.nak();
+                metricsRegistry.increment(CoreMetrics.NATS_EVENT_PROCESSING_FAILED);
             }
         };
 

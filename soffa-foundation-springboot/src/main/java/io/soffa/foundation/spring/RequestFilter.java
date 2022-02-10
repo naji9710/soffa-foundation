@@ -2,17 +2,19 @@ package io.soffa.foundation.spring;
 
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.MapUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.model.Authentication;
 import io.soffa.foundation.core.model.TenantId;
 import io.soffa.foundation.core.security.AuthManager;
 import io.soffa.foundation.core.security.roles.GrantedRole;
 import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,28 +24,32 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static io.soffa.foundation.core.metrics.CoreMetrics.HTTP_REQUEST;
+
 @NoArgsConstructor
 public class RequestFilter extends OncePerRequestFilter {
 
     private static final Logger LOG = Logger.get(RequestFilter.class);
     private AuthManager authManager;
+    private MetricsRegistry metricsRegistry;
 
-    public RequestFilter(@Autowired(required = false) AuthManager authManager) {
+    public RequestFilter(AuthManager authManager,
+                         MetricsRegistry metricsRegistry) {
         super();
         this.authManager = authManager;
+        this.metricsRegistry = metricsRegistry;
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain chain) throws ServletException, IOException {
+                                    @NonNull FilterChain chain)  {
 
         RequestContext context = new RequestContext();
 
@@ -77,12 +83,29 @@ public class RequestFilter extends OncePerRequestFilter {
             return;
         }
 
-        try {
-            RequestContextHolder.set(context);
-            chain.doFilter(request, response);
-        } finally {
-            RequestContextHolder.clear();
-        }
+        //noinspection Convert2Lambda
+        metricsRegistry.timed(HTTP_REQUEST,
+            MapUtil.create(
+                "uri", request.getRequestURI(),
+                "ctx_authenticated", context.isAuthenticated(),
+                "ctx_tenant", context.getTenant(),
+                "ctx_span_id", context.getSpanId(),
+                "ctx_trace_id", context.getTraceId(),
+                "ctx_application", context.getApplicationName(),
+                "ctx_username", context.getUsername()
+            ),
+            new Runnable() {
+                @SneakyThrows
+                @Override
+                public void run() {
+                    try {
+                        RequestContextHolder.set(context);
+                        chain.doFilter(request, response);
+                    } finally {
+                        RequestContextHolder.clear();
+                    }
+                }
+            });
     }
 
     private void processTracing(RequestContext context) {

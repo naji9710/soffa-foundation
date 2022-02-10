@@ -2,7 +2,8 @@
 
 * Nats.io integration for distributed binary messages
 * Binary API Client added
-* [Breaking] PubSubListener is now AmqpListener
+* MetricsRegistry integration
+* [Breaking] Refactoring
 
 ## 1.3.8 (February 08, 2022)
 

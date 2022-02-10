@@ -10,7 +10,6 @@ logging.level.foundation: ${PLATFORM_LOG_LEVEL:INFO}
 logging.level.app: ${LOG_LEVEL:INFO}
 logging.level.service: ${LOG_LEVEL:INFO}
 
-
 spring.jackson:
   default-property-inclusion: non_null
 
@@ -19,26 +18,6 @@ spring.output.ansi.enabled: always
 server:
   compression.enabled: true
   forward-headers-strategy: framework
-
-#spring.rabbitmq:
-#  listener.simple.retry:
-#    enabled: true
-#    initial-interval: 2s
-#    max-attempts: 30
-#    max-interval: 300s
-#    multiplier: 2
-#  addresses: ${app.amqp.addresses:}
-#  username: ${app.amqp.username:}
-#  password: ${app.amqp.password:}
-#  virtual-host: ${app.amqp.vhost:/}
-#  ssl.enabled: ${app.amqp.ssl.enabled:false}
-#  ssl.algorithm: ${app.amqp.ssl.algorithm:TLSv1.2}
-#  ssl.key-store: ${app.amqp.ssl.key-store:}
-#  ssl.key-store-password: ${app.amqp.ssl.key-store-password:}
-#  ssl.trust-store: ${app.amqp.ssl.trust-store:}
-#  ssl.trust-store-password: ${app.amqp.ssl.trust-store-password:}
-
-app.amqp.enabled: false
 
 management:
   endpoints.web.exposure.include: "info,health,prometheus,metrics,refresh"
@@ -146,5 +125,15 @@ logging.file.name: ${LOGGING_FILE_NAME:${spring.application.name}.log}
 ---
 spring.config.activate.on-profile: test
 management.health.vault.enabled: false
-#app.amqp.embedded: true
-#app.vault.embedded: true
+logging.level.io.soffa: DEBUG
+logging.level.foundation: DEBUG
+
+#---
+#spring.config.activate.on-profile: amqp
+#spring.config.import: classpath:foundation-amqp.yml
+
+---
+
+spring.config.activate.on-profile: nats
+app.nats.enabled: true
+app.nats.url: ${NATS_URL}

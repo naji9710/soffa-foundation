@@ -32,7 +32,7 @@ public class NatsIntegrationTest {
 
     static {
         String natsUrl = System.getenv("NATS_URL");
-        if (TextUtil.isNotEmpty(System.getenv("NATS_URL"))) {
+        if (TextUtil.isNotEmpty(natsUrl)) {
             System.setProperty("app.nats.enabled", "true");
             System.setProperty("app.nats.queue", "foundation-service");
             System.setProperty("app.nats.url", natsUrl);

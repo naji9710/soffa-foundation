@@ -1,4 +1,4 @@
-package io.soffa.foundation.spring.config;
+package io.soffa.foundation.spring.aop;
 
 import io.soffa.foundation.annotations.DefaultTenant;
 import io.soffa.foundation.context.TenantHolder;

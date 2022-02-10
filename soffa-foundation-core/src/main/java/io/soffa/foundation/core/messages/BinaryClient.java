@@ -3,11 +3,12 @@ package io.soffa.foundation.core.messages;
 
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.actions.Action0;
 import io.soffa.foundation.core.actions.MessageHandler;
-import io.soffa.foundation.core.annotations.ActionBind;
+import io.soffa.foundation.core.annotations.BindAction;
 import io.soffa.foundation.exceptions.TechnicalException;
 
 import java.lang.reflect.Method;
@@ -48,15 +49,22 @@ public interface BinaryClient extends MessageDispatcher {
         Map<Method, String> mapping = new HashMap<>();
 
         for (Method method : clientInterface.getDeclaredMethods()) {
-            ActionBind binding = method.getAnnotation(ActionBind.class);
+            BindAction binding = method.getAnnotation(BindAction.class);
             if (binding != null) {
-                LOG.debug("ActionBind %S found on method %s", binding.value(), method.getName());
-                mapping.put(method, binding.value().getName());
+                LOG.debug("BindAction %S found on method %s", binding.value(), method.getName());
+                if (TextUtil.isNotEmpty(binding.name())) {
+                    mapping.put(method, binding.name());
+                } else if (binding.value() != Object.class) {
+                    mapping.put(method, binding.value().getName());
+                } else {
+                    throw new TechnicalException("Invalid BindAction annotation on method %s. No value or name specified", method.getName());
+                }
+
             }
         }
 
         if (mapping.isEmpty()) {
-            throw new TechnicalException("No method found with annotation @ActionBind");
+            throw new TechnicalException("No method found with annotation @BindAction");
         }
 
         return (T) java.lang.reflect.Proxy.newProxyInstance(
@@ -70,7 +78,7 @@ public interface BinaryClient extends MessageDispatcher {
                     return method.equals(args[0]);
                 }
                 if (!mapping.containsKey(method)) {
-                    throw new TechnicalException("This method has no @ActionBind annotation");
+                    throw new TechnicalException("This method has no @BindAction annotation");
                 }
                 return request(subject, createMessage(mapping.get(method), args), method.getReturnType()).get(30, TimeUnit.SECONDS);
             });

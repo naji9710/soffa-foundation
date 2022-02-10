@@ -1,4 +1,4 @@
-package io.soffa.foundation.spring.config;
+package io.soffa.foundation.spring.aop;
 
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;

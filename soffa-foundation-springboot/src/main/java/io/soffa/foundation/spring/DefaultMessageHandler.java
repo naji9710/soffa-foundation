@@ -6,6 +6,7 @@ import io.soffa.foundation.core.actions.Action;
 import io.soffa.foundation.core.actions.Action0;
 import io.soffa.foundation.core.actions.MessageHandler;
 import io.soffa.foundation.core.messages.Message;
+import io.soffa.foundation.exceptions.TechnicalException;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.reflect.MethodUtils;
@@ -41,10 +42,15 @@ public class DefaultMessageHandler implements MessageHandler {
         }
         if (action instanceof Action) {
             Class<?> inputType = mapping.getInputTypes().get(message.getAction());
+            if (inputType == null) {
+                throw new TechnicalException("Unable to find input type for action " + message.getAction());
+            }
             Object payload = message.getPayloadAs(inputType).orElse(null);
             return Optional.ofNullable(MethodUtils.invokeMethod(action, "handle", new Object[]{payload, context}));
-        } else {
+        } else if (action instanceof Action0) {
             return Optional.ofNullable(((Action0<?>) action).handle(context));
+        } else {
+            throw new TechnicalException("Unsupported action type: " + action.getClass().getName());
         }
     }
 

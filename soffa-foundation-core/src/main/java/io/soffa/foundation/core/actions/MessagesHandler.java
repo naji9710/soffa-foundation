@@ -7,12 +7,14 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 @AllArgsConstructor
 public class MessagesHandler implements MessageHandler {
 
     private static final Logger LOG = Logger.get(MessagesHandler.class);
     private final List<MessageHandler> handlers;
+    public static final AtomicLong COUNTER = new AtomicLong(0);
 
     public static MessagesHandler of(List<MessageHandler> handlers) {
         return new MessagesHandler(handlers);
@@ -22,6 +24,7 @@ public class MessagesHandler implements MessageHandler {
     public Optional<Object> onMessage(Message message) {
         for (MessageHandler handler : handlers) {
             if (handler.accept(message.getAction())) {
+                COUNTER.incrementAndGet();
                 return handler.onMessage(message);
             }
         }
