@@ -6,6 +6,7 @@ plugins {
 
 dependencies {
     compileOnly(project(":soffa-foundation-core"))
+    compileOnly(project(":soffa-foundation-springboot"))
     // api("org.springframework:spring-test")
     api("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google")
@@ -13,6 +14,7 @@ dependencies {
 
 
     compileOnly("org.springframework.boot:spring-boot-starter-web")
+
     @Suppress("GradlePackageUpdate")
     api("com.h2database:h2:2.1.210")
     api("com.google.guava:guava:31.0.1-jre")

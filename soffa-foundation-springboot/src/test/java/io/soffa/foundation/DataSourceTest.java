@@ -8,6 +8,7 @@ import io.soffa.foundation.core.data.MetricRepository;
 import io.soffa.foundation.core.data.SysLogRepository;
 import io.soffa.foundation.core.data.entities.Metric;
 import io.soffa.foundation.core.data.entities.SysLog;
+import io.soffa.foundation.test.DatabaseTest;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
@@ -25,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class DataSourceTest {
+public class DataSourceTest extends DatabaseTest {
 
     @Autowired
     private SysLogRepository sysLogs;
@@ -36,6 +37,7 @@ public class DataSourceTest {
     @SneakyThrows
     @Test
     public void testDataSource() {
+
         TenantHolder.set("T2");
         assertEquals(0, metricsRepo.count());
         metricsRepo.save(new Metric("metric.test.001", 1.0));

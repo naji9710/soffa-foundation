@@ -6,6 +6,7 @@ import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.data.SysLogRepository;
 import io.soffa.foundation.core.data.entities.SysLog;
+import io.soffa.foundation.test.DatabaseTest;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @ActiveProfiles("test2")
-public class DataSource2Test {
+public class DataSource2Test extends DatabaseTest {
 
     @Autowired
     private SysLogRepository sysLogs;

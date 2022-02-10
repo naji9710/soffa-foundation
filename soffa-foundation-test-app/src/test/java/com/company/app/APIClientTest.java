@@ -4,6 +4,7 @@ import com.company.app.core.PingResponse;
 import com.company.app.gateways.API;
 import io.soffa.foundation.client.RestClient;
 import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.test.DatabaseTest;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class APIClientTest {
+public class APIClientTest extends DatabaseTest {
 
     @LocalServerPort
     private int port;

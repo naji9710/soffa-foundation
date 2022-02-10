@@ -7,9 +7,6 @@ import java.util.Set;
 
 public interface TenantsProvider {
 
-    String P_SYSLOG = "syslog";
-    String P_AUTOMIGRATE = "automigrate";
-
     default Set<String> getTenantList(Handle handle) {
         return new HashSet<>();
     }

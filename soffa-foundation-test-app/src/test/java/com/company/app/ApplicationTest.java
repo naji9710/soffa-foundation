@@ -4,6 +4,7 @@ import com.company.app.gateways.MessageRepository;
 import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.context.TenantHolder;
+import io.soffa.foundation.test.DatabaseTest;
 import io.soffa.foundation.test.HttpExpect;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class ApplicationTest {
+public class ApplicationTest extends DatabaseTest {
 
     public static final String F_USERNAME = "username";
     public static final String F_PASSWORD = "password";

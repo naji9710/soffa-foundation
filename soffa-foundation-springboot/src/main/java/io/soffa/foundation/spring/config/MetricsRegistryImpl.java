@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.function.Supplier;
