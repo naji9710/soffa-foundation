@@ -10,6 +10,9 @@ import java.util.function.Supplier;
 
 public interface MetricsRegistry {
 
+    String FAILED_SUFFIX = "_failed";
+    String DURATION_SUFFIX = "_duration";
+
     default void increment(String counter) {
         increment(counter, 1, ImmutableMap.of());
     }
@@ -20,11 +23,11 @@ public interface MetricsRegistry {
 
     default <T> T track(String prefix, Map<String, Object> tags, Supplier<T> supplier) {
         try {
-            T result = timed(prefix, tags, supplier);
+            T result = timed(prefix + DURATION_SUFFIX, tags, supplier);
             increment(prefix, tags);
             return result;
         } catch (Exception e) {
-            increment(prefix + "_failed", tags);
+            increment(prefix + FAILED_SUFFIX, tags);
             if (e instanceof ManagedException) {
                 throw e;
             } else {
@@ -35,10 +38,10 @@ public interface MetricsRegistry {
 
     default void track(String prefix, Map<String, Object> tags, Runnable runnable) {
         try {
-            timed(prefix, tags, runnable);
+            timed(prefix + DURATION_SUFFIX, tags, runnable);
             increment(prefix, tags);
         } catch (Exception e) {
-            increment(prefix + "_failed", tags);
+            increment(prefix + FAILED_SUFFIX, tags);
             if (e instanceof ManagedException) {
                 throw e;
             } else {
@@ -48,6 +51,8 @@ public interface MetricsRegistry {
     }
 
     void increment(String counter, double amount, Map<String, Object> tags);
+
+    double counter(String name);
 
     void timed(String name, Duration duration, Map<String, Object> tags);
 

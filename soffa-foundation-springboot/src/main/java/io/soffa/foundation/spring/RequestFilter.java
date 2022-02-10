@@ -1,8 +1,8 @@
 package io.soffa.foundation.spring;
 
+import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.MapUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
@@ -84,16 +84,7 @@ public class RequestFilter extends OncePerRequestFilter {
         }
 
         //noinspection Convert2Lambda
-        metricsRegistry.timed(HTTP_REQUEST,
-            MapUtil.create(
-                "uri", request.getRequestURI(),
-                "ctx_authenticated", context.isAuthenticated(),
-                "ctx_tenant", context.getTenant(),
-                "ctx_span_id", context.getSpanId(),
-                "ctx_trace_id", context.getTraceId(),
-                "ctx_application", context.getApplicationName(),
-                "ctx_username", context.getUsername()
-            ),
+        metricsRegistry.timed(HTTP_REQUEST, context.tags(ImmutableMap.of("uri", request.getRequestURI())),
             new Runnable() {
                 @SneakyThrows
                 @Override

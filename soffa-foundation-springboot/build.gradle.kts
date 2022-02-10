@@ -38,7 +38,7 @@ dependencies {
     implementation("org.jdbi:jdbi3-core:3.27.1") {
         exclude(group = "com.github.ben-manes.caffeine")
     }
-    implementation("io.micrometer:micrometer-registry-prometheus")
+    api("io.micrometer:micrometer-registry-prometheus")
     implementation("org.postgresql:postgresql:42.3.2")
     api("org.springdoc:springdoc-openapi-ui:1.6.5"){
         exclude(group = "io.github.classgraph")

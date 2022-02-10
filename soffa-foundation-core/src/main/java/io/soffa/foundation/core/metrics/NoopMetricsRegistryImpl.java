@@ -15,6 +15,11 @@ public class NoopMetricsRegistryImpl implements MetricsRegistry {
     }
 
     @Override
+    public double counter(String name) {
+        return 0;
+    }
+
+    @Override
     public void timed(String name, Duration duration, Map<String, Object> tags) {
         // Add a dummy implementation
     }

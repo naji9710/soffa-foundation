@@ -1,5 +1,6 @@
 package io.soffa.foundation.spring.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
@@ -7,7 +8,6 @@ import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.actions.*;
 import io.soffa.foundation.core.application.AppConfig;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
-import io.soffa.foundation.core.metrics.NoopMetricsRegistryImpl;
 import io.soffa.foundation.core.web.OpenApiBuilder;
 import io.soffa.foundation.spring.ActionsMapping;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -86,9 +86,10 @@ public class PlatformBeansFactory {
     }
 
     @Bean
-    @ConditionalOnMissingBean(MetricsRegistry.class)
-    public MetricsRegistry createDefaultMetricsRegistry() {
-        return new NoopMetricsRegistryImpl();
+    @Primary
+    public MetricsRegistry createMetricsRegistry(MeterRegistry registry) {
+        return new MetricsRegistryImpl(registry);
     }
+
 
 }
