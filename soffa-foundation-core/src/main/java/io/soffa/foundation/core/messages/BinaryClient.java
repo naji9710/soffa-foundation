@@ -3,13 +3,12 @@ package io.soffa.foundation.core.messages;
 
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.core.actions.Action0;
-import io.soffa.foundation.core.actions.MessageHandler;
-import io.soffa.foundation.core.annotations.BindAction;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.core.annotations.Operation;
+import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.core.exceptions.TechnicalException;
+import io.soffa.foundation.core.operations.MessageHandler;
+import io.soffa.foundation.core.operations.Operation0;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -29,13 +28,13 @@ public interface BinaryClient extends MessageDispatcher {
 
     void publish(String subject, Message message);
 
-    default <O> CompletableFuture<O> request(String subject, Class<? extends Action0<O>> action) {
+    default <O> CompletableFuture<O> request(String subject, Class<? extends Operation0<O>> operation) {
         Message message = new Message(
-            action.getSimpleName(),
-            action, RequestContextHolder.get().orElseGet(RequestContext::new)
+            operation.getSimpleName(),
+            operation, RequestContextHolder.get().orElseGet(RequestContext::new)
         );
         @SuppressWarnings("unchecked")
-        Class<O> returnType = (Class<O>) ClassUtil.getClassFromGenericInterface(action, Action0.class, 0);
+        Class<O> returnType = (Class<O>) ClassUtil.getClassFromGenericInterface(operation, Operation0.class, 0);
         try {
             return request(subject, message, returnType);
         } catch (Exception e) {
@@ -49,22 +48,14 @@ public interface BinaryClient extends MessageDispatcher {
         Map<Method, String> mapping = new HashMap<>();
 
         for (Method method : clientInterface.getDeclaredMethods()) {
-            BindAction binding = method.getAnnotation(BindAction.class);
+            Operation binding = method.getAnnotation(Operation.class);
             if (binding != null) {
-                LOG.debug("BindAction %S found on method %s", binding.value(), method.getName());
-                if (TextUtil.isNotEmpty(binding.name())) {
-                    mapping.put(method, binding.name());
-                } else if (binding.value() != Object.class) {
-                    mapping.put(method, binding.value().getName());
-                } else {
-                    throw new TechnicalException("Invalid BindAction annotation on method %s. No value or name specified", method.getName());
-                }
-
+                mapping.put(method, binding.value().getName());
             }
         }
 
         if (mapping.isEmpty()) {
-            throw new TechnicalException("No method found with annotation @BindAction");
+            throw new TechnicalException("No method found with annotation @Operation");
         }
 
         return (T) java.lang.reflect.Proxy.newProxyInstance(
@@ -78,13 +69,13 @@ public interface BinaryClient extends MessageDispatcher {
                     return method.equals(args[0]);
                 }
                 if (!mapping.containsKey(method)) {
-                    throw new TechnicalException("This method has no @BindAction annotation");
+                    throw new TechnicalException("This method has no @Operation annotation");
                 }
                 return request(subject, createMessage(mapping.get(method), args), method.getReturnType()).get(30, TimeUnit.SECONDS);
             });
     }
 
-    default Message createMessage(String actionName, Object... args) {
+    default Message createMessage(String operation, Object... args) {
         RequestContext context = null;
         Object input = null;
         for (Object arg : args) {
@@ -102,7 +93,7 @@ public interface BinaryClient extends MessageDispatcher {
         if (context == null) {
             context = RequestContextHolder.get().orElseGet(RequestContext::new);
         }
-        return new Message(actionName, input, context);
+        return new Message(operation, input, context);
     }
 
 

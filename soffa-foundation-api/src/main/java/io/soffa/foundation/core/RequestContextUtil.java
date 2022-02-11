@@ -1,6 +1,9 @@
 package io.soffa.foundation.core;
 
-import java.util.HashMap;
+import io.soffa.foundation.commons.TextUtil;
+import org.apache.commons.codec.digest.DigestUtils;
+
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public final class RequestContextUtil {
@@ -13,13 +16,16 @@ public final class RequestContextUtil {
     }
 
     public static Map<String, Object> tagify(RequestContext context, Map<String, Object> more) {
+        String sessionId = context.getAuthorization();
+        if (TextUtil.isNotEmpty(sessionId)) {
+            sessionId = DigestUtils.md5Hex(sessionId);
+        }
         Map<String, Object> tags = createTags(
-            "ctx_authenticated", context.isAuthenticated(),
+            "ctx_access", context.isAuthenticated() ? "authenticated" : "anonymous",
             "ctx_tenant", context.getTenant(),
-            "ctx_span_id", context.getSpanId(),
-            "ctx_trace_id", context.getTraceId(),
             "ctx_application", context.getApplicationName(),
-            "ctx_username", context.getUsername()
+            "ctx_username", context.getUsername(),
+            "ctx_session_id", sessionId
         );
         if (more != null) {
             tags.putAll(more);
@@ -32,7 +38,7 @@ public final class RequestContextUtil {
         if (args.length % 2 != 0) {
             throw new IllegalArgumentException("MapUtil.create() requires an even number of arguments");
         }
-        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> result = new LinkedHashMap<>();
         for (int i = 0; i < args.length; i += 2) {
             if (!(args[i] instanceof String)) {
                 throw new IllegalArgumentException("MapUtil.create() requires String keys");

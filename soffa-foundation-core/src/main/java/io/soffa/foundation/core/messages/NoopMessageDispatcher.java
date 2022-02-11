@@ -9,7 +9,7 @@ public class NoopMessageDispatcher implements MessageDispatcher {
     @Override
     public void broadcast(Message event) {
         if (LOG.isInfoEnabled()) {
-            LOG.info("[NoopMessageDispatcher] dispatch event: " + event.getAction());
+            LOG.info("[NoopMessageDispatcher] dispatch event: " + event.getOperation());
         }
     }
 

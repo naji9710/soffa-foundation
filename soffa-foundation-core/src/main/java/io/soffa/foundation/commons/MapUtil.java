@@ -21,4 +21,11 @@ public final class MapUtil {
         }
         return result;
     }
+
+    public static boolean isEmpty(Map<String, Object> tags) {
+        return tags==null || tags.isEmpty();
+    }
+    public static boolean isNotEmpty(Map<String, Object> tags) {
+        return !isEmpty(tags);
+    }
 }

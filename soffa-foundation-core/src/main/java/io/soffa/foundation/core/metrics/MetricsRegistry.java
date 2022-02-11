@@ -1,8 +1,9 @@
 package io.soffa.foundation.core.metrics;
 
 import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.exceptions.ManagedException;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.core.exceptions.ManagedException;
+import io.soffa.foundation.core.exceptions.TechnicalException;
 
 import java.time.Duration;
 import java.util.Map;
@@ -12,6 +13,7 @@ public interface MetricsRegistry {
 
     String FAILED_SUFFIX = "_failed";
     String DURATION_SUFFIX = "_duration";
+    Logger LOG = Logger.get(MetricsRegistry.class);
 
     default void increment(String counter) {
         increment(counter, 1, ImmutableMap.of());
@@ -27,6 +29,7 @@ public interface MetricsRegistry {
             increment(prefix, tags);
             return result;
         } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
             increment(prefix + FAILED_SUFFIX, tags);
             if (e instanceof ManagedException) {
                 throw e;
@@ -53,6 +56,8 @@ public interface MetricsRegistry {
     void increment(String counter, double amount, Map<String, Object> tags);
 
     double counter(String name);
+
+    double globalCounter(String name);
 
     void timed(String name, Duration duration, Map<String, Object> tags);
 

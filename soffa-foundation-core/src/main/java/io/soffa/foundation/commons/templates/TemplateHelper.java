@@ -3,7 +3,7 @@ package io.soffa.foundation.commons.templates;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.soffa.foundation.commons.IOUtil;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.core.exceptions.TechnicalException;
 
 import java.io.*;
 import java.nio.file.Files;

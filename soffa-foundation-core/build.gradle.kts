@@ -18,6 +18,8 @@ dependencies {
     api("javax.transaction:javax.transaction-api:1.3")
     //api("org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final")
     //api("org.hibernate.validator:hibernate-validator:7.0.1.Final")
+    api("com.netflix.graphql.dgs:graphql-dgs:4.9.17")
+
     api("com.amazonaws:aws-java-sdk-s3:1.12.150")
     // api("commons-validator:commons-validator:1.7")
     implementation("com.auth0:java-jwt:3.18.3")

@@ -1,3 +1,9 @@
+## 1.5.0 (February 11, 2022) - Breaking changes
+
+* Actions are now Operations
+* Code cleanup
+* Netflix DGS integration 
+
 ## 1.4.0 (February 10, 2022)
 
 * Database migrations are applied after initial startup

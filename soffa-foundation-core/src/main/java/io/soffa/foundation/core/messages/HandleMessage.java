@@ -1,6 +1,6 @@
 package io.soffa.foundation.core.messages;
 
-import io.soffa.foundation.core.actions.Action;
+import io.soffa.foundation.core.operations.Operation;
 
-public interface HandleMessage extends Action<Message, Object> {
+public interface HandleMessage extends Operation<Message, Object> {
 }

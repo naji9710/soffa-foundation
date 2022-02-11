@@ -6,7 +6,7 @@ plugins {
 
 dependencies {
     compileOnly(project(":soffa-foundation-core"))
-    compileOnly(project(":soffa-foundation-springboot"))
+    compileOnly(project(":soffa-foundation-service"))
     // api("org.springframework:spring-test")
     api("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google")

@@ -7,11 +7,11 @@ import io.nats.client.impl.NatsMessage;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.core.actions.MessageHandler;
+import io.soffa.foundation.core.exceptions.FunctionalException;
+import io.soffa.foundation.core.exceptions.TechnicalException;
 import io.soffa.foundation.core.metrics.CoreMetrics;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
-import io.soffa.foundation.exceptions.FunctionalException;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.core.operations.MessageHandler;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import static io.soffa.foundation.core.Constants.OPERATION;
 import static io.soffa.foundation.core.metrics.CoreMetrics.*;
 
 public class NatsClient implements BinaryClient {
@@ -62,9 +63,9 @@ public class NatsClient implements BinaryClient {
     private Map<String, Object> createTags(@Nullable String subject, Message message) {
         Map<String, Object> tags = new HashMap<>();
         if (subject != null) {
-            tags.put("action", message.getAction());
+            tags.put(OPERATION, message.getOperation());
         }
-        tags.put("action", message.getAction());
+        tags.put(OPERATION, message.getOperation());
         return tags;
     }
 

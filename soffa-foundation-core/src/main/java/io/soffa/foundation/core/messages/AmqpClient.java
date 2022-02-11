@@ -11,6 +11,6 @@ public interface AmqpClient extends MessageDispatcher {
 
     <T> T request(Message event, Class<T> kind);
 
-    void sendInternal(Message event);
+    void publishSelf(Message event);
 
 }
