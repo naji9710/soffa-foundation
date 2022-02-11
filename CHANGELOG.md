@@ -7,7 +7,7 @@
 ## 1.4.0 (February 10, 2022)
 
 * Database migrations are applied after initial startup
-* Database migration added to actuator health
+* Customer HealthIndicator added for database migration
 * Database distributed lock 
 
 ## 1.3.9 (February 09, 2022)
