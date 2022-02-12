@@ -1,9 +1,9 @@
 package com.company.app;
 
-import io.soffa.foundation.core.messages.AmqpClient;
-import io.soffa.foundation.core.messages.Message;
-import io.soffa.foundation.core.messages.MessageDispatcher;
-import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.messages.AmqpClient;
+import io.soffa.foundation.messages.Message;
+import io.soffa.foundation.messages.MessageDispatcher;
+import io.soffa.foundation.metrics.MetricsRegistry;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;

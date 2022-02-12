@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableDiscoveryClient
 @EnableScheduling
 @Configuration
-@ComponentScan({"io.soffa.foundation.spring"})
+@ComponentScan({"io.soffa.foundation.service"})
 //@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class FoundationAutoConfiguration {
 }

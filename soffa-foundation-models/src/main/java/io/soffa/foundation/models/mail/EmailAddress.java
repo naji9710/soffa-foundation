@@ -1,7 +1,7 @@
 package io.soffa.foundation.models.mail;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.soffa.foundation.core.annotations.JsonModel;
+import io.soffa.foundation.annotations.JsonModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,11 +1,11 @@
 package com.company.app.events;
 
-import io.soffa.foundation.core.context.TenantHolder;
+import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.metrics.CoreMetrics;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
-import io.soffa.foundation.spring.config.jobs.Job;
-import io.soffa.foundation.spring.config.jobs.JobManager;
+import io.soffa.foundation.service.config.jobs.Job;
+import io.soffa.foundation.service.config.jobs.JobManager;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class JobRunnerTest {
             Job job = jobs.enqueue("testPing", new Message("Ping").withTenant(t1));
             jobs.run(job);
         });
-        assertEquals(jobsCount+1, metrics.counter(CoreMetrics.JOBS));
+        assertEquals(jobsCount + 1, metrics.counter(CoreMetrics.JOBS));
     }
 
 }

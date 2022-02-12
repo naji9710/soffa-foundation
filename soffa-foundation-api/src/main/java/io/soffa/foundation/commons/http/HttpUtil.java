@@ -5,7 +5,7 @@ import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.Regex;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.context.RequestContextHolder;
 import lombok.SneakyThrows;
 import okhttp3.*;
 

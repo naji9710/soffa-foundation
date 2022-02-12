@@ -1,6 +1,7 @@
 package io.soffa.foundation.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.soffa.foundation.security.AuthUtil;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,8 +11,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collections;
 
 public class HttpRequest {
@@ -62,9 +61,7 @@ public class HttpRequest {
     }
 
     public HttpRequest basicAuth(String username, String password) {
-        final String pair = username + ":" + password;
-        final String encoded = Base64.getEncoder().encodeToString(pair.getBytes(StandardCharsets.UTF_8));
-        header(HttpHeaders.AUTHORIZATION, "Basic " + encoded);
+        header(HttpHeaders.AUTHORIZATION, AuthUtil.createBasicAuthorization(username, password));
         return this;
     }
 

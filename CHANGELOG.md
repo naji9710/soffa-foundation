@@ -1,3 +1,8 @@
+## 1.5.1 (February 12, 2022) - Breaking changes
+
+* AuthManager improvements
+* Refactoring
+ 
 ## 1.5.0 (February 11, 2022) - Breaking changes
 
 * Actions are now Operations

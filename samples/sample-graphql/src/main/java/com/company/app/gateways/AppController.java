@@ -5,7 +5,7 @@ import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.core.model.InputData;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.core.operations.OperationDispatcher;
+import io.soffa.foundation.operations.OperationDispatcher;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;

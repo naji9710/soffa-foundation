@@ -1,6 +1,6 @@
 package io.soffa.foundation.commons;
 
-import io.soffa.foundation.core.exceptions.FunctionalException;
+import io.soffa.foundation.exceptions.FunctionalException;
 
 import java.util.function.Supplier;
 

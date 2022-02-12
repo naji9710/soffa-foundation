@@ -3,7 +3,7 @@ package com.company.app.core;
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsQuery;
 import com.netflix.graphql.dgs.InputArgument;
-import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.context.RequestContext;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Named;

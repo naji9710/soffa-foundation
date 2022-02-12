@@ -1,6 +1,6 @@
 package io.soffa.foundation;
 
-import io.soffa.foundation.core.model.TenantId;
+import io.soffa.foundation.model.TenantId;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

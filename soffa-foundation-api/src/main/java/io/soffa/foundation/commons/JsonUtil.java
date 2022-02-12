@@ -1,7 +1,7 @@
 package io.soffa.foundation.commons;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.context.RequestContext;
 import lombok.SneakyThrows;
 import org.json.JSONException;
 import org.json.JSONObject;

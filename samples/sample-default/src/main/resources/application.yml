@@ -16,7 +16,7 @@ app.openapi:
       url: http://nopp
       email: noreply@soffa.io
   security:
-    jwt-bearer: true
+    token-bearer: true
     oauth2:
       url: http://localhost:9000
       scopes: openid

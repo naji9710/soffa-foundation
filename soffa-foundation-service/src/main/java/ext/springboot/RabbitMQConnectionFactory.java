@@ -1,6 +1,6 @@
 package ext.springboot;
 
-import io.soffa.foundation.spring.config.amqp.model.RabbitMQProperties;
+import io.soffa.foundation.service.config.amqp.model.RabbitMQProperties;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;

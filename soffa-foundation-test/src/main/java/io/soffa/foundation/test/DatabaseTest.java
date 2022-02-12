@@ -1,6 +1,6 @@
 package io.soffa.foundation.test;
 
-import io.soffa.foundation.spring.state.DatabasePlane;
+import io.soffa.foundation.service.state.DatabasePlane;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 

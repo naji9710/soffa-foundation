@@ -18,6 +18,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
     implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
+    implementation("com.auth0:java-jwt:3.18.3")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.18")
     api("org.springframework.boot:spring-boot-starter-data-jpa") {
         exclude(group = "com.zaxxer")
     }

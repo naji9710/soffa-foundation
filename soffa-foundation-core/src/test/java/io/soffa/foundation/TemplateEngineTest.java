@@ -1,7 +1,7 @@
 package io.soffa.foundation;
 
 import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.commons.templates.TemplateHelper;
+import io.soffa.foundation.templates.TemplateHelper;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;

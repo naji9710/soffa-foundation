@@ -8,24 +8,15 @@ plugins {
 dependencies {
     api(project(":soffa-foundation-api"))
     api(project(":soffa-foundation-models"))
-
     implementation("com.aventrix.jnanoid:jnanoid:2.0.0")
-    implementation("com.nimbusds:nimbus-jose-jwt:9.18")
     @Suppress("GradlePackageUpdate")
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.github.michaelgantman:MgntUtils:1.6.0.1")
     api("com.jayway.jsonpath:json-path:2.7.0")
     api("javax.transaction:javax.transaction-api:1.3")
-    //api("org.hibernate.validator:hibernate-validator-annotation-processor:7.0.1.Final")
-    //api("org.hibernate.validator:hibernate-validator:7.0.1.Final")
     api("com.netflix.graphql.dgs:graphql-dgs:4.9.17")
-
     api("com.amazonaws:aws-java-sdk-s3:1.12.150")
-    // api("commons-validator:commons-validator:1.7")
-    implementation("com.auth0:java-jwt:3.18.3")
     api("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")
-    compileOnly("io.nats:jnats:2.13.2")
-
     compileOnly("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")

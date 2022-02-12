@@ -1,6 +1,6 @@
 package io.soffa.foundation.commons;
 
-import io.soffa.foundation.core.exceptions.TechnicalException;
+import io.soffa.foundation.exceptions.TechnicalException;
 import lombok.SneakyThrows;
 
 import java.util.concurrent.*;

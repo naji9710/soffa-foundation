@@ -15,5 +15,9 @@ app.db:
       url: h2://mem/t2_${random.int}
       migration: true
 
+app.security.tokens:
+  public-jwks: /security/jwks-dev.pub.json
+  private-jwks: /security/jwks-dev.priv.json
+
 spring.config.import:
   - classpath:application-foundation.yml

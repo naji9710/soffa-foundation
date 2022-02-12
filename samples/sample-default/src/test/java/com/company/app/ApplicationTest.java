@@ -3,7 +3,7 @@ package com.company.app;
 import com.company.app.gateways.MessageRepository;
 import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.IdGenerator;
-import io.soffa.foundation.core.context.TenantHolder;
+import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.test.DatabaseTest;
 import io.soffa.foundation.test.HttpExpect;
 import org.junit.jupiter.api.Test;

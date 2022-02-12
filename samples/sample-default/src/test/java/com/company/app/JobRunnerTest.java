@@ -1,10 +1,10 @@
 package com.company.app;
 
-import io.soffa.foundation.core.context.TenantHolder;
-import io.soffa.foundation.core.messages.Message;
-import io.soffa.foundation.core.metrics.MetricsRegistry;
-import io.soffa.foundation.spring.config.jobs.Job;
-import io.soffa.foundation.spring.config.jobs.JobManager;
+import io.soffa.foundation.context.TenantHolder;
+import io.soffa.foundation.messages.Message;
+import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.service.config.jobs.Job;
+import io.soffa.foundation.service.config.jobs.JobManager;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;

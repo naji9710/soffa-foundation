@@ -1,8 +1,8 @@
 package com.company.app.core;
 
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.core.exceptions.FakeException;
-import io.soffa.foundation.core.model.TenantId;
+import io.soffa.foundation.exceptions.FakeException;
+import io.soffa.foundation.model.TenantId;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Named;

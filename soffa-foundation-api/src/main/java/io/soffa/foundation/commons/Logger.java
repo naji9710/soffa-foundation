@@ -1,8 +1,8 @@
 package io.soffa.foundation.commons;
 
 import com.mgnt.utils.TextUtils;
-import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.core.model.TenantId;
+import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.model.TenantId;
 import org.slf4j.LoggerFactory;
 
 public class Logger {
@@ -110,6 +110,7 @@ public class Logger {
         log.error(message);
         log.error(ErrorUtil.getStacktrace(e));
     }
+
 
     public void error(String message, Object... args) {
         log.error(formatMessage(message, args));
