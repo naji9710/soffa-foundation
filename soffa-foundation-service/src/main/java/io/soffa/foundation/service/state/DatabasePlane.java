@@ -20,7 +20,7 @@ public class DatabasePlane {
     public static final String PENDING = "PENDING";
     public static final String FAILED = "FAILED";
 
-    private String state;
+    private String state = "PENDING";
     private String message;
     private LockProvider lockProvider;
 
@@ -29,10 +29,19 @@ public class DatabasePlane {
     }
 
     public String getMessage() {
-        if (TextUtil.isEmpty(message)) {
-            return state;
+        if (TextUtil.isNotEmpty(message)) {
+            return message;
         }
-        return message;
+        if (isPending()) {
+            return "Pending database migrations";
+        }
+        if (isFailed()) {
+            return "Failed database migrations";
+        }
+        if (isReady()) {
+            return "Database migrations applied";
+        }
+        return state;
     }
 
     public boolean isPending() {

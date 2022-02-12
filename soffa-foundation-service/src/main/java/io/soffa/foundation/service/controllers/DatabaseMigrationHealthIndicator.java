@@ -4,22 +4,26 @@ import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.actuate.health.Status;
 import org.springframework.stereotype.Component;
 
-@Component("DbMigration")
+@Component("db-migration")
 @AllArgsConstructor
 public class DatabaseMigrationHealthIndicator implements HealthIndicator {
 
     private final DatabasePlane state;
+    public static final String DESC = "Database migration status";
 
     @Override
     public Health health() {
+        Status status;
         if (state.isReady()) {
-            return Health.up().build();
+            status = new Status(Status.UP.getCode(), DESC);
+        }else {
+            status = new Status(Status.DOWN.getCode(), state.getMessage());
         }
-        Health.Builder status = Health.down();
-        status.withDetail("message", state.getMessage());
-        return status.build();
+        return Health.status(status).build();
     }
+
 
 }

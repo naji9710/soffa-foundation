@@ -41,6 +41,7 @@ public class DBConfiguration {
                                        @Value("${spring.application.name}") String applicationName) {
         if (!appConfig.hasDataSources()) {
             LOG.info("No datasources configured for this service.");
+            dbState.setReady();
             return new MockDataSource();
         }
         return new TenantAwareDatasourceImpl(tenantsProvider, dbState, appConfig.getDb(), applicationName, publisher);
