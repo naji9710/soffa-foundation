@@ -12,13 +12,12 @@ import org.springframework.stereotype.Component;
 public class DatabaseMigrationHealthIndicator implements HealthIndicator {
 
     private final DatabasePlane state;
-    public static final String DESC = "Database migration status";
 
     @Override
     public Health health() {
         Status status;
         if (state.isReady()) {
-            status = new Status(Status.UP.getCode(), DESC);
+            status = new Status(Status.UP.getCode());
         }else {
             status = new Status(Status.DOWN.getCode(), state.getMessage());
         }

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-//@ConditionalOnBean(MessageDispatcher.class)
 public class MessageDispatcherAspect {
 
     private final MessageDispatcher messageDispatcher;

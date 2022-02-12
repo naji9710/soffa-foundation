@@ -29,10 +29,9 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
-
 import javax.sql.DataSource;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, TenantAwareDatasource {
@@ -288,11 +287,14 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
 
     public void configure() {
         DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
-        dbState.withLock("db-migration", 630, 30, () -> {
+
+        dbState.withLock("db-migration", 60, 30, () -> {
             // Migrate static tenants
-            for (Map.Entry<Object, Object> entry : dataSources.entrySet()) {
-                applyMigrations((DataSource) entry.getValue());
-            }
+
+            dataSources.forEach((key, value) -> {
+                final DataSource datasource = (DataSource) value;
+                applyMigrations(datasource);
+            });
 
             DataSourceConfig tenantDs = dbConfig.getDatasources().get(TENANT_WILDCARD);
             boolean hasTenantDs = tenantDs != null;
