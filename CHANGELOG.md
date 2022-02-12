@@ -1,3 +1,9 @@
+## 1.5.2 (February 12, 2022)
+
+IMPROVEMENTS:
+
+* Database Health Indicator
+
 ## 1.5.1 (February 12, 2022) - Breaking changes
 
 * AuthManager improvements
