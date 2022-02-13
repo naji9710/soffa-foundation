@@ -41,7 +41,7 @@ dependencies {
         exclude(group = "com.h2database")
 
     }
-    implementation("org.jdbi:jdbi3-core:3.27.1") {
+    api("org.jdbi:jdbi3-core:3.27.1") {
         exclude(group = "com.github.ben-manes.caffeine")
     }
     api("io.micrometer:micrometer-registry-prometheus")

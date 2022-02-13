@@ -11,7 +11,7 @@ import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.data.DataSourceProperties;
 import io.soffa.foundation.data.TenantAwareDatasource;
-import io.soffa.foundation.data.TenantsProvider;
+import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.exceptions.DatabaseException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.model.TenantId;
@@ -29,32 +29,32 @@ import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+
 import javax.sql.DataSource;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, TenantAwareDatasource {
 
-    public static final String NONE = "NONE";
+    public static final String NONE = "none";
     private static final Logger LOG = Logger.get(TenantAwareDatasourceImpl.class);
     private final Map<Object, Object> dataSources = new ConcurrentHashMap<>();
     private String tablesPrefix = "";
     private final String appicationName;
     private boolean appicationStarted;
-    private final TenantsProvider tenantsProvider;
-    private static final String TENANT_PLACEHOLDER = "__TENANT__";
-    private static final String TENANT_WILDCARD = "__TENANT__";
+    private final String tenanstListQuery;
+    private final TenantsLoader tenantsLoader;
+    private static final String TENANT_PLACEHOLDER = "__tenant__";
     private static final String DEFAULT_DS = "default";
-    private final DbConfig dbConfig;
     private static final Map<String, Boolean> MIGRATED = new ConcurrentHashMap<>();
-    private final Map<DataSource, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
+    private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final DatabasePlane dbState;
     private final ApplicationEventPublisher publisher;
 
 
     @SneakyThrows
-    public TenantAwareDatasourceImpl(final TenantsProvider tenantsProvider,
+    public TenantAwareDatasourceImpl(final TenantsLoader tenantsLoader,
                                      final DatabasePlane dbState,
                                      final DbConfig dbConfig,
                                      final String appicationName,
@@ -66,39 +66,26 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
 
         this.publisher = publisher;
         this.dbState = dbState;
-        this.tenantsProvider = tenantsProvider;
-        this.dbConfig = dbConfig;
+        this.tenantsLoader = tenantsLoader;
         this.appicationName = appicationName;
+        this.tenanstListQuery = dbConfig.getTenantListQuery();
         setTablesPrefix(dbConfig.getTablesPrefix());
         setLenientFallback(false);
-
-        createDatasources();
+        dbState.setPending();
+        createDatasources(dbConfig.getDatasources());
         TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
         super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
-
-        boolean hasMigrations = false;
-        for (Map.Entry<Object, Object> entry : dataSources.entrySet()) {
-            if (checkMigrations((DataSource) entry.getValue())) {
-                dbState.setPending();
-                hasMigrations = true;
-                break;
-            }
-        }
-
-        if (!hasMigrations) {
-            dbState.setReady();
-        }
         createLockTable();
     }
 
-    private void createDatasources() {
-        if (dbConfig.getDatasources().isEmpty()) {
+    private void createDatasources(Map<String, DataSourceConfig> datasources) {
+        if (datasources==null || datasources.isEmpty()) {
             throw new TechnicalException("No db link provided");
         }
-        for (Map.Entry<String, DataSourceConfig> dbLink : dbConfig.getDatasources().entrySet()) {
-            if (!TENANT_WILDCARD.equalsIgnoreCase(dbLink.getKey())) {
-                registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
-            }
+        for (Map.Entry<String, DataSourceConfig> dbLink : datasources.entrySet()) {
+            //if (!TENANT_PLACEHOLDER.equalsIgnoreCase(dbLink.getKey())) {
+            registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
+            //}
         }
         if (!dataSources.containsKey(DEFAULT_DS)) {
             throw new TechnicalException("No default datasource provided");
@@ -126,22 +113,26 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             LOG.warn("Datasource with id {} is already registered", id);
             return;
         }
-        String url = link.getUrl();
-        if (url.contains(TENANT_PLACEHOLDER)) {
-            url = url.replace(TENANT_PLACEHOLDER, id);
+        String url = link.getUrl().replace(TENANT_PLACEHOLDER, id).replace(TENANT_PLACEHOLDER.toUpperCase(), id);
+        dsConfigs.put(id.toLowerCase(), link);
+        if (!TENANT_PLACEHOLDER.equalsIgnoreCase(id)) {
+            DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(id, url), link);
+            dsConfigs.put(ds, link);
+            dataSources.put(id.toLowerCase(), ds);
+            if (migrate) {
+                applyMigrations(ds);
+            }
         }
-        DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(id, url), link);
-        dsConfigs.put(ds, link);
-        dataSources.put(id, ds);
-        if (migrate) {
-            applyMigrations(ds);
-        }
+
     }
 
     @NotNull
     @Override
     protected DataSource determineTargetDataSource() {
         Object lookupKey = determineCurrentLookupKey();
+        if (lookupKey != null) {
+            lookupKey = lookupKey.toString().toLowerCase();
+        }
         if (!dataSources.containsKey(lookupKey)) {
             throw new DatabaseException("%s is not a valid database link", lookupKey);
         }
@@ -159,8 +150,9 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
             }
             throw new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
         }
-        if (!dataSources.containsKey(linkId) && dbConfig.getDatasources().containsKey(TENANT_WILDCARD)) {
-            registerDatasource(linkId, dbConfig.getDatasources().get(TENANT_WILDCARD), true);
+        linkId = linkId.toLowerCase();
+        if (!dataSources.containsKey(linkId) && dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
+            registerDatasource(linkId, dsConfigs.get(TENANT_PLACEHOLDER), true);
             super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         }
         return linkId;
@@ -226,15 +218,10 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
         }
     }
 
-    private boolean checkMigrations(DataSource dataSource) {
-        DataSourceConfig link = dsConfigs.get(dataSource);
-        return TextUtil.isNotEmpty(findChangeLogPath(link));
-    }
-
     private String findChangeLogPath(DataSourceConfig link) {
         String changelogPath = null;
-        boolean noMigration = "false".equals(link.getMigration()) || "no".equals(link.getMigration());
-        if (!noMigration) {
+        boolean hasMigration = !("false".equals(link.getMigration()) || "no".equals(link.getMigration()));
+        if (hasMigration) {
             if (TextUtil.isNotEmpty(link.getMigration()) && !"true".equals(link.getMigration())) {
                 changelogPath = "/db/changelog/" + link.getMigration() + ".xml";
             } else {
@@ -296,31 +283,28 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
                 applyMigrations(datasource);
             });
 
-            DataSourceConfig tenantDs = dbConfig.getDatasources().get(TENANT_WILDCARD);
-            boolean hasTenantDs = tenantDs != null;
-            final Set<String> tenants = new HashSet<>();
-            if (hasTenantDs) {
-
-                // DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
-                Jdbi jdbi = Jdbi.create(defaultDs);
-                jdbi.useHandle(handle -> {
-                    String query = dbConfig.getTenantListQuery();
-                    if (TextUtil.isNotEmpty(query)) {
-                        LOG.info("Loading tenants from query: %s", query);
-                        List<String> results = handle.createQuery(query).mapTo(String.class).collect(Collectors.toList());
+            if (dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
+                final Set<String> tenants = new HashSet<>();
+                if (TextUtil.isNotEmpty(tenanstListQuery)) {
+                    Jdbi jdbi = Jdbi.create(defaultDs);
+                    jdbi.useHandle(handle -> {
+                        LOG.info("Loading tenants from query: %s", tenanstListQuery);
+                        List<String> results = handle.createQuery(tenanstListQuery).mapTo(String.class).collect(Collectors.toList());
                         if (CollectionUtil.isNotEmpty(results)) {
                             tenants.addAll(results);
                         }
-                    } else {
-                        tenants.addAll(tenantsProvider.getTenantList(handle));
-                    }
-                });
+                    });
+                } else {
+                    tenants.addAll(tenantsLoader.getTenantList());
+                }
 
                 for (String tenant : tenants) {
-                    if (!DEFAULT_DS.equalsIgnoreCase(tenant) && !TENANT_WILDCARD.equalsIgnoreCase(tenant)) {
-                        registerDatasource(tenant, dbConfig.getDatasources().get(TENANT_WILDCARD), true);
-                    }
+                    registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
                 }
+            } else if (!tenantsLoader.equals(TenantsLoader.NOOP)) {
+                LOG.error("TenantsLoader provided but not TenantDS defined (add a Datasource with key __tenant__)");
+            } else {
+                LOG.debug("No TenantDS provided, skipping tenants migration.");
             }
         });
     }

@@ -2,9 +2,7 @@ package io.soffa.foundation.service.config;
 
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.config.AppConfig;
-import io.soffa.foundation.data.DefaultTenantsProvider;
-import io.soffa.foundation.data.NoTenantsProvider;
-import io.soffa.foundation.data.TenantsProvider;
+import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.service.data.MockDataSource;
 import io.soffa.foundation.service.data.TenantAwareDatasourceImpl;
 import io.soffa.foundation.service.state.DatabasePlane;
@@ -22,20 +20,16 @@ public class DBConfiguration {
 
     private static final Logger LOG = Logger.get(DBConfiguration.class);
 
-
     @Bean
     @ConditionalOnMissingBean
-    public TenantsProvider createDefaultTenantsProvider(AppConfig appConfig) {
-        if (!appConfig.hasDataSources()) {
-            return new NoTenantsProvider();
-        }
-        return new DefaultTenantsProvider(appConfig.getDb().getDatasources().keySet());
+    public TenantsLoader createDefaultTenantsLoader() {
+        return TenantsLoader.NOOP;
     }
 
     @Bean
     @Primary
     public DataSource createDatasource(AppConfig appConfig,
-                                       TenantsProvider tenantsProvider,
+                                       TenantsLoader tenantsLoader,
                                        DatabasePlane dbState,
                                        ApplicationEventPublisher publisher,
                                        @Value("${spring.application.name}") String applicationName) {
@@ -44,7 +38,7 @@ public class DBConfiguration {
             dbState.setReady();
             return new MockDataSource();
         }
-        return new TenantAwareDatasourceImpl(tenantsProvider, dbState, appConfig.getDb(), applicationName, publisher);
+        return new TenantAwareDatasourceImpl(tenantsLoader, dbState, appConfig.getDb(), applicationName, publisher);
     }
 
 
