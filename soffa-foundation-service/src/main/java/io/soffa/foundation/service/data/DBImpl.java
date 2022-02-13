@@ -23,6 +23,7 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -53,12 +54,13 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final DatabasePlane dbState;
     private final ApplicationEventPublisher publisher;
-    private final BinaryClient binaryClient;
+    private final ApplicationContext context;
+    // private final BinaryClient binaryClient;
 
     @SneakyThrows
     public DBImpl(final TenantsLoader tenantsLoader,
                   final DatabasePlane dbState,
-                  final BinaryClient binaryClient,
+                  final ApplicationContext context,
                   final DbConfig dbConfig,
                   final String appicationName,
                   final ApplicationEventPublisher publisher) {
@@ -67,7 +69,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
         Preconditions.checkNotNull(dbState, "DatabasePlane is required");
 
-        this.binaryClient = binaryClient;
+        this.context = context;
         this.publisher = publisher;
         this.dbState = dbState;
         this.tenantsLoader = tenantsLoader;
@@ -312,6 +314,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                         }
                     });
                 } else {
+                    BinaryClient binaryClient = context.getBean(BinaryClient.class);
                     tenants.addAll(tenantsLoader.getTenantList(binaryClient));
                 }
 

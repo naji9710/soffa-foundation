@@ -5,6 +5,7 @@ import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import io.soffa.foundation.service.NatsClient;
 import io.soffa.foundation.service.PlatformAuthManager;
+import io.soffa.foundation.tokens.TokenProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +24,12 @@ public class NatsBeansFactory {
         @Value("${app.nats.url}") String natsUrl,
         PlatformAuthManager authManager,
         MessageHandler messageHandler,
+        TokenProvider tokenProvider,
         MetricsRegistry metricsRegistry) {
-        return new NatsClient(authManager, applicationName, queue, natsUrl, messageHandler, metricsRegistry);
+        return new NatsClient(
+            authManager, applicationName, queue,
+            tokenProvider, natsUrl, messageHandler, metricsRegistry
+        );
     }
 
 }

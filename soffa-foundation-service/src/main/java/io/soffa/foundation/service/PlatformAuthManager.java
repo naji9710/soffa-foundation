@@ -55,6 +55,10 @@ public class PlatformAuthManager {
     }
 
     public void process(RequestContext context, String token) {
+
+        if (TextUtil.isEmpty(token)) {
+            return;
+        }
         Authentication auth = null;
 
         if (token.toLowerCase().startsWith("bearer ")) {
@@ -65,14 +69,13 @@ public class PlatformAuthManager {
             String basicAuth = token.substring("basic ".length()).trim();
             String[] credentials = new String(Base64.getDecoder().decode(basicAuth)).split(":");
             String username = credentials[0];
-            String pasword = "";
             boolean hasPassword = credentials.length > 1;
-            if (hasPassword) {
-                pasword = credentials[1];
-            }
+            String pasword = hasPassword ? credentials[1] : "";
             if (isServiceAuthorization(pasword)) {
                 auth = Authentication.builder()
-                    .username(username)
+                    .application(username)
+                    //.username(username)
+                    .tenantId(context.getTenantId())
                     .principal(username)
                     .permissions(ImmutableSet.of("service"))
                     .roles(ImmutableSet.of("service"))
@@ -80,6 +83,8 @@ public class PlatformAuthManager {
             } else {
                 auth = authenticate(context, username, pasword);
             }
+        } else {
+            LOG.warn("An authorization header was found but it is not a bearer or basic authorization header");
         }
 
         if (auth == null) {

@@ -25,6 +25,11 @@ public class AbstractBinaryClient implements BinaryClient {
     }
 
     @Override
+    public String getServiceToken() {
+        return null;
+    }
+
+    @Override
     public void broadcast(Message message) {
         // Empty on purpose
     }

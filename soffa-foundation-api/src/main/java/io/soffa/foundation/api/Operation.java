@@ -10,6 +10,8 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public interface Operation<I, O> {
 
+    Void NO_INPUT = null;
+
     O handle(I input, @NonNull RequestContext context);
 
     default O handle(I input) {

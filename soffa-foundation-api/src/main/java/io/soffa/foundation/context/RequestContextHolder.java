@@ -37,6 +37,10 @@ public final class RequestContextHolder {
         return Optional.ofNullable(CURRENT.get());
     }
 
+    public static RequestContext getOrCreate() {
+        return Optional.ofNullable(CURRENT.get()).orElse(new RequestContext().withTenant(TenantHolder.get().orElse("default")));
+    }
+
     public static RequestContext require() {
         return Optional.ofNullable(CURRENT.get()).orElseThrow(() -> new FunctionalException("MISSING_NTENAT"));
     }

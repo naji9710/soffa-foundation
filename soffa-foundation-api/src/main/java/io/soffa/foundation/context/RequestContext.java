@@ -62,11 +62,20 @@ public class RequestContext {
         return this;
     }
 
+    public RequestContext withAuthorization(String authorization) {
+        this.authorization = authorization;
+        return this;
+    }
+
     public String getTenant() {
         if (tenantId == null) {
             return null;
         }
         return tenantId.getValue();
+    }
+
+    public String getServiceName() {
+        return serviceName;
     }
 
     public void setAuthorization(String authorization) {

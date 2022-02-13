@@ -14,6 +14,7 @@ import io.soffa.foundation.messages.BinaryClient;
 import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.metrics.CoreMetrics;
 import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.tokens.TokenProvider;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -37,17 +38,20 @@ public class NatsClient implements BinaryClient {
     private final String broadcastSubject;
     private final MetricsRegistry metricsRegistry;
     private final PlatformAuthManager authManager;
+    private final TokenProvider tokenProvider;
 
     public NatsClient(
         PlatformAuthManager authManager,
         String applicationName,
         String broadcastSubject,
+        TokenProvider tokenProvider,
         String url,
         MessageHandler handler,
         MetricsRegistry metricsRegistry) {
 
         this.authManager = authManager;
         this.broadcastSubject = broadcastSubject;
+        this.tokenProvider = tokenProvider;
         this.metricsRegistry = metricsRegistry;
 
         Options o = new Options.Builder().servers(url.split(",")).maxReconnects(-1).build();
@@ -69,6 +73,15 @@ public class NatsClient implements BinaryClient {
         } catch (Exception e) {
             throw new TechnicalException("Unable to connect to NATS @ " + url, e);
         }
+    }
+
+    public TokenProvider getTokenProvider() {
+        return tokenProvider;
+    }
+
+    @Override
+    public String getServiceToken() {
+        return tokenProvider.getServiceToken();
     }
 
     private Map<String, Object> createTags(@Nullable String subject, io.soffa.foundation.messages.Message message) {
@@ -154,6 +167,7 @@ public class NatsClient implements BinaryClient {
                 metricsRegistry.increment(CoreMetrics.NATS_EVENT_PROCESSED);
             } catch (FunctionalException e) {
                 LOG.warn(TextUtil.format("Message %s was skipped due to a functionnal error", msg.getSID()), e);
+                LOG.warn(e.getMessage(), e);
                 msg.ack();
                 metricsRegistry.increment(CoreMetrics.NATS_EVENT_SKIPPED);
             } catch (Exception e) {

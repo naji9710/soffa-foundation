@@ -4,9 +4,12 @@ package io.soffa.foundation.messages;
 import io.soffa.foundation.annotations.BindOperation;
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
+import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.security.AuthUtil;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -26,10 +29,29 @@ public interface BinaryClient extends MessageDispatcher {
 
     void publish(String subject, Message message);
 
-    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation) {
+    String getServiceToken();
+
+    default <I,O> CompletableFuture<O> requestWithServiceToken(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input) {
+        return requestWithServiceToken(subject, operation, input, RequestContextHolder.getOrCreate());
+    }
+
+    default <I,O> CompletableFuture<O> requestWithServiceToken(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input, RequestContext context) {
+        String serviceToken = getServiceToken();
+        if (TextUtil.isEmpty(serviceToken)) {
+            throw new ConfigurationException("serviceToken is not configured");
+        }
+        return request(subject, operation, input, context.withAuthorization(AuthUtil.createBasicAuthorization(context.getServiceName(), serviceToken)));
+    }
+
+    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input) {
+        return request(subject, operation, input, RequestContextHolder.getOrCreate());
+    }
+
+    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, Object input, RequestContext context) {
         Message message = new Message(
             operation.getSimpleName(),
-            operation, RequestContextHolder.get().orElseGet(RequestContext::new)
+            input,
+            context
         );
         @SuppressWarnings("unchecked")
         Class<O> returnType = (Class<O>) ClassUtil.getClassFromGenericInterface(operation, io.soffa.foundation.api.Operation.class, 1);

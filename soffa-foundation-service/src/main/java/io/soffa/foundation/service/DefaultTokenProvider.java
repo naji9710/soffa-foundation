@@ -48,6 +48,11 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
     }
 
     @Override
+    public String getServiceToken() {
+        return config.getServiceToken();
+    }
+
+    @Override
     public Token create(TokenType type, String subjet, Map<String, Object> claims) {
         return create(type, subjet, claims, config.getDefaultTtl());
     }

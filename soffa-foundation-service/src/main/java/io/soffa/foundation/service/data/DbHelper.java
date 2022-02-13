@@ -45,7 +45,6 @@ public final class DbHelper {
         hc.setIdleTimeout(35_000);
         hc.setMaxLifetime(45_000);
         hc.setMaximumPoolSize(20);
-        hc.setMaxLifetime(1000);
 
         if (config.getUrl().contains(":h2:")) {
             hc.addDataSourceProperty("ignore_startup_parameters", "search_path");

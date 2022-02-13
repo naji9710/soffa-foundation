@@ -22,4 +22,7 @@ public interface TokenProvider {
     Authentication extractInfo(Token token);
 
     TokenConfig getConfig();
+
+    String getServiceToken();
+
 }

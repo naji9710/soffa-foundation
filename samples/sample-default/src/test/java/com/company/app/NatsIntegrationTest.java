@@ -4,6 +4,7 @@ import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.gateways.API;
 import com.company.app.operations.SendEmailHandler;
+import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.messages.BinaryClient;
@@ -71,7 +72,7 @@ public class NatsIntegrationTest {
         binaryClient.broadcast(event);
         Awaitility.await().atMost(500, TimeUnit.DAYS).until(() -> SendEmailHandler.COUNTER.get() == initialCounterValue + 2);
 
-        PingResponse resp = binaryClient.request(applicationName, Ping.class).get(1, TimeUnit.SECONDS);
+        PingResponse resp = binaryClient.request(applicationName, Ping.class, Operation.NO_INPUT).get(1, TimeUnit.SECONDS);
         assertEquals("PONG", resp.getValue());
 
         API binaryAPI = binaryClient.createClient(API.class, applicationName);
