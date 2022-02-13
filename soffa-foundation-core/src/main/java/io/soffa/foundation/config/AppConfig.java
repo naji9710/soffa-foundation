@@ -10,9 +10,14 @@ import lombok.NoArgsConstructor;
 public class AppConfig {
 
     private boolean sysLogs = true;
+    private String name;
     private DbConfig db;
     private OpenAPIDesc openapi;
     private SecurityConfig security;
+
+    public AppConfig(String name) {
+        this.name = name;
+    }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean hasDataSources() {

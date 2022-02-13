@@ -10,7 +10,7 @@ import io.soffa.foundation.config.DataSourceConfig;
 import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.data.DataSourceProperties;
-import io.soffa.foundation.data.TenantAwareDatasource;
+import io.soffa.foundation.data.DB;
 import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.exceptions.DatabaseException;
 import io.soffa.foundation.exceptions.TechnicalException;
@@ -35,10 +35,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, TenantAwareDatasource {
+public final class DBImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, DB {
 
     public static final String NONE = "none";
-    private static final Logger LOG = Logger.get(TenantAwareDatasourceImpl.class);
+    private static final Logger LOG = Logger.get(DBImpl.class);
     private final Map<Object, Object> dataSources = new ConcurrentHashMap<>();
     private String tablesPrefix = "";
     private final String appicationName;
@@ -54,11 +54,11 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
 
 
     @SneakyThrows
-    public TenantAwareDatasourceImpl(final TenantsLoader tenantsLoader,
-                                     final DatabasePlane dbState,
-                                     final DbConfig dbConfig,
-                                     final String appicationName,
-                                     final ApplicationEventPublisher publisher) {
+    public DBImpl(final TenantsLoader tenantsLoader,
+                  final DatabasePlane dbState,
+                  final DbConfig dbConfig,
+                  final String appicationName,
+                  final ApplicationEventPublisher publisher) {
 
         super();
 
@@ -251,6 +251,16 @@ public final class TenantAwareDatasourceImpl extends AbstractRoutingDataSource i
 
     public DataSource get(String tenant) {
         return Objects.requireNonNull((DataSource) dataSources.get(tenant));
+    }
+
+    @Override
+    public void applyMigrations(String tenantId) {
+        registerDatasource(tenantId, dsConfigs.get(TENANT_PLACEHOLDER), true);
+    }
+
+    @Override
+    public boolean tenantExists(String tenant) {
+        return dataSources.containsKey(tenant.toLowerCase());
     }
 
     @SneakyThrows

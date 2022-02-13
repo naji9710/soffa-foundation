@@ -144,7 +144,7 @@ public class NatsClient implements BinaryClient {
                     authManager.process(message.getContext());
                     RequestContextHolder.set(message.getContext());
                 }
-                Optional<Object> response = handler.onMessage(message);
+                Optional<Object> response = handler.handle(message);
                 if (TextUtil.isNotEmpty(msg.getReplyTo())) {
                     byte[] responseData = response.map(o -> JsonUtil.serialize(o).getBytes(StandardCharsets.UTF_8)).orElse(null);
                     msg.getConnection().publish(msg.getReplyTo(), responseData);

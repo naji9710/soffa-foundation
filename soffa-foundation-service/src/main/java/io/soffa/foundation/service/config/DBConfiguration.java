@@ -4,7 +4,7 @@ import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.config.AppConfig;
 import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.service.data.MockDataSource;
-import io.soffa.foundation.service.data.TenantAwareDatasourceImpl;
+import io.soffa.foundation.service.data.DBImpl;
 import io.soffa.foundation.service.state.DatabasePlane;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -38,7 +38,7 @@ public class DBConfiguration {
             dbState.setReady();
             return new MockDataSource();
         }
-        return new TenantAwareDatasourceImpl(tenantsLoader, dbState, appConfig.getDb(), applicationName, publisher);
+        return new DBImpl(tenantsLoader, dbState, appConfig.getDb(), applicationName, publisher);
     }
 
 

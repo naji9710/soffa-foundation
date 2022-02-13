@@ -56,7 +56,7 @@ public class PubSubListenerConfig {
                 return;
             }
 
-            handler.onMessage(msg);
+            handler.handle(msg);
             channel.basicAck(tag, false);
             metrics.increment(CoreMetrics.AMQP_EVENT_PROCESSED);
         } catch (Exception e) {

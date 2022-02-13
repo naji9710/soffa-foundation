@@ -59,8 +59,9 @@ public class PlatformBeansFactory {
     @Bean
     @Primary
     @ConfigurationProperties(prefix = "app")
-    public AppConfig createAppConfig() {
-        return new AppConfig();
+    public AppConfig createAppConfig(@Value("${spring.application.name}") String applicationName) {
+        RequestContext.setServiceName(applicationName);
+        return new AppConfig(applicationName);
     }
 
 

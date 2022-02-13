@@ -31,7 +31,7 @@ public class DefaultMessageHandler implements MessageHandler {
     }
 
     @Override
-    public Optional<Object> onMessage(Message message) {
+    public Optional<Object> handle(Message message) {
         final RequestContext context = Optional.ofNullable(message.getContext()).orElse(new RequestContext());
 
         Object operation = mapping.getInternal().get(message.getOperation());

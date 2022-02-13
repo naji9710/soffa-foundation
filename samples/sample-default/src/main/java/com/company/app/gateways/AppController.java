@@ -4,7 +4,7 @@ import com.company.app.core.Echo;
 import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.core.model.InputData;
-import io.soffa.foundation.application.OperationDispatcher;
+import io.soffa.foundation.application.Dispatcher;
 import io.soffa.foundation.context.RequestContext;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,7 +19,7 @@ import javax.validation.Valid;
 @Validated
 public class AppController implements API {
 
-    private final OperationDispatcher dispatcher;
+    private final Dispatcher dispatcher;
 
     @Override
     @GetMapping("ping")

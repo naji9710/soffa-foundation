@@ -4,7 +4,7 @@ import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.api.Operation0;
 import io.soffa.foundation.context.RequestContext;
 
-public interface OperationDispatcher {
+public interface Dispatcher {
 
     int SLOW_ACTION_THRESHOLD = 3;
 
@@ -15,5 +15,6 @@ public interface OperationDispatcher {
     <O> O dispatch(Class<? extends Operation0<O>> operationClass, RequestContext context);
 
     <O> O dispatch(Class<? extends Operation0<O>> operationClass);
+
 
 }

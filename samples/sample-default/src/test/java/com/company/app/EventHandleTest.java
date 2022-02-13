@@ -36,9 +36,9 @@ public class EventHandleTest {
         double echoCount = getCounterValue(Echo.class.getName());
 
         TenantHolder.use("T1", (t1) -> {
-            handler.onMessage(new Message(ping)); // automatic tenant
-            handler.onMessage(new Message(echo, "Hello"));
-            handler.onMessage(new Message(ping).withTenant(t1)); // explicit tenant
+            handler.handle(new Message(ping)); // automatic tenant
+            handler.handle(new Message(echo, "Hello"));
+            handler.handle(new Message(ping).withTenant(t1)); // explicit tenant
         });
 
         assertEquals(pingCount + 2, getCounterValue(ping));

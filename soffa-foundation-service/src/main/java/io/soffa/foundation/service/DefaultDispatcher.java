@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.Constants;
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.api.Operation0;
-import io.soffa.foundation.application.OperationDispatcher;
+import io.soffa.foundation.application.Dispatcher;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
@@ -25,7 +25,7 @@ import static io.soffa.foundation.metrics.CoreMetrics.OPERATION_PREFIX;
 
 @Component
 @AllArgsConstructor
-public class DefaultOperationDispatcher implements OperationDispatcher {
+public class DefaultDispatcher implements Dispatcher {
 
     private final OperationsMapping mapping;
     private final MetricsRegistry metricsRegistry;

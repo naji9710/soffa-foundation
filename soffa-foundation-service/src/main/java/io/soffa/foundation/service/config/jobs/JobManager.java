@@ -23,7 +23,7 @@ public class JobManager implements JobRequestHandler<Job> {
     @Override
     public void run(Job job) {
         TenantHolder.set(job.getTenant());
-        handler.onMessage(job.getMessage());
+        handler.handle(job.getMessage());
     }
 
 }
