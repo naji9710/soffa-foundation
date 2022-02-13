@@ -14,6 +14,7 @@ import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.exceptions.DatabaseException;
 import io.soffa.foundation.exceptions.NotImplementedException;
 import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.messages.BinaryClient;
 import io.soffa.foundation.model.TenantId;
 import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
@@ -52,11 +53,12 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final DatabasePlane dbState;
     private final ApplicationEventPublisher publisher;
-
+    private final BinaryClient binaryClient;
 
     @SneakyThrows
     public DBImpl(final TenantsLoader tenantsLoader,
                   final DatabasePlane dbState,
+                  final BinaryClient binaryClient,
                   final DbConfig dbConfig,
                   final String appicationName,
                   final ApplicationEventPublisher publisher) {
@@ -65,6 +67,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
         Preconditions.checkNotNull(dbState, "DatabasePlane is required");
 
+        this.binaryClient = binaryClient;
         this.publisher = publisher;
         this.dbState = dbState;
         this.tenantsLoader = tenantsLoader;
@@ -309,7 +312,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                         }
                     });
                 } else {
-                    tenants.addAll(tenantsLoader.getTenantList());
+                    tenants.addAll(tenantsLoader.getTenantList(binaryClient));
                 }
 
                 for (String tenant : tenants) {

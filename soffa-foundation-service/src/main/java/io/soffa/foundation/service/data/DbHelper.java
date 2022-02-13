@@ -40,26 +40,21 @@ public final class DbHelper {
         hc.setPoolName(IdGenerator.shortUUID(config.getName() + "_"));
         hc.setConnectionTestQuery("select 1");
 
-        // hc.setMinimumIdle(0);
+        hc.setMinimumIdle(10_000);
         hc.setConnectionTimeout(30_000);
         hc.setIdleTimeout(35_000);
         hc.setMaxLifetime(45_000);
+        hc.setMaximumPoolSize(20);
+        hc.setMaxLifetime(1000);
 
         if (config.getUrl().contains(":h2:")) {
             hc.addDataSourceProperty("ignore_startup_parameters", "search_path");
         }
 
-        // hc.setIdleTimeout(30_000);
-        // hc.setMaximumPoolSize(20);
-        // hc.setMinimumIdle(5);
-        // hc.setMaxLifetime(2_000_000);
-        // hc.setConnectionTimeout(30_000);
-        // hc.setValidationTimeout(10_000);
         if (config.hasSchema()) {
             hc.setSchema(config.getSchema());
         }
         link.setName(config.getName());
-        //hc.addDataSourceProperty("__link", link);
         return new HikariDataSource(hc);
     }
 
