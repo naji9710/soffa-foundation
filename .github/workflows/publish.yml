@@ -22,12 +22,7 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Run checks
-        run: |
-          gradle check \
-            -PossrhUsername=foo -PossrhPassword=foo \
-            -Psigning.keyId=foo -Psigning.password=foo \
-            -Psigning.secretKeyRingFile=foo \
-            -Pverbose=true
+        run: NO_PUBLISH gradle check
 
   publish-to-sonatype:
     needs: check

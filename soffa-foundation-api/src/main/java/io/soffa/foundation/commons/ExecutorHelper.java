@@ -35,7 +35,7 @@ public final class ExecutorHelper {
             }
         });
         if (!latch.await(5, TimeUnit.MINUTES)) {
-            throw new TechnicalException("Operation timed out");
+            throw new TechnicalException("BindOperation timed out");
         }
         if (exception.get() != null) {
             throw exception.get();

@@ -14,7 +14,7 @@ public class PingImpl implements Ping {
     public static final TenantId T2 = new TenantId("T2");
 
     @Override
-    public PingResponse handle(@NotNull RequestContext context) {
+    public PingResponse handle(Void arg, @NotNull RequestContext context) {
         if (T2.equals(context.getTenantId())) {
             throw new FakeException("Controlled error triggered (%s)", context.getTenantId());
         } else {

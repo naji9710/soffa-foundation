@@ -7,6 +7,7 @@ import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
+import io.soffa.foundation.model.NoInput;
 import io.soffa.foundation.model.TenantId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -57,6 +58,9 @@ public class Message implements Serializable {
     }
 
     public <T> Optional<T> getPayloadAs(Class<T> expectedType) {
+        if (expectedType==Void.class || expectedType== NoInput.class) {
+            return  Optional.empty();
+        }
         Preconditions.checkNotNull(expectedType, "Invalid type provided");
         if (payload == null) {
             return Optional.empty();

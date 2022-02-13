@@ -2,6 +2,7 @@ package io.soffa.foundation.tokens;
 
 
 import io.soffa.foundation.model.Authentication;
+
 import java.util.Map;
 
 public interface TokenProvider {

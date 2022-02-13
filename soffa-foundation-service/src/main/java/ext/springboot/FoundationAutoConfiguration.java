@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @Configuration
 @ComponentScan({"io.soffa.foundation.service"})
-//@AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
+//@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
 public class FoundationAutoConfiguration {
+
 }

@@ -1,10 +1,7 @@
 package io.soffa.foundation.service;
 
-import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.Constants;
 import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.api.Operation0;
-import io.soffa.foundation.application.Dispatcher;
+import io.soffa.foundation.application.OperationHandler;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
@@ -19,29 +16,27 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
-
 import static io.soffa.foundation.metrics.CoreMetrics.OPERATION_PREFIX;
 
 @Component
 @AllArgsConstructor
-public class DefaultDispatcher implements Dispatcher {
+public class DefaultOperationHandler implements OperationHandler {
 
     private final OperationsMapping mapping;
     private final MetricsRegistry metricsRegistry;
     private final PlatformAuthManager authManager;
 
     @Override
-    public <I, O> O dispatch(Class<? extends Operation<I, O>> operationClass, I request) {
+    public <I, O> O handle(Class<? extends Operation<I, O>> operationClass, I request) {
         RequestContext context = RequestContextHolder.require();
-        return dispatch(operationClass, request, context);
+        return handle(operationClass, request, context);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <I, O> O dispatch(Class<? extends Operation<I, O>> operationClass, I request, RequestContext context) {
-        if (request instanceof Validatable) {
-            ((Validatable) request).validate();
+    public <I, O> O handle(Class<? extends Operation<I, O>> operationClass, I input, RequestContext context) {
+        if (input instanceof Validatable) {
+            ((Validatable) input).validate();
         }
 
         if (SecurityContextHolder.getContext().getAuthentication() == null && context.hasAuthorization()) {
@@ -53,7 +48,7 @@ public class DefaultDispatcher implements Dispatcher {
                 Operation<I, O> impl = (Operation<I, O>) act;
                 return metricsRegistry.track(OPERATION_PREFIX + operationClass.getSimpleName(), RequestContextUtil.tagify(context), () -> {
                     try {
-                        return impl.handle(request, context);
+                        return impl.handle(input, context);
                     } catch (AuthenticationCredentialsNotFoundException e) {
                         throw new UnauthorizedException(e.getMessage(), ErrorUtil.getStacktrace(e));
                     }
@@ -64,24 +59,25 @@ public class DefaultDispatcher implements Dispatcher {
         throw new TechnicalException("Unable to find implementation for operation: %s", operationClass.getName());
     }
 
+   /*
     @Override
-    public <O> O dispatch(Class<? extends Operation0<O>> operationClass) {
+    public <O> O handle(Class<? extends NoInputOperation<O>> operationClass) {
         RequestContext context = RequestContextHolder.require();
-        return dispatch(operationClass, context);
+        return handle(operationClass, context);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     @Transactional
-    public <O> O dispatch(Class<? extends Operation0<O>> operationClass, RequestContext context) {
+    public <O> O handle(Class<? extends NoInputOperation<O>> operationClass, RequestContext context) {
 
         if (SecurityContextHolder.getContext().getAuthentication() == null && context.hasAuthorization()) {
             authManager.process(context);
         }
 
-        for (Operation0<?> act : mapping.getRegistry0()) {
+        for (NoInputOperation<?> act : mapping.getRegistry0()) {
             if (operationClass.isAssignableFrom(act.getClass())) {
-                Operation0<O> impl = (Operation0<O>) act;
+                NoInputOperation<O> impl = (NoInputOperation<O>) act;
                 return metricsRegistry.track(OPERATION_PREFIX + operationClass.getName(), ImmutableMap.of(
                     Constants.OPERATION, operationClass.getName()
                 ), () -> {
@@ -96,6 +92,6 @@ public class DefaultDispatcher implements Dispatcher {
         metricsRegistry.increment(CoreMetrics.INVALID_OPERATION);
         throw new TechnicalException("Unable to find implementation for operation: %s", operationClass.getName());
     }
-
+    */
 
 }

@@ -10,6 +10,7 @@ import io.soffa.foundation.exceptions.ForbiddenException;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.exceptions.UnauthorizedException;
+import io.soffa.foundation.model.ApiInfo;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

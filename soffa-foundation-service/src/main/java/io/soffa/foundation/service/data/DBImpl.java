@@ -1,7 +1,6 @@
 package io.soffa.foundation.service.data;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.zaxxer.hikari.HikariDataSource;
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.Logger;
@@ -9,10 +8,11 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.config.DataSourceConfig;
 import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.data.DataSourceProperties;
 import io.soffa.foundation.data.DB;
+import io.soffa.foundation.data.DataSourceProperties;
 import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.exceptions.DatabaseException;
+import io.soffa.foundation.exceptions.NotImplementedException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.model.TenantId;
 import io.soffa.foundation.service.state.DatabasePlane;
@@ -28,26 +28,27 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
+import org.springframework.jdbc.datasource.AbstractDataSource;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public final class DBImpl extends AbstractRoutingDataSource implements ApplicationListener<ContextRefreshedEvent>, DB {
+public final class DBImpl extends AbstractDataSource implements ApplicationListener<ContextRefreshedEvent>, DB {
 
-    public static final String NONE = "none";
+    // public static final String NONE = "none";
     private static final Logger LOG = Logger.get(DBImpl.class);
     private final Map<Object, Object> dataSources = new ConcurrentHashMap<>();
-    private String tablesPrefix = "";
+    private final String tablesPrefix;
     private final String appicationName;
-    private boolean appicationStarted;
     private final String tenanstListQuery;
     private final TenantsLoader tenantsLoader;
     private static final String TENANT_PLACEHOLDER = "__tenant__";
     private static final String DEFAULT_DS = "default";
-    private static final Map<String, Boolean> MIGRATED = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> migrated = new ConcurrentHashMap<>();
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final DatabasePlane dbState;
     private final ApplicationEventPublisher publisher;
@@ -69,42 +70,27 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
         this.tenantsLoader = tenantsLoader;
         this.appicationName = appicationName;
         this.tenanstListQuery = dbConfig.getTenantListQuery();
-        setTablesPrefix(dbConfig.getTablesPrefix());
-        setLenientFallback(false);
+        this.tablesPrefix = dbConfig.getTablesPrefix();
+
+        // setLenientFallback(false);
         dbState.setPending();
         createDatasources(dbConfig.getDatasources());
         TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
-        super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
+        // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         createLockTable();
     }
 
     private void createDatasources(Map<String, DataSourceConfig> datasources) {
-        if (datasources==null || datasources.isEmpty()) {
-            throw new TechnicalException("No db link provided");
-        }
-        for (Map.Entry<String, DataSourceConfig> dbLink : datasources.entrySet()) {
-            //if (!TENANT_PLACEHOLDER.equalsIgnoreCase(dbLink.getKey())) {
-            registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
-            //}
-        }
-        if (!dataSources.containsKey(DEFAULT_DS)) {
-            throw new TechnicalException("No default datasource provided");
-        }
-        dataSources.put(NONE, new MockDataSource());
-    }
-
-    private void setTablesPrefix(String tablesPrefix) {
-        if (TextUtil.isNotEmpty(tablesPrefix)) {
-
-            String value = TextUtil.trimToEmpty(tablesPrefix)
-                .replaceAll("[^a-zA-Z0-9]", "_")
-                .replaceAll("_+$", "_").trim();
-
-            if (!value.endsWith("_")) {
-                value += "_";
+        if (datasources == null || datasources.isEmpty()) {
+            LOG.warn("No datasources configured for this service.");
+            dbState.setReady();
+        } else {
+            for (Map.Entry<String, DataSourceConfig> dbLink : datasources.entrySet()) {
+                registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
             }
-            this.tablesPrefix = value;
-            CustomPhysicalNamingStrategy.tablePrefix = value;
+            if (!dataSources.containsKey(DEFAULT_DS)) {
+                throw new TechnicalException("No default datasource provided");
+            }
         }
     }
 
@@ -126,9 +112,19 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
 
     }
 
+    @Override
+    public Connection getConnection() throws SQLException {
+        return determineTargetDataSource().getConnection();
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) {
+        throw new NotImplementedException("Not supported");
+    }
+
     @NotNull
     @Override
-    protected DataSource determineTargetDataSource() {
+    public DataSource determineTargetDataSource() {
         Object lookupKey = determineCurrentLookupKey();
         if (lookupKey != null) {
             lookupKey = lookupKey.toString().toLowerCase();
@@ -139,21 +135,18 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
         return (DataSource) dataSources.get(lookupKey);
     }
 
-    @Override
-    protected Object determineCurrentLookupKey() {
+    private Object determineCurrentLookupKey() {
         String linkId = TenantHolder.get().orElse(null);
         if (linkId == null) {
             if (dataSources.containsKey(TenantId.DEFAULT_VALUE)) {
                 return TenantId.DEFAULT_VALUE;
-            } else if (!appicationStarted) {
-                return NONE;
             }
             throw new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
         }
         linkId = linkId.toLowerCase();
         if (!dataSources.containsKey(linkId) && dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
             registerDatasource(linkId, dsConfigs.get(TENANT_PLACEHOLDER), true);
-            super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
+            // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         }
         return linkId;
     }
@@ -185,7 +178,6 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
         } else {
             publisher.publishEvent(new DatabaseReadyEvent(event.getApplicationContext()));
         }
-        appicationStarted = true;
     }
 
     @Override
@@ -194,11 +186,11 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
         if (ds == null) {
             throw new TechnicalException("Datasource not registered: " + tenantId);
         }
-        Jdbi jdbi = Jdbi.create(ds);
-        jdbi.useHandle(handle -> {
-            handle.execute("CREATE SCHEMA IF NOT EXISTS " + schema);
+        Jdbi.create(ds).useHandle(handle -> {
+            if (handle.execute("CREATE SCHEMA IF NOT EXISTS " + schema) > 0) {
+                LOG.info("New schema created: %s", schema);
+            }
         });
-        LOG.info("New schema created: %s", schema);
     }
 
     public void applyMigrations() {
@@ -239,14 +231,14 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
 
     private void applyMigrations(HikariDataSource dataSource) {
         DataSourceConfig link = dsConfigs.get(dataSource);
-        if (MIGRATED.containsKey(appicationName + "." + link.getName())) {
+        if (migrated.containsKey(link.getName().toLowerCase())) {
             return;
         }
         String changelogPath = findChangeLogPath(link);
         if (TextUtil.isNotEmpty(changelogPath)) {
             DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
         }
-        MIGRATED.put(appicationName + "." + link.getName(), true);
+        migrated.put(link.getName().toLowerCase(), true);
     }
 
     public DataSource get(String tenant) {
@@ -261,6 +253,18 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
     @Override
     public boolean tenantExists(String tenant) {
         return dataSources.containsKey(tenant.toLowerCase());
+    }
+
+    @Override
+    public List<Map<String,Object>> query(String datasource, String query) {
+        DataSource ds = (DataSource)dataSources.get(datasource.toLowerCase());
+        return Jdbi.create(ds).withHandle(handle -> handle.createQuery(query).setMaxRows(1000).mapToMap().list());
+    }
+
+    @Override
+    public List<Map<String,Object>> query(String query) {
+        DataSource ds = determineTargetDataSource();
+        return Jdbi.create(ds).withHandle(handle -> handle.createQuery(query).setMaxRows(1000).mapToMap().list());
     }
 
     @SneakyThrows
@@ -318,4 +322,5 @@ public final class DBImpl extends AbstractRoutingDataSource implements Applicati
             }
         });
     }
+
 }

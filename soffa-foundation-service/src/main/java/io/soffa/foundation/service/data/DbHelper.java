@@ -39,13 +39,22 @@ public final class DbHelper {
         hc.setJdbcUrl(config.getUrl());
         hc.setPoolName(IdGenerator.shortUUID(config.getName() + "_"));
         hc.setConnectionTestQuery("select 1");
-        hc.setIdleTimeout(30_000);
-        hc.setMaximumPoolSize(20);
-        hc.setMinimumIdle(5);
-        hc.setMaxLifetime(2_000_000);
+
+        // hc.setMinimumIdle(0);
         hc.setConnectionTimeout(30_000);
-        hc.setValidationTimeout(10_000);
-        hc.addDataSourceProperty("ignore_startup_parameters", "search_path");
+        hc.setIdleTimeout(35_000);
+        hc.setMaxLifetime(45_000);
+
+        if (config.getUrl().contains(":h2:")) {
+            hc.addDataSourceProperty("ignore_startup_parameters", "search_path");
+        }
+
+        // hc.setIdleTimeout(30_000);
+        // hc.setMaximumPoolSize(20);
+        // hc.setMinimumIdle(5);
+        // hc.setMaxLifetime(2_000_000);
+        // hc.setConnectionTimeout(30_000);
+        // hc.setValidationTimeout(10_000);
         if (config.hasSchema()) {
             hc.setSchema(config.getSchema());
         }
@@ -89,7 +98,7 @@ public final class DbHelper {
         doApplyMigration(lqb, changeLogParams, (HikariDataSource) dataSource);
     }
 
-    private static void doApplyMigration(SpringLiquibase lqb, Map<String, String> changeLogParams, HikariDataSource ds) {
+    private static void doApplyMigration(SpringLiquibase lqb, Map<String, String> changeLogParams, final HikariDataSource ds) {
         String schema = ds.getSchema();
         String dsName = ds.getPoolName().split("__")[0];
         if (TenantId.DEFAULT_VALUE.equals(dsName)) {
@@ -102,12 +111,21 @@ public final class DbHelper {
             lqb.setLiquibaseSchema(schema);
         }
         lqb.setChangeLogParameters(changeLogParams);
-        try (HikariDataSource dscopy = new HikariDataSource(ds)) {
-            lqb.setDataSource(dscopy);
+        try {
+            lqb.setDataSource(ds);
+
             lqb.afterPropertiesSet(); // Run migrations
             LOG.info("[datasource:%s] migration '%s' successfully applied", dsName, lqb.getChangeLog());
         } catch (Exception e) {
-            throw new DatabaseException(e, "Migration failed for %s", schema);
+            String msg = e.getMessage().toLowerCase();
+            if (msg.contains("changelog") && msg.contains("already exists")) {
+                boolean isTestDb = ((HikariDataSource)lqb.getDataSource()).getJdbcUrl().startsWith("jdbc:h2:mem");
+                if (!isTestDb) {
+                    LOG.warn("Looks like migrations are being ran twice for %s.%s, ignore this error", dsName, schema);
+                }
+            }else {
+                throw new DatabaseException(e, "Migration failed for %s", schema);
+            }
         }
     }
 

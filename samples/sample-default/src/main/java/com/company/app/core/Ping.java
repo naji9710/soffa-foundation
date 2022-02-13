@@ -1,6 +1,6 @@
 package com.company.app.core;
 
-import io.soffa.foundation.api.Operation0;
+import io.soffa.foundation.api.Operation;
 
-public interface Ping extends Operation0<PingResponse> {
+public interface Ping extends Operation<Void, PingResponse> {
 }

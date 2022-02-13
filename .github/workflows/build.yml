@@ -22,28 +22,5 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Run checks
-        run: |
-          gradle check \
-            -PossrhUsername=foo -PossrhPassword=foo \
-            -Psigning.keyId=foo -Psigning.password=foo \
-            -Psigning.secretKeyRingFile=foo \
-            -Pverbose=true
-
-  publish-to-sonatype:
-    needs: check
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@v2
-      - name: Publish artifact to public Sonatype Nexus
-        run: |
-          echo $SONATYPE_GPG | base64 -d > $HOME/.sonatype-keys.gpg
-          gradle sign -x check publishMavenPublicationToSonatypeRepository closeAndReleaseSonatypeStagingRepository -Psonatype=true \
-            -PossrhUsername=$SONATYPE_USERNAME \
-            -PossrhPassword=$SONATYPE_PASSWORD \
-            -Psigning.keyId=$SIGNING_KEYID  \
-            -Psigning.password=$SIGNING_PASSWORD \
-            -Psigning.secretKeyRingFile=$HOME/.sonatype-keys.gpg
+        run: NO_PUBLISH=true gradle check
 

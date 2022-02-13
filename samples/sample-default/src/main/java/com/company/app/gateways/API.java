@@ -3,7 +3,7 @@ package com.company.app.gateways;
 import com.company.app.core.Echo;
 import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
-import io.soffa.foundation.annotations.Operation;
+import io.soffa.foundation.annotations.BindOperation;
 import io.soffa.foundation.api.ApiHeaders;
 import io.soffa.foundation.context.RequestContext;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,7 +24,7 @@ public interface API {
         parameters = {@Parameter(ref = ApiHeaders.TENANT_ID)}
     )
     @Path("/ping")
-    @Operation(Ping.class)
+    @BindOperation(Ping.class)
     PingResponse ping(@Parameter(hidden = true) RequestContext context);
 
     @io.swagger.v3.oas.annotations.Operation(
@@ -34,7 +34,7 @@ public interface API {
         parameters = {@Parameter(ref = ApiHeaders.TENANT_ID)}
     )
     @Path("/echo")
-    @Operation(Echo.class)
+    @BindOperation(Echo.class)
     String echo(String input, @Parameter(hidden = true) RequestContext context);
 
 }

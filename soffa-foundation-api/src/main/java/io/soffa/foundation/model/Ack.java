@@ -1,4 +1,4 @@
-package io.soffa.foundation.models.commons;
+package io.soffa.foundation.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Ack {
+
+    public static final Ack OK = new Ack("OK", true);
 
     private String value;
     private boolean success;

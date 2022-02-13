@@ -2,7 +2,6 @@ package io.soffa.foundation.service.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.api.Operation0;
 import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
@@ -35,9 +34,8 @@ public class PlatformBeansFactory {
     }
 
     @Bean
-    public OperationsMapping createOperationsMapping(Set<Operation<?, ?>> operationHandlers,
-                                                     Set<Operation0<?>> operationHandlers0) {
-        return new OperationsMapping(operationHandlers, operationHandlers0);
+    public OperationsMapping createOperationsMapping(Set<Operation<?, ?>> operations) {
+        return new OperationsMapping(operations);
     }
 
     @Bean@ConditionalOnMissingBean(AuthManager.class)

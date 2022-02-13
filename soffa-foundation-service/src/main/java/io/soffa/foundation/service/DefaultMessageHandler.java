@@ -1,7 +1,6 @@
 package io.soffa.foundation.service;
 
 import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.api.Operation0;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextUtil;
@@ -11,7 +10,6 @@ import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.lang.reflect.MethodUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -26,8 +24,8 @@ public class DefaultMessageHandler implements MessageHandler {
     private final MetricsRegistry metricsRegistry;
 
     @Override
-    public boolean accept(String operationId) {
-        return mapping.getInternal().containsKey(operationId);
+    public boolean accept(String operation) {
+        return mapping.getInternal().containsKey(operation);
     }
 
     @Override
@@ -46,9 +44,6 @@ public class DefaultMessageHandler implements MessageHandler {
                 throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
             }
             Object payload = message.getPayloadAs(inputType).orElse(null);
-            if (payload == null) {
-                throw new TechnicalException("Operation " + operation.getClass().getName() + " is expecting a null input");
-            }
             //noinspection Convert2Lambda
             return metricsRegistry.track(
                 "app_operation_" + message.getOperation(),
@@ -56,15 +51,9 @@ public class DefaultMessageHandler implements MessageHandler {
                     @SneakyThrows
                     @Override
                     public Optional<Object> get() {
-                        return Optional.ofNullable(MethodUtils.invokeMethod(operation, "handle", new Object[]{payload, context}));
+                        //noinspection unchecked
+                        return Optional.ofNullable(((Operation<Object, ?>) operation).handle(payload, context));
                     }
-                });
-        } else if (operation instanceof Operation0) {
-            return metricsRegistry.track(
-                "app_operation_" + message.getOperation(),
-                RequestContextUtil.tagify(context), () -> {
-                    //EL
-                    return Optional.ofNullable(((Operation0<?>) operation).handle(context));
                 });
         } else {
             throw new TechnicalException("Unsupported operation type: " + operation.getClass().getName());

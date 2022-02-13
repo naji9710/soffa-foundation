@@ -1,13 +1,12 @@
 package io.soffa.foundation.messages;
 
 
+import io.soffa.foundation.annotations.BindOperation;
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.annotations.Operation;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.api.Operation0;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -27,13 +26,13 @@ public interface BinaryClient extends MessageDispatcher {
 
     void publish(String subject, Message message);
 
-    default <O> CompletableFuture<O> request(String subject, Class<? extends Operation0<O>> operation) {
+    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation) {
         Message message = new Message(
             operation.getSimpleName(),
             operation, RequestContextHolder.get().orElseGet(RequestContext::new)
         );
         @SuppressWarnings("unchecked")
-        Class<O> returnType = (Class<O>) ClassUtil.getClassFromGenericInterface(operation, Operation0.class, 0);
+        Class<O> returnType = (Class<O>) ClassUtil.getClassFromGenericInterface(operation, io.soffa.foundation.api.Operation.class, 1);
         try {
             return request(subject, message, returnType);
         } catch (Exception e) {
@@ -47,14 +46,14 @@ public interface BinaryClient extends MessageDispatcher {
         Map<Method, String> mapping = new HashMap<>();
 
         for (Method method : clientInterface.getDeclaredMethods()) {
-            Operation binding = method.getAnnotation(Operation.class);
+            BindOperation binding = method.getAnnotation(BindOperation.class);
             if (binding != null) {
                 mapping.put(method, binding.value().getName());
             }
         }
 
         if (mapping.isEmpty()) {
-            throw new TechnicalException("No method found with annotation @Operation");
+            throw new TechnicalException("No method found with annotation @BindOperation");
         }
 
         return (T) java.lang.reflect.Proxy.newProxyInstance(
@@ -68,7 +67,7 @@ public interface BinaryClient extends MessageDispatcher {
                     return method.equals(args[0]);
                 }
                 if (!mapping.containsKey(method)) {
-                    throw new TechnicalException("This method has no @Operation annotation");
+                    throw new TechnicalException("This method has no @BindOperation annotation");
                 }
                 return request(subject, createMessage(mapping.get(method), args), method.getReturnType()).get(30, TimeUnit.SECONDS);
             });

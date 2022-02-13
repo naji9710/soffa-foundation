@@ -1,4 +1,4 @@
-package io.soffa.foundation.api;
+package io.soffa.foundation.model;
 
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.exceptions.TechnicalException;
@@ -25,7 +25,7 @@ public class ApiInfo {
             Path path = method.getAnnotation(Path.class);
             Operation operation = method.getAnnotation(Operation.class);
             if (path == null || operation == null) {
-                throw new TechnicalException("Method '%s' should be annotated with @Path and @Operation", method.getName());
+                throw new TechnicalException("Method '%s' should be annotated with @Path and @BindOperation", method.getName());
             }
             if (TextUtil.isEmpty(path.value())) {
                 throw new TechnicalException("@Path value is required on methid '%s'", method.getName());

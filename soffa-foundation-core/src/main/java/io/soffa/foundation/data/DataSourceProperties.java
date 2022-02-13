@@ -57,11 +57,14 @@ public class DataSourceProperties {
                 break;
             }
         }
-
-        JdbcInfo jdbcInfo = createJdbcUrl(provider, url, schema, databaseUrl);
-        if (schema != null && jdbcInfo.getUrl().startsWith("jdbc:h2")) {
-            schema = schema.toUpperCase();
+        if (schema != null) {
+            if (provider.equals(H2)) {
+                schema = schema.toUpperCase();
+            }else {
+                schema = schema.toLowerCase();
+            }
         }
+        JdbcInfo jdbcInfo = createJdbcUrl(provider, url, schema, databaseUrl);
         return DataSourceProperties.builder()
             .name(name)
             .username(jdbcInfo.getUsername())
@@ -84,13 +87,11 @@ public class DataSourceProperties {
         String jdbcDriver;
         StringBuilder hostname = new StringBuilder(url.getHost());
         String path = url.getPath().replaceAll("^/", "");
-        String sc = schema;
         if (H2.equals(provider)) {
             jdbcDriver = H2_DRIVER;
             jdbcUrl.append(String.format("jdbc:h2:%1$s:%2$s;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE", hostname, path));
             if (TextUtil.isNotEmpty(schema)) {
-                sc = schema.toUpperCase();
-                jdbcUrl.append(";INIT=CREATE SCHEMA IF NOT EXISTS ").append(sc);
+                jdbcUrl.append(";INIT=CREATE SCHEMA IF NOT EXISTS ").append(schema);
             }
         } else {
             jdbcDriver = "org.postgresql.Driver";
@@ -101,13 +102,12 @@ public class DataSourceProperties {
             }
             jdbcUrl.append(String.format("jdbc:postgresql://%1$s/%2$s", hostname, path));
             if (TextUtil.isNotEmpty(schema)) {
-                sc = schema.toLowerCase();
                 createSchema(jdbcUrl.toString(), urlInfo.getUsername(), urlInfo.getPassword(), schema);
                 jdbcUrl.append("?currentSchema=").append(schema);
             }
         }
 
-        return new JdbcInfo(jdbcDriver, jdbcUrl.toString(), urlInfo.getUsername(), urlInfo.getPassword(), sc);
+        return new JdbcInfo(jdbcDriver, jdbcUrl.toString(), urlInfo.getUsername(), urlInfo.getPassword(), schema);
     }
 
     private static void createSchema(String jdbcUrl, String username, String password, String schema) {

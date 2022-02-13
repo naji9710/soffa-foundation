@@ -1,10 +1,10 @@
 package io.soffa.foundation.web;
 
 import com.google.common.base.Preconditions;
+import io.soffa.foundation.api.SecuritySchemes;
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.api.SecuritySchemes;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;

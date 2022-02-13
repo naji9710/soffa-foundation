@@ -89,7 +89,7 @@ public class DatabasePlane {
 
     @SneakyThrows
     public void await() {
-        await(Duration.ofSeconds(2));
+        await(Duration.ofSeconds(5));
     }
 
     @SneakyThrows
