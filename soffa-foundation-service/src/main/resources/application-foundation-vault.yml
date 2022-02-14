@@ -1,10 +1,10 @@
 spring.cloud.vault:
   enabled: true
-  uri: ${app.vault.uri:http://localhost:8200}
-  token: ${app.vault.token:${VAULT_TOKEN:0000000000}}
+  uri: ${VAULT_URI}
+  token: ${VAULT_TOKEN}
   kv:
     enabled: true
-    default-context: ${app.vault.context:services/${spring.application.name}}
+    default-context: ${VAULT_CONTEXT:application}
     application-name: ${spring.application.name}
   connection-timeout: 5000
   read-timeout: 15000
