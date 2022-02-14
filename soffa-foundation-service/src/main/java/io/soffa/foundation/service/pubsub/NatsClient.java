@@ -193,22 +193,27 @@ public class NatsClient implements PubSubClient {
         return new NatsMessage(subject, "", JsonUtil.serialize(message).getBytes(StandardCharsets.UTF_8));
     }
 
+    private void setReady() {
+        ready = true;
+        LOG.info("NATS client is ready for business");
+    }
+
     private void subsribe(final String clientId, final String subject, final String queue, final MessageHandler handler) {
         if (dbPlane.isReady()) {
             doSubsribe(clientId, subject, queue, handler);
+            setReady();
         } else {
             final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            LOG.info("Waiting from DatabasePlane before subscribing to %s", subject);
             executor.scheduleAtFixedRate(() -> {
                 if (dbPlane.isReady()) {
                     if (!ready) {
                         doSubsribe(clientId, subject, queue, handler);
                     }
+                    setReady();
                     executor.shutdown();
-                    ready = true;
-                } else if (LOG.isInfoEnabled()) {
-                    LOG.info("Waiting from DatabasePlace before subscribing to subject: " + subject);
                 }
-            }, 300, 300, TimeUnit.MILLISECONDS);
+            }, 0, 500, TimeUnit.MILLISECONDS);
         }
     }
 
