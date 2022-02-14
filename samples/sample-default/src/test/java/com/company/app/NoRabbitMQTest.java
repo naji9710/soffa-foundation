@@ -9,7 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
-@SpringBootTest(properties = {"app.amqp.enabled=false"})
+@SpringBootTest
 public class NoRabbitMQTest {
 
     @Autowired(required = false)

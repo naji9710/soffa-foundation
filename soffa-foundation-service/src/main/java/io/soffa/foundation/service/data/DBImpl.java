@@ -22,6 +22,7 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
@@ -303,6 +304,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
             if (dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
                 final Set<String> tenants = new HashSet<>();
                 if (TextUtil.isNotEmpty(tenanstListQuery)) {
+                    LOG.info("Loading tenants from database");
                     Jdbi jdbi = Jdbi.create(defaultDs);
                     jdbi.useHandle(handle -> {
                         LOG.info("Loading tenants from query: %s", tenanstListQuery);
@@ -312,9 +314,16 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                         }
                     });
                 } else {
-                    TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
-                    tenants.addAll(tenantsLoader.getTenantList());
+                    LOG.info("Loading tenants with TenantsLoader");
+                    try {
+                        TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
+                        tenants.addAll(tenantsLoader.getTenantList());
+                    }catch (NoSuchBeanDefinitionException e) {
+                        LOG.error("No TenantsLoader defined");
+                    }
                 }
+
+                LOG.info("Tenants loaded: %d", tenants.size());
 
                 for (String tenant : tenants) {
                     registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
