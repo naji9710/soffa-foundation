@@ -1,3 +1,7 @@
+## 1.5.8 (February 14, 2022)
+
+* Improvements and stability
+
 ## 1.5.7 (February 13, 2022)
 
 * Improvements and stability
