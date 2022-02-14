@@ -72,14 +72,25 @@ public class NatsClient implements PubSubClient {
                 this.clients.put(clientId, connexion);
 
                 JetStreamOptions jso = JetStreamOptions.defaultOptions();
-                this.streams.put(clientId, connexion.jetStream(jso));
+                JetStream stream = connexion.jetStream(jso);
+                this.streams.put(clientId, stream);
+
 
                 if (TextUtil.isNotEmpty(clientConfig.getBroadcast())) {
+
+                    StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
+                        .name(IdGenerator.shortUUID(applicationName));
+                    try {
+                        Subscription sub = stream.subscribe(clientConfig.getBroadcast());
+                        sub.unsubscribe();
+                    } catch (IllegalStateException e) {
+                        LOG.warn(e.getMessage());
+                        scBuilder.addSubjects(clientConfig.getBroadcast());
+                    }
+
                     broadcastSubjects.put(clientId, clientConfig.getBroadcast());
-                    StreamConfiguration sc = StreamConfiguration.builder()
-                        .name(IdGenerator.shortUUID(applicationName)).build();
                     JetStreamManagement jsm = connexion.jetStreamManagement();
-                    jsm.addStream(sc);
+                    jsm.addStream(scBuilder.build());
                 }
 
                 this.subsribe(applicationName, clientConfig.getBroadcast(), handler);

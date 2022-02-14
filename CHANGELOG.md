@@ -1,4 +1,4 @@
-## 1.5.8 (February 14, 2022)
+## 1.5.10 (February 14, 2022)
 
 * Improvements and stability
 
