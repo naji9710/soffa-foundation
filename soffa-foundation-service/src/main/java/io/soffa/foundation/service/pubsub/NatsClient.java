@@ -1,33 +1,33 @@
-package io.soffa.foundation.service;
+package io.soffa.foundation.service.pubsub;
 
 import io.nats.client.*;
-import io.nats.client.api.PublishAck;
-import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.NatsMessage;
-import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.exceptions.ConfigurationException;
-import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.messages.PubSubClient;
-import io.soffa.foundation.metrics.CoreMetrics;
 import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.service.PlatformAuthManager;
 import io.soffa.foundation.service.pubsub.nats.NatsClientConfig;
 import io.soffa.foundation.service.pubsub.nats.NatsConfig;
+import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.annotation.PreDestroy;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static io.soffa.foundation.Constants.OPERATION;
 import static io.soffa.foundation.metrics.CoreMetrics.*;
@@ -40,25 +40,41 @@ public class NatsClient implements PubSubClient {
     private final Map<String, JetStream> streams = new HashMap<>();
     private final String applicationName;
     private final MetricsRegistry metricsRegistry;
+    private final DatabasePlane dbPlane;
     private final PlatformAuthManager authManager;
     public static final String DEFAULT_CLIENT = "default";
+    private final List<Subscription> subscriptions = new ArrayList<>();
+    private boolean ready;
 
-    @SuppressWarnings("PMD")
+
     public NatsClient(
         PlatformAuthManager authManager,
         String applicationName,
         NatsConfig config,
         MessageHandler handler,
-        MetricsRegistry metricsRegistry) {
+        MetricsRegistry metricsRegistry,
+        DatabasePlane dbPlane) {
 
+        this.ready = false;
         this.authManager = authManager;
         this.metricsRegistry = metricsRegistry;
         this.applicationName = applicationName;
+        this.dbPlane = dbPlane;
 
         if (!config.hasDefaultClient()) {
             throw new ConfigurationException("Nats client configuration is missing default client");
         }
 
+        configure(config, handler);
+    }
+
+    @Override
+    public boolean isReady() {
+        return ready;
+    }
+
+    @SuppressWarnings("PMD")
+    private void configure(NatsConfig config, MessageHandler handler) {
         for (Map.Entry<String, NatsClientConfig> cc : config.getClients().entrySet()) {
             String clientId = cc.getKey();
             NatsClientConfig clientConfig = cc.getValue();
@@ -70,35 +86,10 @@ public class NatsClient implements PubSubClient {
                 Options o = new Options.Builder().servers(addresses).maxReconnects(-1).build();
                 Connection connexion = Nats.connect(o);
                 this.clients.put(clientId, connexion);
-
-                JetStreamOptions jso = JetStreamOptions.defaultOptions();
-                JetStream stream = connexion.jetStream(jso);
-                this.streams.put(clientId, stream);
-
-
-                if (TextUtil.isNotEmpty(clientConfig.getBroadcast())) {
-
-                    StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
-                        .name(IdGenerator.shortUUID(applicationName));
-                    try {
-                        Subscription sub = stream.subscribe(clientConfig.getBroadcast());
-                        sub.unsubscribe();
-                    } catch (IllegalStateException e) {
-                        LOG.warn(e.getMessage());
-                        scBuilder.addSubjects(clientConfig.getBroadcast());
-                    }
-
-                    broadcastSubjects.put(clientId, clientConfig.getBroadcast());
-                    JetStreamManagement jsm = connexion.jetStreamManagement();
-                    jsm.addStream(scBuilder.build());
-                }
-
-                this.subsribe(applicationName, clientConfig.getBroadcast(), handler);
-
+                this.subsribe(clientId, applicationName, clientConfig.getBroadcast(), handler);
                 LOG.info("Connected to NATS servers: %s", clientConfig.getAddresses());
             } catch (Exception e) {
                 for (Connection value : this.clients.values()) {
-
                     try {
                         value.close();
                     } catch (InterruptedException ignore) {
@@ -124,7 +115,7 @@ public class NatsClient implements PubSubClient {
         return metricsRegistry.track(NATS_REQUEST,
             createTags(subject, message),
             () -> {
-                //EL
+                LOG.debug("Sending request #%s to %s", message.getId(), subject);
                 return getClient(client).request(createNatsMessage(subject, message))
                     .thenApply(msg -> JsonUtil.deserialize(msg.getData(), responseClass));
             });
@@ -136,7 +127,9 @@ public class NatsClient implements PubSubClient {
         metricsRegistry.track(
             NATS_PUBLISH,
             createTags(sub, message),
-            () -> getClient(client).publish(createNatsMessage(sub, message))
+            () -> {
+                getClient(client).publish(createNatsMessage(sub, message));
+            }
         );
     }
 
@@ -188,10 +181,10 @@ public class NatsClient implements PubSubClient {
                 @SneakyThrows
                 @Override
                 public void run() {
-                    PublishAck ack = getStream(client).publish(createNatsMessage(broadcastSubjet, message));
-                    if (ack.hasError()) {
+                    getClient(client).publish(createNatsMessage(broadcastSubjet, message));
+                    /*if (ack.hasError()) {
                         throw new TechnicalException(ack.getError());
-                    }
+                    }*/
                 }
             });
     }
@@ -200,48 +193,65 @@ public class NatsClient implements PubSubClient {
         return new NatsMessage(subject, "", JsonUtil.serialize(message).getBytes(StandardCharsets.UTF_8));
     }
 
-    @Override
-    public final void subsribe(String subject, String queue, MessageHandler handler) {
-
-        io.nats.client.MessageHandler localHandler = (msg) -> {
-            try {
-                io.soffa.foundation.messages.Message message = JsonUtil.deserialize(msg.getData(), io.soffa.foundation.messages.Message.class);
-                if (message.getContext() != null) {
-                    authManager.process(message.getContext());
-                    RequestContextHolder.set(message.getContext());
+    private void subsribe(final String clientId, final String subject, final String queue, final MessageHandler handler) {
+        if (dbPlane.isReady()) {
+            doSubsribe(clientId, subject, queue, handler);
+        } else {
+            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleAtFixedRate(() -> {
+                if (dbPlane.isReady()) {
+                    if (!ready) {
+                        doSubsribe(clientId, subject, queue, handler);
+                    }
+                    executor.shutdown();
+                    ready = true;
+                } else if (LOG.isInfoEnabled()) {
+                    LOG.info("Waiting from DatabasePlace before subscribing to subject: " + subject);
                 }
-                Optional<Object> response = handler.handle(message);
-                if (TextUtil.isNotEmpty(msg.getReplyTo())) {
-                    byte[] responseData = response.map(o -> JsonUtil.serialize(o).getBytes(StandardCharsets.UTF_8)).orElse(null);
-                    msg.getConnection().publish(msg.getReplyTo(), responseData);
-                } else {
-                    msg.ack();
-                }
-                metricsRegistry.increment(CoreMetrics.NATS_EVENT_PROCESSED);
-            } catch (FunctionalException e) {
-                LOG.warn(TextUtil.format("Message %s was skipped due to a functionnal error", msg.getSID()), e);
-                LOG.warn(e.getMessage(), e);
-                msg.ack();
-                metricsRegistry.increment(CoreMetrics.NATS_EVENT_SKIPPED);
-            } catch (Exception e) {
-                LOG.error("Nats avent handling failed with error", e);
-                msg.nak();
-                metricsRegistry.increment(CoreMetrics.NATS_EVENT_PROCESSING_FAILED);
-            }
-        };
+            }, 300, 300, TimeUnit.MILLISECONDS);
+        }
+    }
 
-        Dispatcher dispatcher = getClient(DEFAULT_CLIENT).createDispatcher(localHandler);
-        dispatcher.subscribe(subject);
+    @SneakyThrows
+    private void doSubsribe(String clientId, String subject, String broadcast, MessageHandler handler) {
 
-        if (TextUtil.isNotEmpty(queue)) {
+        NatsMessageHandler h = new NatsMessageHandler(metricsRegistry, authManager, handler, true);
+        @SuppressWarnings("PMD")
+        Connection cli = getClient(clientId);
+        Dispatcher dispatcher = cli.createDispatcher(h);
+        dispatcher.subscribe(subject, subject + "-group");
+
+        if (TextUtil.isNotEmpty(broadcast)) {
+
+            JetStreamOptions jso = JetStreamOptions.defaultOptions();
+            JetStream stream = cli.jetStream(jso);
+            streams.put(clientId, stream);
+            broadcastSubjects.put(clientId, broadcast);
+
             PushSubscribeOptions so = PushSubscribeOptions.builder()
                 .durable(applicationName)
                 .build();
-            try {
-                getStream(DEFAULT_CLIENT).subscribe(queue, dispatcher, localHandler, false, so);
-            } catch (JetStreamApiException | IOException e) {
-                throw new TechnicalException(e.getMessage(), e);
-            }
+            subscriptions.add(getStream(clientId).subscribe(
+                broadcast, dispatcher, h, true, so
+            ));
+
+            /*
+            StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
+                .name(clientConfig.getBroadcast());
+             */
+            /*try {
+                Subscription sub = stream.subscribe(clientConfig.getBroadcast());
+                sub.unsubscribe();
+            } catch (IllegalStateException e) {
+                LOG.warn(e.getMessage());
+                scBuilder.addSubjects(clientConfig.getBroadcast());
+            }*/
+            /*
+                    JetStreamManagement jsm = connexion.jetStreamManagement();
+                    jsm.addStream(scBuilder.build());
+             */
+
+
         }
 
     }
@@ -249,6 +259,13 @@ public class NatsClient implements PubSubClient {
     @PreDestroy
     @SuppressWarnings("PMD")
     public void cleanup() {
+        for (Subscription subscription : subscriptions) {
+            try {
+                subscription.unsubscribe();
+            } catch (Exception e) {
+                LOG.debug("Unsubscription failed: %s", e.getMessage());
+            }
+        }
         for (Connection connection : clients.values()) {
             try {
                 connection.close();

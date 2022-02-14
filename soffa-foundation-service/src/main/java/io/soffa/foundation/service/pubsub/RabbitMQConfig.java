@@ -6,10 +6,8 @@ import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.config.AppConfig;
-import io.soffa.foundation.exceptions.NotImplementedException;
 import io.soffa.foundation.exceptions.TechnicalException;
 import io.soffa.foundation.messages.Message;
-import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.messages.PubSubClient;
 import io.soffa.foundation.service.pubsub.amqp.AmqpClientConfig;
 import io.soffa.foundation.service.pubsub.amqp.AmqpConfig;
@@ -124,11 +122,6 @@ public class RabbitMQConfig {
                     return applicationName;
                 }
                 return subject;
-            }
-
-            @Override
-            public void subsribe(String subject, String queue, MessageHandler handler) {
-                throw new NotImplementedException("Not implemented yet");
             }
 
             @Override

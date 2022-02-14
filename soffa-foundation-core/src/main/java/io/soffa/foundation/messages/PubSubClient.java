@@ -20,8 +20,6 @@ public interface PubSubClient {
 
     Logger LOG = Logger.get(PubSubClient.class);
 
-    void subsribe(String subject, String queue, MessageHandler handler);
-
     <T> CompletableFuture<T> request(String subject, Message event, Class<T> expectedClass, String client);
 
     default <T> CompletableFuture<T> request(String subject, Message event, Class<T> expectedClass) {
@@ -34,6 +32,10 @@ public interface PubSubClient {
 
     default void publish(Message message) {
         publish(null, message, null);
+    }
+
+    default boolean isReady() {
+        return true;
     }
 
     void publish(String subject, Message message, String client);

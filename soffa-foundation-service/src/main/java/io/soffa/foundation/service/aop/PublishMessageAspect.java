@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class PublishMessageAspect {
 
+    private static final Logger LOG = Logger.get(PublishMessageAspect.class);
     private final PubSubClient pubSub;
 
     public PublishMessageAspect(@Autowired(required = false) PubSubClient pubSub) {
         this.pubSub = pubSub;
     }
 
-    public static final Logger LOG = Logger.get(PublishMessageAspect.class);
 
     @SneakyThrows
     @Around("@annotation(message)")

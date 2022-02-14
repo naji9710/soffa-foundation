@@ -31,17 +31,18 @@ public class DefaultMessageHandler implements MessageHandler {
     @Override
     public Optional<Object> handle(Message message) {
         final RequestContext context = Optional.ofNullable(message.getContext()).orElse(new RequestContext());
-
         Object operation = mapping.getInternal().get(message.getOperation());
-
         if (operation == null) {
+            LOG.debug("Message %s skipped, no local handler registered", message.getOperation());
             return Optional.empty();
         }
+        LOG.debug("New message received with operation %s#%s", message.getOperation(), message.getId());
         if (operation instanceof Operation) {
             Class<?> inputType = mapping.getInputTypes().get(message.getOperation());
             if (inputType == null) {
                 throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
             }
+            LOG.debug("Converting message payload to %s", inputType.getName());
             Object payload = message.getPayloadAs(inputType).orElse(null);
             //noinspection Convert2Lambda
             return metricsRegistry.track(

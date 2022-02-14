@@ -58,12 +58,16 @@ public class Message implements Serializable {
     }
 
     public <T> Optional<T> getPayloadAs(Class<T> expectedType) {
-        if (expectedType==Void.class || expectedType== NoInput.class) {
-            return  Optional.empty();
-        }
         Preconditions.checkNotNull(expectedType, "Invalid type provided");
         if (payload == null) {
             return Optional.empty();
+        }
+        if (expectedType == Void.class || expectedType == NoInput.class) {
+            return Optional.empty();
+        }
+        if (expectedType.isInstance(payload)) {
+            //noinspection unchecked
+            return Optional.of((T) payload);
         }
         try {
             return Optional.ofNullable(JsonUtil.convert(payload, expectedType));

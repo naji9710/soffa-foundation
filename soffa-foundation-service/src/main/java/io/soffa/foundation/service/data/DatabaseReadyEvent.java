@@ -7,6 +7,7 @@ public class DatabaseReadyEvent extends ApplicationContextEvent {
 
     public static final long serialVersionUID = 1L;
 
+
     public DatabaseReadyEvent(ApplicationContext source) {
         super(source);
     }
