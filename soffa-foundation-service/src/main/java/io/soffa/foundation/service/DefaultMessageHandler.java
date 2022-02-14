@@ -35,7 +35,6 @@ public class DefaultMessageHandler implements MessageHandler {
         Object operation = mapping.getInternal().get(message.getOperation());
 
         if (operation == null) {
-            LOG.error("No handler found for event %s, dont't forget to use the operation simple class name", message.getOperation());
             return Optional.empty();
         }
         if (operation instanceof Operation) {
