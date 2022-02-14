@@ -1,2 +1,3 @@
 app.nats.enabled: true
-app.nats.url: ${NATS_URL}
+app.nats.clients:
+  default.addresses: ${NATS_URL}

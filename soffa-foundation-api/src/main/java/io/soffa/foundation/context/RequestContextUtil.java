@@ -1,8 +1,11 @@
 package io.soffa.foundation.context;
 
+import io.soffa.foundation.api.ApiHeaders;
 import io.soffa.foundation.commons.TextUtil;
+import lombok.SneakyThrows;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -49,4 +52,47 @@ public final class RequestContextUtil {
     }
 
 
+    @SneakyThrows
+    public static Map<String, String> getContextMap(RequestContext context) {
+        Map<String, String> contextMap = new HashMap<>();
+        if (TextUtil.isNotEmpty(context.getApplicationName())) {
+            contextMap.put("application", context.getApplicationName());
+        }
+        if (TextUtil.isNotEmpty(context.getTenant())) {
+            contextMap.put("tenant", context.getTenant());
+        }
+        if (TextUtil.isNotEmpty(context.getTraceId())) {
+            contextMap.put("traceId", context.getTraceId());
+        }
+        if (TextUtil.isNotEmpty(context.getSpanId())) {
+            contextMap.put("spanId", context.getSpanId());
+        }
+        if (context.getAuthentication() != null && TextUtil.isNotEmpty(context.getAuthentication().getUsername())) {
+            contextMap.put("user", context.getAuthentication().getUsername());
+        }
+        contextMap.put("service_name", context.getServiceName());
+        return contextMap;
+    }
+
+    @SneakyThrows
+    public static Map<String, String> getHeaders(RequestContext context) {
+        Map<String, String> headers = new HashMap<>();
+
+        if (TextUtil.isNotEmpty(context.getApplicationName())) {
+            headers.put(ApiHeaders.APPLICATION, context.getApplicationName());
+        }
+        if (TextUtil.isNotEmpty(context.getTenant())) {
+            headers.put(ApiHeaders.TENANT_ID, context.getTenant());
+        }
+        if (TextUtil.isNotEmpty(context.getTraceId())) {
+            headers.put(ApiHeaders.TRACE_ID, context.getTraceId());
+        }
+        if (TextUtil.isNotEmpty(context.getSpanId())) {
+            headers.put(ApiHeaders.SPAN_ID, context.getSpanId());
+        }
+        if (TextUtil.isNotEmpty(context.getAuthorization())) {
+            headers.put("Authorization", context.getAuthorization());
+        }
+        return headers;
+    }
 }

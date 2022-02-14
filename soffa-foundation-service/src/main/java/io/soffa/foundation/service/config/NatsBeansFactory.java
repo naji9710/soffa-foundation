@@ -1,13 +1,14 @@
 package io.soffa.foundation.service.config;
 
-import io.soffa.foundation.messages.BinaryClient;
+import io.soffa.foundation.config.AppConfig;
 import io.soffa.foundation.messages.MessageHandler;
+import io.soffa.foundation.messages.PubSubClient;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import io.soffa.foundation.service.NatsClient;
 import io.soffa.foundation.service.PlatformAuthManager;
-import io.soffa.foundation.tokens.TokenProvider;
-import org.springframework.beans.factory.annotation.Value;
+import io.soffa.foundation.service.pubsub.nats.NatsConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -17,18 +18,25 @@ import org.springframework.context.annotation.Primary;
 public class NatsBeansFactory {
 
     @Bean
+    @ConfigurationProperties(prefix = "app.nats")
+    public NatsConfig createNatsConfig() {
+        return new NatsConfig();
+    }
+
+    @Bean
     @Primary
-    public BinaryClient createNatsClient(
-        @Value("${spring.application.name}") String applicationName,
-        @Value("${app.nats.queue:}") String queue,
-        @Value("${app.nats.url}") String natsUrl,
+    public PubSubClient createNatsClient(
+        AppConfig appConfig,
         PlatformAuthManager authManager,
         MessageHandler messageHandler,
-        TokenProvider tokenProvider,
+        NatsConfig natsConfig,
         MetricsRegistry metricsRegistry) {
         return new NatsClient(
-            authManager, applicationName, queue,
-            tokenProvider, natsUrl, messageHandler, metricsRegistry
+            authManager,
+            appConfig.getName(),
+            natsConfig,
+            messageHandler,
+            metricsRegistry
         );
     }
 

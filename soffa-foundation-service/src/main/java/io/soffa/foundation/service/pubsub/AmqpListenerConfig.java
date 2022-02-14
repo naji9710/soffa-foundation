@@ -1,4 +1,4 @@
-package io.soffa.foundation.service.config.amqp;
+package io.soffa.foundation.service.pubsub;
 
 import com.rabbitmq.client.Channel;
 import io.soffa.foundation.commons.JsonUtil;
@@ -17,13 +17,13 @@ import java.nio.charset.StandardCharsets;
 
 @Configuration
 @ConditionalOnProperty(value = "app.amqp.enabled", havingValue = "true")
-public class PubSubListenerConfig {
+public class AmqpListenerConfig {
 
-    private static final Logger LOG = Logger.get(PubSubListenerConfig.class);
+    private static final Logger LOG = Logger.get(AmqpListenerConfig.class);
     private final MessageHandler handler;
     private final MetricsRegistry metrics;
 
-    public PubSubListenerConfig(MessageHandler handler, MetricsRegistry metrics) {
+    public AmqpListenerConfig(MessageHandler handler, MetricsRegistry metrics) {
         this.handler = handler;
         this.metrics = metrics;
     }

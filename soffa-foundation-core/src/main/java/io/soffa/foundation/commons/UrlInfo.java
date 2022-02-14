@@ -16,6 +16,8 @@ import java.util.Map;
 @AllArgsConstructor
 public class UrlInfo {
 
+    public static final String PROTOCL_DIVIDER = "://";
+
     private String protocol;
     private int port;
     private String hostname;
@@ -33,9 +35,17 @@ public class UrlInfo {
 
     public String getAddress() {
         if (isDefaultPort()) {
-            return protocol + "://" + hostname;
+            return protocol + PROTOCL_DIVIDER + hostname;
         }
-        return protocol + "://" + hostname + ":" + port;
+        return protocol + PROTOCL_DIVIDER + hostname + ":" + port;
+    }
+
+    public boolean hasParam(String name) {
+        return params.containsKey(name);
+    }
+
+    public Object getParam(String name) {
+        return params.get(name);
     }
 
     public String getHostnameWithPort() {
@@ -57,7 +67,11 @@ public class UrlInfo {
 
     @SneakyThrows
     public static UrlInfo parse(String value) {
-        String[] parts = value.split("://");
+        String v = value.trim();
+        if (!v.contains(PROTOCL_DIVIDER)) {
+            v = "noop://" + v;
+        }
+        String[] parts = v.split(PROTOCL_DIVIDER);
         String protocol = parts[0];
         UrlInfo info = parse(new URL("https://" + parts[1]));
         info.setProtocol(protocol);

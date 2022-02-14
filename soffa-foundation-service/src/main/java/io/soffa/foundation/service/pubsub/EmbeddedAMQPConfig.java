@@ -1,4 +1,4 @@
-package io.soffa.foundation.service.config.amqp;
+package io.soffa.foundation.service.pubsub;
 
 import com.github.fridujo.rabbitmq.mock.MockConnectionFactory;
 import io.soffa.foundation.commons.Logger;
@@ -23,6 +23,12 @@ public class EmbeddedAMQPConfig {
     public ConnectionFactory connectionFactory() {
         LOG.info("Embedded AMQP server enabled");
         RabbitMQConfig.embeddedMode = true;
+        /*CachingConnectionFactory ccf = new CachingConnectionFactory(new MockConnectionFactory());
+        try (Connection connexion = ccf.createConnection()) {
+            try (Channel channel = connexion.createChannel(true)) {
+                channel.exchangeDeclare("test", BuiltinExchangeType.TOPIC);
+            }
+        }*/
         return new CachingConnectionFactory(new MockConnectionFactory());
     }
 

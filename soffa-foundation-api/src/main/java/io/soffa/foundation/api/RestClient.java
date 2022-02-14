@@ -6,6 +6,7 @@ import io.soffa.foundation.commons.http.HttpClient;
 import io.soffa.foundation.commons.http.HttpRequest;
 import io.soffa.foundation.commons.http.HttpResponse;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.context.RequestContextUtil;
 import io.soffa.foundation.exceptions.ForbiddenException;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
@@ -80,7 +81,7 @@ public final class RestClient implements InvocationHandler {
             for (Object arg : args) {
                 if (arg instanceof RequestContext) {
                     RequestContext context = (RequestContext) arg;
-                    request.setHeaders(context.getHeaders());
+                    request.setHeaders(RequestContextUtil.getHeaders(context));
                 } else {
                     request.setBody(arg);
                 }

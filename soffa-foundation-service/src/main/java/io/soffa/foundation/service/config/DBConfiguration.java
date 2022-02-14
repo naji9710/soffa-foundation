@@ -26,20 +26,19 @@ public class DBConfiguration {
 
     @Bean
     public DB createDB(AppConfig appConfig,
-                               TenantsLoader tenantsLoader,
-                               DatabasePlane dbState,
-                               ApplicationEventPublisher publisher,
-                               ApplicationContext context,
-                               @Value("${spring.application.name}") String applicationName) {
+                       DatabasePlane dbState,
+                       ApplicationEventPublisher publisher,
+                       ApplicationContext context,
+                       @Value("${spring.application.name}") String applicationName) {
 
         appConfig.configure();
-        return new DBImpl(tenantsLoader, dbState, context, appConfig.getDb(), applicationName, publisher);
+        return new DBImpl(dbState, context, appConfig.getDb(), applicationName, publisher);
     }
 
     @Bean
     @Primary
     public DataSource createDatasource(DB db) {
-        return (DataSource)db;
+        return (DataSource) db;
     }
 
 

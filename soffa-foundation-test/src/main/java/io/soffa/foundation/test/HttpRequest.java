@@ -1,7 +1,7 @@
 package io.soffa.foundation.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.soffa.foundation.security.AuthUtil;
+import io.soffa.foundation.context.AuthUtil;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

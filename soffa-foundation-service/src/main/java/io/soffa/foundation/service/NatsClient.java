@@ -4,17 +4,20 @@ import io.nats.client.*;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.NatsMessage;
+import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
+import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.exceptions.FunctionalException;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.messages.BinaryClient;
 import io.soffa.foundation.messages.MessageHandler;
+import io.soffa.foundation.messages.PubSubClient;
 import io.soffa.foundation.metrics.CoreMetrics;
 import io.soffa.foundation.metrics.MetricsRegistry;
-import io.soffa.foundation.tokens.TokenProvider;
+import io.soffa.foundation.service.pubsub.nats.NatsClientConfig;
+import io.soffa.foundation.service.pubsub.nats.NatsConfig;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -29,59 +32,71 @@ import java.util.concurrent.CompletableFuture;
 import static io.soffa.foundation.Constants.OPERATION;
 import static io.soffa.foundation.metrics.CoreMetrics.*;
 
-public class NatsClient implements BinaryClient {
+public class NatsClient implements PubSubClient {
 
     private static final Logger LOG = Logger.get(NatsClient.class);
-    private final Connection client;
-    private final JetStream stream;
+    private final Map<String, Connection> clients = new HashMap<>();
+    private final Map<String, String> broadcastSubjects = new HashMap<>();
+    private final Map<String, JetStream> streams = new HashMap<>();
     private final String applicationName;
-    private final String broadcastSubject;
     private final MetricsRegistry metricsRegistry;
     private final PlatformAuthManager authManager;
-    private final TokenProvider tokenProvider;
+    public static final String DEFAULT_CLIENT = "default";
 
+    @SuppressWarnings("PMD")
     public NatsClient(
         PlatformAuthManager authManager,
         String applicationName,
-        String broadcastSubject,
-        TokenProvider tokenProvider,
-        String url,
+        NatsConfig config,
         MessageHandler handler,
         MetricsRegistry metricsRegistry) {
 
         this.authManager = authManager;
-        this.broadcastSubject = broadcastSubject;
-        this.tokenProvider = tokenProvider;
         this.metricsRegistry = metricsRegistry;
+        this.applicationName = applicationName;
 
-        Options o = new Options.Builder().servers(url.split(",")).maxReconnects(-1).build();
-        try {
-            this.applicationName = applicationName;
-            client = Nats.connect(o);
-            JetStreamOptions jso = JetStreamOptions.defaultOptions();
-            stream = client.jetStream(jso);
-
-            if (TextUtil.isNotEmpty(broadcastSubject)) {
-                StreamConfiguration sc = StreamConfiguration.builder()
-                    .name(applicationName)
-                    .subjects(broadcastSubject).build();
-                JetStreamManagement jsm = client.jetStreamManagement();
-                jsm.addStream(sc);
-            }
-            this.subsribe(applicationName, broadcastSubject, handler);
-            LOG.info("Connected to NATS server: %s", url);
-        } catch (Exception e) {
-            throw new TechnicalException("Unable to connect to NATS @ " + url, e);
+        if (!config.hasDefaultClient()) {
+            throw new ConfigurationException("Nats client configuration is missing default client");
         }
-    }
 
-    public TokenProvider getTokenProvider() {
-        return tokenProvider;
-    }
+        for (Map.Entry<String, NatsClientConfig> cc : config.getClients().entrySet()) {
+            String clientId = cc.getKey();
+            NatsClientConfig clientConfig = cc.getValue();
+            if (TextUtil.isEmpty(clientConfig.getAddresses())) {
+                throw new ConfigurationException("Nats client configuration is missing addresses for client " + clientId);
+            }
+            String[] addresses = clientConfig.getAddresses().split(",");
+            try {
+                Options o = new Options.Builder().servers(addresses).maxReconnects(-1).build();
+                Connection connexion = Nats.connect(o);
+                this.clients.put(clientId, connexion);
 
-    @Override
-    public String getServiceToken() {
-        return tokenProvider.getServiceToken();
+                JetStreamOptions jso = JetStreamOptions.defaultOptions();
+                this.streams.put(clientId, connexion.jetStream(jso));
+
+                if (TextUtil.isNotEmpty(clientConfig.getBroadcast())) {
+                    broadcastSubjects.put(clientId, clientConfig.getBroadcast());
+                    StreamConfiguration sc = StreamConfiguration.builder()
+                        .name(IdGenerator.shortUUID(applicationName)).build();
+                    JetStreamManagement jsm = connexion.jetStreamManagement();
+                    jsm.addStream(sc);
+                }
+
+                this.subsribe(applicationName, clientConfig.getBroadcast(), handler);
+
+                LOG.info("Connected to NATS servers: %s", clientConfig.getAddresses());
+            } catch (Exception e) {
+                for (Connection value : this.clients.values()) {
+
+                    try {
+                        value.close();
+                    } catch (InterruptedException ignore) {
+                        LOG.warn("Error while closing NATS connection");
+                    }
+                }
+                throw new TechnicalException(e, "Unable to connect to NATS @ %s", clientConfig.getAddresses());
+            }
+        }
     }
 
     private Map<String, Object> createTags(@Nullable String subject, io.soffa.foundation.messages.Message message) {
@@ -94,39 +109,66 @@ public class NatsClient implements BinaryClient {
     }
 
     @Override
-    public CompletableFuture<byte[]> request(String subject, io.soffa.foundation.messages.Message message) {
-        return metricsRegistry.track(
-            NATS_REQUEST,
-            createTags(subject, message),
-            () -> {
-                //EL
-                return client.request(createNatsMessage(subject, message))
-                    .thenApply(io.nats.client.Message::getData);
-            });
-    }
-
-    @Override
-    public <T> CompletableFuture<T> request(String subject, io.soffa.foundation.messages.Message message, Class<T> responseClass) {
+    public <T> CompletableFuture<T> request(String subject, io.soffa.foundation.messages.Message message, Class<T> responseClass, String client) {
         return metricsRegistry.track(NATS_REQUEST,
             createTags(subject, message),
             () -> {
                 //EL
-                return client.request(createNatsMessage(subject, message))
+                return getClient(client).request(createNatsMessage(subject, message))
                     .thenApply(msg -> JsonUtil.deserialize(msg.getData(), responseClass));
             });
     }
 
     @Override
-    public void publish(String subject, io.soffa.foundation.messages.Message message) {
+    public void publish(String subject, io.soffa.foundation.messages.Message message, String client) {
+        String sub = getSubject(subject);
         metricsRegistry.track(
             NATS_PUBLISH,
-            createTags(subject, message),
-            () -> client.publish(createNatsMessage(subject, message))
+            createTags(sub, message),
+            () -> getClient(client).publish(createNatsMessage(sub, message))
         );
     }
 
+    private String getSubject(String subject) {
+        if (TextUtil.isEmpty(subject)) {
+            return applicationName;
+        }
+        return subject;
+    }
+
+    private Connection getClient(String id) {
+        if (TextUtil.isEmpty(id)) {
+            return getClient(DEFAULT_CLIENT);
+        }
+        if (!clients.containsKey(id)) {
+            throw new ConfigurationException("No client registered with id: " + id);
+        }
+        return clients.get(id);
+    }
+
+    private JetStream getStream(String id) {
+        if (TextUtil.isEmpty(id)) {
+            return getStream(DEFAULT_CLIENT);
+        }
+        if (!streams.containsKey(id)) {
+            throw new ConfigurationException("No jetsteam client registered with id: " + id);
+        }
+        return streams.get(id);
+    }
+
     @Override
-    public void broadcast(io.soffa.foundation.messages.Message message) {
+    public void broadcast(io.soffa.foundation.messages.Message message, String client) {
+        if (TextUtil.isEmpty(client)) {
+            broadcast(message, DEFAULT_CLIENT);
+            return;
+        }
+        if (message.getContext() == null) {
+            message.setContext(RequestContextHolder.getOrCreate());
+        }
+        final String broadcastSubjet = broadcastSubjects.get(client);
+        if (TextUtil.isEmpty(broadcastSubjet)) {
+            throw new ConfigurationException("No broadcast subject configured for client: " + client);
+        }
         //noinspection Convert2Lambda
         metricsRegistry.track(
             NATS_BROADCAST,
@@ -135,7 +177,7 @@ public class NatsClient implements BinaryClient {
                 @SneakyThrows
                 @Override
                 public void run() {
-                    PublishAck ack = stream.publish(createNatsMessage(broadcastSubject, message));
+                    PublishAck ack = getStream(client).publish(createNatsMessage(broadcastSubjet, message));
                     if (ack.hasError()) {
                         throw new TechnicalException(ack.getError());
                     }
@@ -177,7 +219,7 @@ public class NatsClient implements BinaryClient {
             }
         };
 
-        Dispatcher dispatcher = client.createDispatcher(localHandler);
+        Dispatcher dispatcher = getClient(DEFAULT_CLIENT).createDispatcher(localHandler);
         dispatcher.subscribe(subject);
 
         if (TextUtil.isNotEmpty(queue)) {
@@ -185,7 +227,7 @@ public class NatsClient implements BinaryClient {
                 .durable(applicationName)
                 .build();
             try {
-                stream.subscribe(queue, dispatcher, localHandler, false, so);
+                getStream(DEFAULT_CLIENT).subscribe(queue, dispatcher, localHandler, false, so);
             } catch (JetStreamApiException | IOException e) {
                 throw new TechnicalException(e.getMessage(), e);
             }
@@ -194,11 +236,14 @@ public class NatsClient implements BinaryClient {
     }
 
     @PreDestroy
+    @SuppressWarnings("PMD")
     public void cleanup() {
-        try {
-            client.close();
-        } catch (Exception e) {
-            LOG.error("Unable to close NATS connection", e);
+        for (Connection connection : clients.values()) {
+            try {
+                connection.close();
+            } catch (Exception e) {
+                LOG.error("Unable to close NATS connection", e);
+            }
         }
     }
 

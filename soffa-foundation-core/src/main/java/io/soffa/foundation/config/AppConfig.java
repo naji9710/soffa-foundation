@@ -2,6 +2,7 @@ package io.soffa.foundation.config;
 
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.web.OpenAPIDesc;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -40,6 +41,10 @@ public class AppConfig {
                 value += "_";
             }
             db.setTablesPrefix(value);
+        }
+        RequestContext.setServiceName(name);
+        if (security != null && security.getTokens() != null) {
+            RequestContext.setServiceToken(security.getTokens().getServiceToken());
         }
         configured = true;
     }

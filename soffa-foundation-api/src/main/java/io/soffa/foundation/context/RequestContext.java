@@ -1,7 +1,7 @@
 package io.soffa.foundation.context;
 
-import io.soffa.foundation.api.ApiHeaders;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.model.Authentication;
 import io.soffa.foundation.model.TenantId;
 import lombok.Getter;
@@ -23,6 +23,7 @@ public class RequestContext {
     private String applicationName;
     private String traceId;
     private String spanId;
+    private static String serviceToken = "";
 
     public RequestContext() {
         this.traceId = UUID.randomUUID().toString();
@@ -49,8 +50,9 @@ public class RequestContext {
         serviceName = value;
     }
 
-    private static boolean isNotEmpty(String value) {
-        return !isEmpty(value);
+    @SneakyThrows
+    public static void setServiceToken(String value) {
+        serviceToken = value;
     }
 
     private static boolean isEmpty(String value) {
@@ -64,6 +66,21 @@ public class RequestContext {
 
     public RequestContext withAuthorization(String authorization) {
         this.authorization = authorization;
+        return this;
+    }
+    public RequestContext withAuthorization(String username, String password) {
+        this.authorization = AuthUtil.createBasicAuthorization(username, password);
+        return this;
+    }
+
+    public RequestContext withServiceToken() {
+        if (TextUtil.isEmpty(serviceToken)) {
+            throw new ConfigurationException("Service token is not configured");
+        }
+         if (TextUtil.isEmpty(serviceName)) {
+            throw new ConfigurationException("Service name is not configured");
+        }
+        this.authorization = AuthUtil.createBasicAuthorization(serviceName,serviceToken);
         return this;
     }
 
@@ -130,47 +147,6 @@ public class RequestContext {
         return Optional.empty();
     }
 
-    @SneakyThrows
-    public Map<String, String> getContextMap() {
-        Map<String, String> contextMap = new HashMap<>();
-        if (isNotEmpty(applicationName)) {
-            contextMap.put("application", applicationName);
-        }
-        if (tenantId != null) {
-            contextMap.put("tenant", tenantId.getValue());
-        }
-        if (isNotEmpty(traceId)) {
-            contextMap.put("traceId", traceId);
-        }
-        if (isNotEmpty(spanId)) {
-            contextMap.put("spanId", spanId);
-        }
-        if (authentication != null && isNotEmpty(authentication.getUsername())) {
-            contextMap.put("user", authentication.getUsername());
-        }
-        contextMap.put("service_name", serviceName);
-        return contextMap;
-    }
 
-    @SneakyThrows
-    public Map<String, String> getHeaders() {
-        Map<String, String> headers = new HashMap<>();
-        if (isNotEmpty(applicationName)) {
-            headers.put(ApiHeaders.APPLICATION, applicationName);
-        }
-        if (tenantId != null) {
-            headers.put(ApiHeaders.TENANT_ID, tenantId.getValue());
-        }
-        if (isNotEmpty(traceId)) {
-            headers.put(ApiHeaders.TRACE_ID, traceId);
-        }
-        if (isNotEmpty(spanId)) {
-            headers.put(ApiHeaders.SPAN_ID, spanId);
-        }
-        if (authorization != null && !authorization.isEmpty()) {
-            headers.put("Authorization", "Bearer " + authorization);
-        }
-        return headers;
-    }
 
 }

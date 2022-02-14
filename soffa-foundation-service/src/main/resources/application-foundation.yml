@@ -34,11 +34,6 @@ management:
 
 spring.groovy.template.check-template-location: false
 
-app.nats:
-  enbaled: ${NATS_ENABLED:false}
-  url: ${NATS_URL:nats://localhost:4222}
-  binding: ${spring.application.name}
-
 springdoc:
   api-docs.enabled: true
   show-actuator: false
@@ -49,18 +44,11 @@ springdoc:
     tags-sorter: alpha
 
 spring.cloud.consul:
-  enabled: ${app.consul.discovery:${CONSUL_ENABLED:false}}
-  host: ${app.consul.host:${CONSUL_HOST:localhost}}
-  port: ${app.consul.port:${CONSUL_PORT:8500}}
+  enabled: false
   config:
-    enabled: ${app.consul.config:false}
+    enabled: false
   discovery:
-    tags: ${app.consul.tags:}
-    enabled: ${app.consul.discovery:${CONSUL_ENABLED:false}}
-    register: ${app.consul.register:true}
-    healthCheckPath: ${server.servlet.contextPath}/actuator/health
-    healthCheckInterval: ${CONSUL_HEALTH_CHECK_INTERVAL:10s}
-    instanceId: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+    enabled: false
 
 spring.autoconfigure.exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 management.endpoint.health.group.liveness.include: livenessstate,cacheCheck
@@ -137,8 +125,3 @@ management.endpoint.health:
 #spring.config.activate.on-profile: amqp
 #spring.config.import: classpath:foundation-amqp.yml
 
----
-
-spring.config.activate.on-profile: nats
-app.nats.enabled: true
-app.nats.url: ${NATS_URL}

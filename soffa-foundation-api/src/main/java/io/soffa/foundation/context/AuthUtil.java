@@ -1,4 +1,4 @@
-package io.soffa.foundation.security;
+package io.soffa.foundation.context;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

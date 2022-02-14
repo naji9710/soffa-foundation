@@ -7,7 +7,7 @@ import com.company.app.operations.SendEmailHandler;
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.messages.BinaryClient;
+import io.soffa.foundation.messages.PubSubClient;
 import io.soffa.foundation.messages.Message;
 import io.soffa.foundation.models.mail.Email;
 import io.soffa.foundation.models.mail.EmailAddress;
@@ -35,8 +35,8 @@ public class NatsIntegrationTest {
         String natsUrl = System.getenv("NATS_URL");
         if (TextUtil.isNotEmpty(natsUrl)) {
             System.setProperty("app.nats.enabled", "true");
-            System.setProperty("app.nats.queue", "foundation-service");
-            System.setProperty("app.nats.url", natsUrl);
+            System.setProperty("app.nats.clients.default.addresses", natsUrl);
+            System.setProperty("app.nats.clients.default.broadcast", "foundation-service");
         }
     }
 
@@ -47,7 +47,7 @@ public class NatsIntegrationTest {
     private ApplicationContext context;
 
     @Autowired(required = false)
-    private BinaryClient binaryClient;
+    private PubSubClient pubSubClient;
 
     @Test
     public void testContext() {
@@ -58,24 +58,24 @@ public class NatsIntegrationTest {
     @Test
     @EnabledIfEnvironmentVariable(named = "NATS_URL", matches = ".+")
     public void testNatsIntegration() {
-        assertNotNull(binaryClient);
+        assertNotNull(pubSubClient);
         long initialCounterValue = SendEmailHandler.COUNTER.get();
         Message event = new Message(
             "SendEmail",
             new Email("Hello world", EmailAddress.of("to@email.com"), "Text message", "<h1>Html message</h1>")
         );
-        EmailId response = binaryClient.request(applicationName, event, EmailId.class).get(1, TimeUnit.SECONDS);
+        EmailId response = pubSubClient.request(applicationName, event, EmailId.class).get(1, TimeUnit.SECONDS);
         assertNotNull(response);
         assertEquals("000", response.getId());
         assertEquals(initialCounterValue + 1, SendEmailHandler.COUNTER.get());
 
-        binaryClient.broadcast(event);
+        pubSubClient.broadcast(event);
         Awaitility.await().atMost(500, TimeUnit.DAYS).until(() -> SendEmailHandler.COUNTER.get() == initialCounterValue + 2);
 
-        PingResponse resp = binaryClient.request(applicationName, Ping.class, Operation.NO_INPUT).get(1, TimeUnit.SECONDS);
+        PingResponse resp = pubSubClient.request(applicationName, Ping.class, Operation.NO_INPUT).get(1, TimeUnit.SECONDS);
         assertEquals("PONG", resp.getValue());
 
-        API binaryAPI = binaryClient.createClient(API.class, applicationName);
+        API binaryAPI = pubSubClient.createClient(API.class, applicationName);
         resp = binaryAPI.ping(new RequestContext());
         assertEquals("PONG", resp.getValue());
     }

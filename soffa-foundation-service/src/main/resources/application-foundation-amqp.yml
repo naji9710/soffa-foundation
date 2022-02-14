@@ -1,11 +1,12 @@
 app.amqp:
   enabled: true
-  exchange: app
-  routing: services
-  vhost: ${AMQP_VHOST:/}
-  addresses: ${AMQP_ADDRESSES:"localhost:5672"}
-  username: ${AMQP_USERNAME:"user"}
-  password: ${AMQP_PASSWORD:"user"}
+  clients.default:
+    exchange: app
+    routing: services
+    vhost: ${AMQP_VHOST:/}
+    addresses: ${AMQP_ADDRESSES:"localhost:5672"}
+    username: ${AMQP_USERNAME}
+    password: ${AMQP_PASSWORD}
 
 
 spring.rabbitmq:
@@ -15,10 +16,10 @@ spring.rabbitmq:
     max-attempts: 30
     max-interval: 300s
     multiplier: 2
-  addresses: ${app.amqp.addresses}
-  username: ${app.amqp.username}
-  password: ${app.amqp.password}
-  virtual-host: ${app.amqp.vhost}
+  addresses: ${app.amqp.clients.default.addresses}
+  username: ${app.amqp.clients.default.username}
+  password: ${app.amqp.clients.default.password}
+  virtual-host: ${app.amqp.clients.default.vhost}
   ssl.enabled: ${app.amqp.ssl.enabled:false}
   ssl.algorithm: ${app.amqp.ssl.algorithm:TLSv1.2}
   ssl.key-store: ${app.amqp.ssl.key-store:}

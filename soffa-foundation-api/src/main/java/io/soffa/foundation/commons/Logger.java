@@ -2,6 +2,7 @@ package io.soffa.foundation.commons;
 
 import com.mgnt.utils.TextUtils;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.context.RequestContextUtil;
 import io.soffa.foundation.model.TenantId;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class Logger {
         if (context == null) {
             org.slf4j.MDC.clear();
         } else {
-            org.slf4j.MDC.setContextMap(context.getContextMap());
+            org.slf4j.MDC.setContextMap(RequestContextUtil.getContextMap(context));
         }
     }
 

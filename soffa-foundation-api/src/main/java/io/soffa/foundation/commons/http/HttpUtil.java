@@ -6,6 +6,7 @@ import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.Regex;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
+import io.soffa.foundation.context.RequestContextUtil;
 import lombok.SneakyThrows;
 import okhttp3.*;
 
@@ -94,7 +95,7 @@ public final class HttpUtil {
             }
             Request.Builder request = originalRequest.newBuilder().header("Content-Type", contentType);
             RequestContextHolder.get().ifPresent(context -> {
-                Map<String, String> headers = context.getHeaders();
+                Map<String, String> headers = RequestContextUtil.getHeaders(context);
                 for (Map.Entry<String, String> e : headers.entrySet()) {
                     boolean isHeaderMissing = TextUtil.isEmpty(originalRequest.header(e.getKey()));
                     if (isHeaderMissing && TextUtil.isNotEmpty(e.getValue())) {

@@ -4,12 +4,9 @@ package io.soffa.foundation.messages;
 import io.soffa.foundation.annotations.BindOperation;
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
-import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.security.AuthUtil;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -17,37 +14,35 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-public interface BinaryClient extends MessageDispatcher {
+public interface PubSubClient {
 
-    Logger LOG = Logger.get(BinaryClient.class);
+    String DEFAULT_ID = "default";
+
+    Logger LOG = Logger.get(PubSubClient.class);
 
     void subsribe(String subject, String queue, MessageHandler handler);
 
-    CompletableFuture<byte[]> request(String subject, Message event);
+    <T> CompletableFuture<T> request(String subject, Message event, Class<T> expectedClass, String client);
 
-    <T> CompletableFuture<T> request(String subject, Message event, Class<T> expectedClass);
-
-    void publish(String subject, Message message);
-
-    String getServiceToken();
-
-    default <I,O> CompletableFuture<O> requestWithServiceToken(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input) {
-        return requestWithServiceToken(subject, operation, input, RequestContextHolder.getOrCreate());
+    default <T> CompletableFuture<T> request(String subject, Message event, Class<T> expectedClass) {
+        return request(subject, event, expectedClass, null);
     }
 
-    default <I,O> CompletableFuture<O> requestWithServiceToken(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input, RequestContext context) {
-        String serviceToken = getServiceToken();
-        if (TextUtil.isEmpty(serviceToken)) {
-            throw new ConfigurationException("serviceToken is not configured");
-        }
-        return request(subject, operation, input, context.withAuthorization(AuthUtil.createBasicAuthorization(context.getServiceName(), serviceToken)));
+    default void publish(String subject, Message message) {
+        publish(subject, message, null);
     }
 
-    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, I input) {
+    default void publish(Message message) {
+        publish(null, message, null);
+    }
+
+    void publish(String subject, Message message, String client);
+
+    default <I, O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I, O>> operation, I input) {
         return request(subject, operation, input, RequestContextHolder.getOrCreate());
     }
 
-    default <I,O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I,O>> operation, Object input, RequestContext context) {
+    default <I, O> CompletableFuture<O> request(String subject, Class<? extends io.soffa.foundation.api.Operation<I, O>> operation, Object input, RequestContext context) {
         Message message = new Message(
             operation.getSimpleName(),
             input,
@@ -116,6 +111,11 @@ public interface BinaryClient extends MessageDispatcher {
         return new Message(operation, input, context);
     }
 
+    void broadcast(Message message, String client);
+
+    default void broadcast(Message message) {
+        broadcast(message, null);
+    }
 
 }
 

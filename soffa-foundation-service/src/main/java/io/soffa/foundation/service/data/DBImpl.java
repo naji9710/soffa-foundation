@@ -14,7 +14,6 @@ import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.exceptions.DatabaseException;
 import io.soffa.foundation.exceptions.NotImplementedException;
 import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.messages.BinaryClient;
 import io.soffa.foundation.model.TenantId;
 import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
@@ -47,7 +46,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final String tablesPrefix;
     private final String appicationName;
     private final String tenanstListQuery;
-    private final TenantsLoader tenantsLoader;
+
     private static final String TENANT_PLACEHOLDER = "__tenant__";
     private static final String DEFAULT_DS = "default";
     private final Map<String, Boolean> migrated = new ConcurrentHashMap<>();
@@ -55,11 +54,10 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final DatabasePlane dbState;
     private final ApplicationEventPublisher publisher;
     private final ApplicationContext context;
-    // private final BinaryClient binaryClient;
+    // private final PubSubClient binaryClient;
 
     @SneakyThrows
-    public DBImpl(final TenantsLoader tenantsLoader,
-                  final DatabasePlane dbState,
+    public DBImpl(final DatabasePlane dbState,
                   final ApplicationContext context,
                   final DbConfig dbConfig,
                   final String appicationName,
@@ -72,7 +70,6 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         this.context = context;
         this.publisher = publisher;
         this.dbState = dbState;
-        this.tenantsLoader = tenantsLoader;
         this.appicationName = appicationName;
         this.tenanstListQuery = dbConfig.getTenantListQuery();
         this.tablesPrefix = dbConfig.getTablesPrefix();
@@ -261,13 +258,13 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     }
 
     @Override
-    public List<Map<String,Object>> query(String datasource, String query) {
-        DataSource ds = (DataSource)dataSources.get(datasource.toLowerCase());
+    public List<Map<String, Object>> query(String datasource, String query) {
+        DataSource ds = (DataSource) dataSources.get(datasource.toLowerCase());
         return Jdbi.create(ds).withHandle(handle -> handle.createQuery(query).setMaxRows(1000).mapToMap().list());
     }
 
     @Override
-    public List<Map<String,Object>> query(String query) {
+    public List<Map<String, Object>> query(String query) {
         DataSource ds = determineTargetDataSource();
         return Jdbi.create(ds).withHandle(handle -> handle.createQuery(query).setMaxRows(1000).mapToMap().list());
     }
@@ -302,6 +299,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                 applyMigrations(datasource);
             });
 
+
             if (dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
                 final Set<String> tenants = new HashSet<>();
                 if (TextUtil.isNotEmpty(tenanstListQuery)) {
@@ -314,15 +312,13 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                         }
                     });
                 } else {
-                    BinaryClient binaryClient = context.getBean(BinaryClient.class);
-                    tenants.addAll(tenantsLoader.getTenantList(binaryClient));
+                    TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
+                    tenants.addAll(tenantsLoader.getTenantList());
                 }
 
                 for (String tenant : tenants) {
                     registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
                 }
-            } else if (!tenantsLoader.equals(TenantsLoader.NOOP)) {
-                LOG.error("TenantsLoader provided but not TenantDS defined (add a Datasource with key __tenant__)");
             } else {
                 LOG.debug("No TenantDS provided, skipping tenants migration.");
             }
