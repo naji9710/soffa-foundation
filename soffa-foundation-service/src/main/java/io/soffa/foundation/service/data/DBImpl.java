@@ -168,17 +168,15 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         if (dbState.isPending()) {
-            new Thread(() -> {
-                try {
-                    configure();
-                    dbState.setReady();
-                    publisher.publishEvent(new DatabaseReadyEvent(event.getApplicationContext()));
-                } catch (Exception e) {
-                    dbState.setFailed(e.getMessage());
-                    logger.fatal("Database migration has failed: " + e.getMessage(), e);
-                }
-            }).start();
-        } else {
+            try {
+                configure();
+                dbState.setReady();
+            } catch (Exception e) {
+                dbState.setFailed(e.getMessage());
+                logger.fatal("Database migration has failed: " + e.getMessage(), e);
+            }
+        }
+        if (dbState.isReady()) {
             publisher.publishEvent(new DatabaseReadyEvent(event.getApplicationContext()));
         }
     }
@@ -318,16 +316,16 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                     try {
                         TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
                         tenants.addAll(tenantsLoader.getTenantList());
-                    }catch (NoSuchBeanDefinitionException e) {
+                    } catch (NoSuchBeanDefinitionException e) {
                         LOG.error("No TenantsLoader defined");
                     }
                 }
 
                 LOG.info("Tenants loaded: %d", tenants.size());
-
                 for (String tenant : tenants) {
                     registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
                 }
+                LOG.info("Database is now configured");
             } else {
                 LOG.debug("No TenantDS provided, skipping tenants migration.");
             }

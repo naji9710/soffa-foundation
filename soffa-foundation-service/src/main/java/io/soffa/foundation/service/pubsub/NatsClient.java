@@ -127,9 +127,7 @@ public class NatsClient implements PubSubClient {
         metricsRegistry.track(
             NATS_PUBLISH,
             createTags(sub, message),
-            () -> {
-                getClient(client).publish(createNatsMessage(sub, message));
-            }
+            () -> getClient(client).publish(createNatsMessage(sub, message))
         );
     }
 
@@ -195,14 +193,16 @@ public class NatsClient implements PubSubClient {
 
     private void setReady() {
         ready = true;
-        LOG.info("NATS client is ready for business");
+        LOG.info("NATS client is now ready for business");
     }
 
     private void subsribe(final String clientId, final String subject, final String queue, final MessageHandler handler) {
-        if (dbPlane.isReady()) {
-            doSubsribe(clientId, subject, queue, handler);
-            setReady();
-        } else {
+        synchronized (dbPlane) {
+            if (dbPlane.isReady()) {
+                doSubsribe(clientId, subject, queue, handler);
+                setReady();
+                return;
+            }
             final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             LOG.info("Waiting from DatabasePlane before subscribing to %s", subject);
             executor.scheduleAtFixedRate(() -> {
@@ -213,12 +213,14 @@ public class NatsClient implements PubSubClient {
                     setReady();
                     executor.shutdown();
                 }
-            }, 0, 500, TimeUnit.MILLISECONDS);
+            }, 1000, 500, TimeUnit.MILLISECONDS);
         }
     }
 
     @SneakyThrows
     private void doSubsribe(String clientId, String subject, String broadcast, MessageHandler handler) {
+
+        LOG.info("Configuring subscription to %s", subject);
 
         NatsMessageHandler h = new NatsMessageHandler(metricsRegistry, authManager, handler, true);
         @SuppressWarnings("PMD")
