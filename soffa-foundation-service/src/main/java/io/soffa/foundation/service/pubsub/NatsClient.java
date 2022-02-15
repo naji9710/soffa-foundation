@@ -1,7 +1,10 @@
 package io.soffa.foundation.service.pubsub;
 
+import com.google.common.eventbus.Subscribe;
 import io.nats.client.*;
+import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.NatsMessage;
+import io.soffa.foundation.application.EventBus;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
@@ -12,10 +15,12 @@ import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.messages.PubSubClient;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import io.soffa.foundation.service.PlatformAuthManager;
+import io.soffa.foundation.service.data.DatabaseReadyEvent;
 import io.soffa.foundation.service.pubsub.nats.NatsClientConfig;
 import io.soffa.foundation.service.pubsub.nats.NatsConfig;
 import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.annotation.PreDestroy;
@@ -25,14 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.soffa.foundation.Constants.OPERATION;
 import static io.soffa.foundation.metrics.CoreMetrics.*;
 
-public class NatsClient implements PubSubClient {
+public class NatsClient implements PubSubClient{
 
     private static final Logger LOG = Logger.get(NatsClient.class);
     private final Map<String, Connection> clients = new HashMap<>();
@@ -40,12 +43,12 @@ public class NatsClient implements PubSubClient {
     private final Map<String, JetStream> streams = new HashMap<>();
     private final String applicationName;
     private final MetricsRegistry metricsRegistry;
-    private final DatabasePlane dbPlane;
     private final PlatformAuthManager authManager;
     public static final String DEFAULT_CLIENT = "default";
     private final List<Subscription> subscriptions = new ArrayList<>();
-    private boolean ready;
-
+    private final AtomicBoolean ready = new AtomicBoolean(false);
+    private final MessageHandler handler;
+    private final NatsConfig config;
 
     public NatsClient(
         PlatformAuthManager authManager,
@@ -55,22 +58,38 @@ public class NatsClient implements PubSubClient {
         MetricsRegistry metricsRegistry,
         DatabasePlane dbPlane) {
 
-        this.ready = false;
-        this.authManager = authManager;
-        this.metricsRegistry = metricsRegistry;
-        this.applicationName = applicationName;
-        this.dbPlane = dbPlane;
-
         if (!config.hasDefaultClient()) {
             throw new ConfigurationException("Nats client configuration is missing default client");
         }
 
-        configure(config, handler);
+        EventBus.register(this);
+        if (dbPlane.isReady()) {
+            ready.set(true);
+        }
+
+        this.handler = handler;
+        this.config = config;
+        this.authManager = authManager;
+        this.metricsRegistry = metricsRegistry;
+        this.applicationName = applicationName;
+    }
+
+
+    @Subscribe
+    private void onDatabaseReady(@NonNull DatabaseReadyEvent ignore) {
+        EventBus.unregister(this);
+        LOG.info("DB is ready, configuring nats clients...");
+        try {
+            configure(this.config, handler);
+            setReady();
+        }catch (Exception e) {
+            LOG.error("Configuration failed", e);
+        }
     }
 
     @Override
     public boolean isReady() {
-        return ready;
+        return ready.get();
     }
 
     @SuppressWarnings("PMD")
@@ -192,33 +211,13 @@ public class NatsClient implements PubSubClient {
     }
 
     private void setReady() {
-        ready = true;
+        ready.set(true);
         LOG.info("NATS client is now ready for business");
     }
 
-    private void subsribe(final String clientId, final String subject, final String queue, final MessageHandler handler) {
-        synchronized (dbPlane) {
-            if (dbPlane.isReady()) {
-                doSubsribe(clientId, subject, queue, handler);
-                setReady();
-                return;
-            }
-            final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            LOG.info("Waiting from DatabasePlane before subscribing to %s", subject);
-            executor.scheduleAtFixedRate(() -> {
-                if (dbPlane.isReady()) {
-                    if (!ready) {
-                        doSubsribe(clientId, subject, queue, handler);
-                    }
-                    setReady();
-                    executor.shutdown();
-                }
-            }, 1000, 500, TimeUnit.MILLISECONDS);
-        }
-    }
 
     @SneakyThrows
-    private void doSubsribe(String clientId, String subject, String broadcast, MessageHandler handler) {
+    private void subsribe(String clientId, String subject, String broadcast, MessageHandler handler) {
 
         LOG.info("Configuring subscription to %s", subject);
 
@@ -235,29 +234,28 @@ public class NatsClient implements PubSubClient {
             streams.put(clientId, stream);
             broadcastSubjects.put(clientId, broadcast);
 
+            StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
+                .name(broadcast);
+            try {
+                Subscription sub = stream.subscribe(broadcast);
+                sub.unsubscribe();
+            } catch (IllegalStateException e) {
+                LOG.warn(e.getMessage());
+                scBuilder.addSubjects(broadcast);
+            }
+            JetStreamManagement jsm = cli.jetStreamManagement();
+            try {
+                jsm.addStream(scBuilder.build());
+            }catch (JetStreamApiException ignore) {
+                LOG.warn("Stream %s already configured", broadcast);
+            }
+
             PushSubscribeOptions so = PushSubscribeOptions.builder()
                 .durable(applicationName)
                 .build();
             subscriptions.add(getStream(clientId).subscribe(
                 broadcast, dispatcher, h, true, so
             ));
-
-            /*
-            StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
-                .name(clientConfig.getBroadcast());
-             */
-            /*try {
-                Subscription sub = stream.subscribe(clientConfig.getBroadcast());
-                sub.unsubscribe();
-            } catch (IllegalStateException e) {
-                LOG.warn(e.getMessage());
-                scBuilder.addSubjects(clientConfig.getBroadcast());
-            }*/
-            /*
-                    JetStreamManagement jsm = connexion.jetStreamManagement();
-                    jsm.addStream(scBuilder.build());
-             */
-
 
         }
 

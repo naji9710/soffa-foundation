@@ -1,14 +1,8 @@
 package io.soffa.foundation.service.data;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ApplicationContextEvent;
+import lombok.NoArgsConstructor;
 
-public class DatabaseReadyEvent extends ApplicationContextEvent {
+@NoArgsConstructor
+public class DatabaseReadyEvent   {
 
-    public static final long serialVersionUID = 1L;
-
-
-    public DatabaseReadyEvent(ApplicationContext source) {
-        super(source);
-    }
 }

@@ -2,6 +2,7 @@ package io.soffa.foundation.service.data;
 
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
+import io.soffa.foundation.application.EventBus;
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
@@ -168,16 +169,18 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         if (dbState.isPending()) {
-            try {
-                configure();
-                dbState.setReady();
-            } catch (Exception e) {
-                dbState.setFailed(e.getMessage());
-                logger.fatal("Database migration has failed: " + e.getMessage(), e);
-            }
-        }
-        if (dbState.isReady()) {
-            publisher.publishEvent(new DatabaseReadyEvent(event.getApplicationContext()));
+            new Thread(() -> {
+                try {
+                    configure();
+                    dbState.setReady();
+                    EventBus.post(new DatabaseReadyEvent());
+                } catch (Exception e) {
+                    dbState.setFailed(e.getMessage());
+                    logger.fatal("Database migration has failed: " + e.getMessage(), e);
+                }
+            }).start();
+        }else if (dbState.isReady()) {
+            EventBus.post(new DatabaseReadyEvent());
         }
     }
 
