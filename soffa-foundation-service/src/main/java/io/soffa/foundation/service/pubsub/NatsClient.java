@@ -8,6 +8,7 @@ import io.nats.client.impl.NatsMessage;
 import io.soffa.foundation.application.EventBus;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.exceptions.ConfigurationException;
@@ -25,7 +26,6 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.annotation.PreDestroy;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static io.soffa.foundation.Constants.OPERATION;
 import static io.soffa.foundation.metrics.CoreMetrics.*;
 
-public class NatsClient implements PubSubClient{
+public class NatsClient implements PubSubClient {
 
     private static final Logger LOG = Logger.get(NatsClient.class);
     private final Map<String, Connection> clients = new HashMap<>();
@@ -50,6 +50,7 @@ public class NatsClient implements PubSubClient{
     private final AtomicBoolean ready = new AtomicBoolean(false);
     private final MessageHandler handler;
     private final NatsConfig config;
+
 
     public NatsClient(
         PlatformAuthManager authManager,
@@ -83,7 +84,7 @@ public class NatsClient implements PubSubClient{
         try {
             configure(this.config, handler);
             setReady();
-        }catch (Exception e) {
+        } catch (Exception e) {
             LOG.error("Configuration failed", e);
         }
     }
@@ -207,11 +208,16 @@ public class NatsClient implements PubSubClient{
             });
     }
 
+    @SneakyThrows
     private NatsMessage createNatsMessage(String subject, io.soffa.foundation.messages.Message message) {
+        if (message.getContext() != null) {
+            message.getContext().sync();
+        }
+        byte[] data = ObjectUtil.serialize(message);
         return new NatsMessage(
             subject,
             "",
-            JsonUtil.serialize(message).getBytes(StandardCharsets.UTF_8)
+            data
         );
     }
 
@@ -251,7 +257,7 @@ public class NatsClient implements PubSubClient{
             JetStreamManagement jsm = cli.jetStreamManagement();
             try {
                 jsm.addStream(scBuilder.build());
-            }catch (JetStreamApiException ignore) {
+            } catch (JetStreamApiException ignore) {
                 LOG.warn("Stream %s already configured", broadcast);
             }
 

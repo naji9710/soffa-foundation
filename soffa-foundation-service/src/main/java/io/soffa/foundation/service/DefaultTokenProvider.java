@@ -23,7 +23,6 @@ import io.soffa.foundation.exceptions.InvalidTokenException;
 import io.soffa.foundation.exceptions.NotImplementedException;
 import io.soffa.foundation.exceptions.UnauthorizedException;
 import io.soffa.foundation.model.Authentication;
-import io.soffa.foundation.model.TenantId;
 import io.soffa.foundation.model.UserProfile;
 import io.soffa.foundation.tokens.*;
 import lombok.Data;
@@ -87,7 +86,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
 
     @Override
     public Authentication extractInfo(Token token) {
-        TenantId tenant = token.lookupClaim("tenant", "tenantId").map(TenantId::new).orElse(null);
+        String tenant = token.lookupClaim("tenant", "tenantId").orElse(null);
 
         UserProfile profile = new UserProfile();
 

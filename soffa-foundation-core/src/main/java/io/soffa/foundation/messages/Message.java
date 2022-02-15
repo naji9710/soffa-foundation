@@ -4,16 +4,16 @@ import com.google.common.base.Preconditions;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.model.NoInput;
 import io.soffa.foundation.model.TenantId;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.SneakyThrows;
 
 import java.io.Serializable;
-import java.util.Optional;
 
 @Data
 @AllArgsConstructor
@@ -23,14 +23,15 @@ public class Message implements Serializable {
     private static final Logger LOG = Logger.get(Message.class);
     private String id;
     private String operation;
-    private Object payload;
+    private byte[] payload;
+    private String payloadType;
     private RequestContext context;
 
     public Message() {
         this.id = IdGenerator.secureRandomId("msg_");
         context = JsonUtil.clone(RequestContextHolder.get().orElse(new RequestContext()));
         if (TenantHolder.isNotEmpty()) {
-            context.setTenantId(TenantId.of(TenantHolder.require()));
+            context.setTenantId(TenantHolder.require());
         }
     }
 
@@ -41,12 +42,15 @@ public class Message implements Serializable {
 
     public Message(String operation, Object payload) {
         this(operation);
-        this.payload = payload;
+        if (payload != null) {
+            payloadType = payload.getClass().getName();
+            this.payload = ObjectUtil.serialize(payload);
+        }
+
     }
 
     public Message(String operation, Object payload, RequestContext context) {
-        this.operation = operation;
-        this.payload = payload;
+        this(operation, payload);
         this.context = JsonUtil.clone(context);
     }
 
@@ -54,26 +58,23 @@ public class Message implements Serializable {
         if (context == null) {
             return null;
         }
-        return context.getTenantId();
+        return new TenantId(context.getTenantId());
     }
 
-    public <T> Optional<T> getPayloadAs(Class<T> expectedType) {
+    @SneakyThrows
+    public Object deserialize() {
+        if (payload == null) {
+            return null;
+        }
+        return this.getPayloadAs(Class.forName(payloadType));
+    }
+
+    public <T> T getPayloadAs(Class<T> expectedType) {
         Preconditions.checkNotNull(expectedType, "Invalid type provided");
         if (payload == null) {
-            return Optional.empty();
+            return null;
         }
-        if (expectedType == Void.class || expectedType == NoInput.class) {
-            return Optional.empty();
-        }
-        if (payload.getClass() == expectedType) {
-            return Optional.of(expectedType.cast(payload));
-        }
-        try {
-            return Optional.ofNullable(JsonUtil.convert(payload, expectedType));
-        } catch (Exception e) {
-            LOG.error("Error unwrapping payload", e);
-            return Optional.empty();
-        }
+        return ObjectUtil.deserialize(payload, expectedType);
     }
 
     public Message withApplication(String application) {
@@ -82,11 +83,12 @@ public class Message implements Serializable {
     }
 
     public Message withTenant(String tenant) {
-        return withTenant(new TenantId(tenant));
+        context.setTenantId(tenant);
+        return this;
     }
 
     public Message withTenant(TenantId tenant) {
-        context.setTenantId(tenant);
+        context.setTenantId(tenant != null ? tenant.getValue() : null);
         return this;
     }
 

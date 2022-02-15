@@ -4,6 +4,7 @@ import io.nats.client.Message;
 import io.nats.client.MessageHandler;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.exceptions.ManagedException;
@@ -28,7 +29,8 @@ public class NatsMessageHandler implements MessageHandler {
     @Override
     public void onMessage(Message msg) throws InterruptedException {
         try {
-            io.soffa.foundation.messages.Message message = JsonUtil.deserialize(msg.getData(), io.soffa.foundation.messages.Message.class);
+
+            io.soffa.foundation.messages.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.messages.Message.class);
             if (message.getContext() != null) {
                 authManager.process(message.getContext());
                 RequestContextHolder.set(message.getContext());

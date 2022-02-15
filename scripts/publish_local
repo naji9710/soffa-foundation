@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
-gradle publishToMavenLocal -x test -x sign -x check
+gradle publishToMavenLocal -x test -x sign -x check -x javadoc
 sync

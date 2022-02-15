@@ -73,7 +73,7 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
             Optional.ofNullable(context.getApplicationName()).ifPresent(s -> body.put("application", s));
             context.getUsername().ifPresent(s -> body.put("user", s));
             if (context.hasTenant()) {
-                body.put("tenant", context.getTenantId().getValue());
+                body.put("tenant", context.getTenantId());
             }
         });
 

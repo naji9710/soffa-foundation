@@ -7,6 +7,7 @@ public interface ApiHeaders {
     String APPLICATION = "X-Application";
     String TRACE_ID = "X-TraceId";
     String SPAN_ID = "X-SpanId";
+    String SERVICE_NAME = "X-ServiceName";
     /**
      * @deprecated <p>
      * Use {@link SecuritySchemes#BEARER_AUTH} instead.

@@ -35,7 +35,6 @@ dependencies {
     implementation("net.javacrumbs.shedlock:shedlock-spring:4.33.0")
 
 
-
     api("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")

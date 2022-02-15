@@ -42,14 +42,14 @@ public class DefaultMessageHandler implements MessageHandler {
         if (!(operation instanceof Operation)) {
             throw new TechnicalException("Unsupported operation type: " + operation.getClass().getName());
         }
-
+        /*
         Class<?> inputType = mapping.getInputTypes().get(message.getOperation());
         if (inputType == null) {
             throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
         }
+         */
 
-        LOG.debug("Converting message payload to %s", inputType.getName());
-        Object payload = message.getPayloadAs(inputType).orElse(null);
+        Object payload = message.deserialize();
         //noinspection Convert2Lambda
         return metricsRegistry.track(
             "app_operation_" + message.getOperation(),

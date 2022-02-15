@@ -1,14 +1,12 @@
 package io.soffa.foundation.context;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.model.Authentication;
-import io.soffa.foundation.model.TenantId;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,26 +14,26 @@ import java.util.UUID;
 public class RequestContext {
 
     private static String serviceName = "app";
-    private final Map<String, Object> metas = new HashMap<>();
     private String authorization;
-    private Authentication authentication;
-    private TenantId tenantId;
+    private String tenantId;
     private String applicationName;
+    private String sender;
     private String traceId;
     private String spanId;
-    private static String serviceToken = "";
+
+    @JsonIgnore
+    private static transient String serviceToken = "";
+    @JsonIgnore
+    private transient Authentication authentication;
 
     public RequestContext() {
         this.traceId = UUID.randomUUID().toString();
         this.spanId = UUID.randomUUID().toString();
+        this.sender = serviceName;
     }
 
     public static RequestContext create(String tenantId) {
-        RequestContext ctx = new RequestContext();
-        if (TextUtil.isNotEmpty(tenantId)) {
-            ctx.setTenantId(new TenantId(tenantId));
-        }
-        return ctx;
+        return new RequestContext().withTenant(tenantId);
     }
 
     public boolean hasAuthorization() {
@@ -50,6 +48,10 @@ public class RequestContext {
         serviceName = value;
     }
 
+    public String getSender() {
+        return sender;
+    }
+
     @SneakyThrows
     public static void setServiceToken(String value) {
         serviceToken = value;
@@ -60,7 +62,7 @@ public class RequestContext {
     }
 
     public RequestContext withTenant(String tenantId) {
-        this.setTenantId(new TenantId(tenantId));
+        this.setTenantId(tenantId);
         return this;
     }
 
@@ -68,6 +70,7 @@ public class RequestContext {
         this.authorization = authorization;
         return this;
     }
+
     public RequestContext withAuthorization(String username, String password) {
         this.authorization = AuthUtil.createBasicAuthorization(username, password);
         return this;
@@ -77,10 +80,10 @@ public class RequestContext {
         if (TextUtil.isEmpty(serviceToken)) {
             throw new ConfigurationException("Service token is not configured");
         }
-         if (TextUtil.isEmpty(serviceName)) {
+        if (TextUtil.isEmpty(serviceName)) {
             throw new ConfigurationException("Service name is not configured");
         }
-        this.authorization = AuthUtil.createBasicAuthorization(serviceName,serviceToken);
+        this.authorization = AuthUtil.createBasicAuthorization(serviceName, serviceToken);
         return this;
     }
 
@@ -88,7 +91,7 @@ public class RequestContext {
         if (tenantId == null) {
             return null;
         }
-        return tenantId.getValue();
+        return tenantId;
     }
 
     public String getServiceName() {
@@ -100,14 +103,14 @@ public class RequestContext {
     }
 
     public boolean hasTenant() {
-        return tenantId != null;
+        return TextUtil.isNotEmpty(tenantId);
     }
 
     public boolean isAuthenticated() {
         return authentication != null;
     }
 
-    public void setTenantId(TenantId tenantId) {
+    public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
     }
 
@@ -123,18 +126,12 @@ public class RequestContext {
         this.spanId = spanId;
     }
 
-    public void setMeta(String key, Object value) {
-        metas.put(key, value);
-    }
-
     public void setAuthentication(Authentication auth) {
         this.authentication = auth;
         if (auth == null) {
             return;
         }
-        if (auth.getTenantId() != null && auth.getTenantId().getValue() != null) {
-            tenantId = auth.getTenantId();
-        }
+        tenantId = auth.getTenantId();
         if (auth.getApplication() != null && !auth.getApplication().isEmpty()) {
             applicationName = auth.getApplication();
         }
@@ -147,6 +144,7 @@ public class RequestContext {
         return Optional.empty();
     }
 
-
-
+    public void sync() {
+        this.sender = serviceName;
+    }
 }

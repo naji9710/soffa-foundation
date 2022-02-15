@@ -11,7 +11,6 @@ import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.exceptions.InvalidAuthException;
 import io.soffa.foundation.exceptions.InvalidTokenException;
 import io.soffa.foundation.metrics.MetricsRegistry;
-import io.soffa.foundation.model.TenantId;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -54,12 +53,12 @@ public class RequestFilter extends OncePerRequestFilter {
         RequestContext context = new RequestContext();
 
         if (TenantHolder.hasDefault) {
-            context.setTenantId(new TenantId("default"));
+            context.setTenantId("default");
         }
 
         lookupHeader(request, "X-TenantId", "X-Tenant").ifPresent(value -> {
             LOG.debug("Tenant found in context", value);
-            context.setTenantId(new TenantId(value));
+            context.setTenantId(value);
         });
         lookupHeader(request, "X-Application", "X-ApplicationName", "X-ApplicationId", "X-App").ifPresent(context::setApplicationName);
         lookupHeader(request, "X-TraceId", "X-Trace-Id", "X-RequestId", "X-Request-Id").ifPresent(context::setTraceId);
@@ -71,6 +70,7 @@ public class RequestFilter extends OncePerRequestFilter {
         );
         processTracing(context);
         AtomicBoolean proceed = new AtomicBoolean(true);
+        //noinspection Convert2Lambda
         lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(new Consumer<String>() {
             @SneakyThrows
             @Override
@@ -111,8 +111,8 @@ public class RequestFilter extends OncePerRequestFilter {
     private void processTracing(RequestContext context) {
         String prefix = "";
         if (context.getTenantId() != null) {
-            TenantHolder.set(context.getTenantId().getValue());
-            prefix = context.getTenantId().getValue() + "_";
+            TenantHolder.set(context.getTenantId());
+            prefix = context.getTenantId() + "_";
             Logger.setTenantId(context.getTenantId());
         }
 

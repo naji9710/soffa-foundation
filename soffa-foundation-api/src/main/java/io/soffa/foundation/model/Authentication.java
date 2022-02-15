@@ -17,7 +17,7 @@ public class Authentication   {
     private String application;
     private String username;
     private UserProfile profile;
-    private TenantId tenantId;
+    private String tenantId;
     private Set<String> roles;
     private Set<String> groups;
     private Set<String> permissions;

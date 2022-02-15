@@ -18,7 +18,7 @@ public class Logger {
     public Logger(org.slf4j.Logger logger) {
         this.log = logger;
     }
-    
+
     public Logger(org.slf4j.Logger logger, String tag) {
         this(logger);
         this.tag = tag;
@@ -33,9 +33,17 @@ public class Logger {
     }
 
     public static void setTenantId(TenantId tenantId) {
-        if (tenantId != null) {
-            org.slf4j.MDC.put("tenant", tenantId.getValue());
-        }else {
+        if (tenantId == null) {
+            setTenantId("");
+        } else {
+            setTenantId(tenantId.getValue());
+        }
+    }
+
+    public static void setTenantId(String tenantId) {
+        if (TextUtil.isNotEmpty(tenantId)) {
+            org.slf4j.MDC.put("tenant", tenantId);
+        } else {
             org.slf4j.MDC.remove("tenant");
         }
     }
@@ -87,12 +95,12 @@ public class Logger {
     public void info(String message, Object... args) {
         log.info(formatMessage(message, args));
     }
-    
+
     private String formatMessage(String message, Object... args) {
         if (TextUtil.isEmpty(tag)) {
             return TextUtil.format(message, args);
         }
-        return "["+tag+"] " + TextUtil.format(message, args);
+        return "[" + tag + "] " + TextUtil.format(message, args);
     }
 
     public void warn(String message, Object... args) {

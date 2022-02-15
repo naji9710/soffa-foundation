@@ -27,6 +27,7 @@ public final class RequestContextUtil {
             "ctx_access", context.isAuthenticated() ? "authenticated" : "anonymous",
             "ctx_tenant", context.getTenant(),
             "ctx_application", context.getApplicationName(),
+            "ctx_source", context.getSender(),
             "ctx_username", context.getUsername(),
             "ctx_session_id", sessionId
         );
@@ -67,6 +68,9 @@ public final class RequestContextUtil {
         if (TextUtil.isNotEmpty(context.getSpanId())) {
             contextMap.put("spanId", context.getSpanId());
         }
+        if (TextUtil.isNotEmpty(context.getSender())) {
+            contextMap.put("sender", context.getSender());
+        }
         if (context.getAuthentication() != null && TextUtil.isNotEmpty(context.getAuthentication().getUsername())) {
             contextMap.put("user", context.getAuthentication().getUsername());
         }
@@ -89,6 +93,9 @@ public final class RequestContextUtil {
         }
         if (TextUtil.isNotEmpty(context.getSpanId())) {
             headers.put(ApiHeaders.SPAN_ID, context.getSpanId());
+        }
+        if (TextUtil.isNotEmpty(context.getSender())) {
+            headers.put(ApiHeaders.SERVICE_NAME, context.getSender());
         }
         if (TextUtil.isNotEmpty(context.getAuthorization())) {
             headers.put("Authorization", context.getAuthorization());

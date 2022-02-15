@@ -12,6 +12,11 @@ dependencies {
     @Suppress("GradlePackageUpdate")
     implementation("commons-codec:commons-codec:1.15")
     implementation("com.github.michaelgantman:MgntUtils:1.6.0.1")
+    implementation("com.jsoniter:jsoniter:0.9.23") {
+        exclude(group = "com.fasterxml.jackson.core")
+        exclude(group = "com.google.code.gson")
+    }
+
     api("com.jayway.jsonpath:json-path:2.7.0")
     api("javax.transaction:javax.transaction-api:1.3")
     api("com.netflix.graphql.dgs:graphql-dgs:4.9.17")
