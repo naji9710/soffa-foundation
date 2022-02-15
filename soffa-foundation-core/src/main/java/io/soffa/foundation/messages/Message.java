@@ -1,10 +1,7 @@
 package io.soffa.foundation.messages;
 
 import com.google.common.base.Preconditions;
-import io.soffa.foundation.commons.IdGenerator;
-import io.soffa.foundation.commons.JsonUtil;
-import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.ObjectUtil;
+import io.soffa.foundation.commons.*;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.TenantHolder;
@@ -14,6 +11,8 @@ import lombok.Data;
 import lombok.SneakyThrows;
 
 import java.io.Serializable;
+import java.util.Map;
+
 
 @Data
 @AllArgsConstructor
@@ -99,5 +98,9 @@ public class Message implements Serializable {
     public Message withContext(RequestContext context) {
         this.context = JsonUtil.clone(context);
         return this;
+    }
+
+    public Map<String, Object> getTags(String subject) {
+        return MapUtil.create("subject", subject, "operation", operation);
     }
 }
