@@ -1,22 +1,23 @@
 package io.soffa.foundation.application;
 
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class EventBus {
 
-    private static final com.google.common.eventbus.EventBus instance = new com.google.common.eventbus.EventBus("default");
+    private static final com.google.common.eventbus.EventBus BUS = new com.google.common.eventbus.EventBus("default");
 
     private EventBus() {
     }
 
     public static void register(Object target) {
-        instance.register(target);
+        BUS.register(target);
     }
 
     public static void unregister(Object target) {
-        instance.unregister(target);
+        BUS.unregister(target);
     }
 
     public static void post(Object event) {
-        instance.post(event);
+        BUS.post(event);
     }
 
 }

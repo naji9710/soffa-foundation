@@ -76,7 +76,7 @@ public class NatsClient implements PubSubClient{
 
 
     @Subscribe
-    private void onDatabaseReady(@NonNull DatabaseReadyEvent ignore) {
+    protected void onDatabaseReady(@NonNull DatabaseReadyEvent event) {
         EventBus.unregister(this);
         LOG.info("DB is ready, configuring nats clients...");
         try {

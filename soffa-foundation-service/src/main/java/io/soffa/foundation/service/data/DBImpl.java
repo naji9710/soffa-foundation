@@ -25,7 +25,6 @@ import org.jdbi.v3.core.Jdbi;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -54,7 +53,6 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final Map<String, Boolean> migrated = new ConcurrentHashMap<>();
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final DatabasePlane dbState;
-    private final ApplicationEventPublisher publisher;
     private final ApplicationContext context;
     // private final PubSubClient binaryClient;
 
@@ -62,15 +60,13 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     public DBImpl(final DatabasePlane dbState,
                   final ApplicationContext context,
                   final DbConfig dbConfig,
-                  final String appicationName,
-                  final ApplicationEventPublisher publisher) {
+                  final String appicationName) {
 
         super();
 
         Preconditions.checkNotNull(dbState, "DatabasePlane is required");
 
         this.context = context;
-        this.publisher = publisher;
         this.dbState = dbState;
         this.appicationName = appicationName;
         this.tenanstListQuery = dbConfig.getTenantListQuery();

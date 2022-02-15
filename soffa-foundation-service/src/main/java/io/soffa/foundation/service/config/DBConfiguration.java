@@ -8,7 +8,6 @@ import io.soffa.foundation.service.state.DatabasePlane;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -27,12 +26,11 @@ public class DBConfiguration {
     @Bean
     public DB createDB(AppConfig appConfig,
                        DatabasePlane dbState,
-                       ApplicationEventPublisher publisher,
                        ApplicationContext context,
                        @Value("${spring.application.name}") String applicationName) {
 
         appConfig.configure();
-        return new DBImpl(dbState, context, appConfig.getDb(), applicationName, publisher);
+        return new DBImpl(dbState, context, appConfig.getDb(), applicationName);
     }
 
     @Bean
