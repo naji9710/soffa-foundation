@@ -2,6 +2,7 @@ package io.soffa.foundation.service.pubsub;
 
 import com.google.common.eventbus.Subscribe;
 import io.nats.client.*;
+import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.impl.NatsMessage;
 import io.soffa.foundation.application.EventBus;
@@ -198,16 +199,20 @@ public class NatsClient implements PubSubClient{
                 @SneakyThrows
                 @Override
                 public void run() {
-                    getClient(client).publish(createNatsMessage(broadcastSubjet, message));
-                    /*if (ack.hasError()) {
+                    PublishAck ack = getStream(client).publish(createNatsMessage(broadcastSubjet, message));
+                    if (ack.hasError()) {
                         throw new TechnicalException(ack.getError());
-                    }*/
+                    }
                 }
             });
     }
 
     private NatsMessage createNatsMessage(String subject, io.soffa.foundation.messages.Message message) {
-        return new NatsMessage(subject, "", JsonUtil.serialize(message).getBytes(StandardCharsets.UTF_8));
+        return new NatsMessage(
+            subject,
+            "",
+            JsonUtil.serialize(message).getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     private void setReady() {

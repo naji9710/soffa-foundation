@@ -36,28 +36,37 @@ public class DefaultMessageHandler implements MessageHandler {
             LOG.debug("Message %s skipped, no local handler registered", message.getOperation());
             return Optional.empty();
         }
+
         LOG.debug("New message received with operation %s#%s", message.getOperation(), message.getId());
-        if (operation instanceof Operation) {
-            Class<?> inputType = mapping.getInputTypes().get(message.getOperation());
-            if (inputType == null) {
-                throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
-            }
-            LOG.debug("Converting message payload to %s", inputType.getName());
-            Object payload = message.getPayloadAs(inputType).orElse(null);
-            //noinspection Convert2Lambda
-            return metricsRegistry.track(
-                "app_operation_" + message.getOperation(),
-                RequestContextUtil.tagify(context), new Supplier<Optional<Object>>() {
-                    @SneakyThrows
-                    @Override
-                    public Optional<Object> get() {
-                        //noinspection unchecked
-                        return Optional.ofNullable(((Operation<Object, ?>) operation).handle(payload, context));
-                    }
-                });
-        } else {
+
+        if (!(operation instanceof Operation)) {
             throw new TechnicalException("Unsupported operation type: " + operation.getClass().getName());
         }
+
+        Class<?> inputType = mapping.getInputTypes().get(message.getOperation());
+        if (inputType == null) {
+            throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
+        }
+
+        LOG.debug("Converting message payload to %s", inputType.getName());
+        Object payload = message.getPayloadAs(inputType).orElse(null);
+        //noinspection Convert2Lambda
+        return metricsRegistry.track(
+            "app_operation_" + message.getOperation(),
+            RequestContextUtil.tagify(context),
+            new Supplier<Optional<Object>>() {
+                @SneakyThrows
+                @Override
+                public Optional<Object> get() {
+                    if (payload == null) {
+                        LOG.debug("Invoking operation %s with empty payload", operation.getClass().getSimpleName());
+                    } else {
+                        LOG.debug("Invoking operation %s with empty payload of type %s", operation.getClass().getSimpleName(), payload.getClass().getSimpleName());
+                    }
+                    //noinspection unchecked
+                    return Optional.ofNullable(((Operation<Object, ?>) operation).handle(payload, context));
+                }
+            });
     }
 
 

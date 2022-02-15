@@ -65,9 +65,8 @@ public class Message implements Serializable {
         if (expectedType == Void.class || expectedType == NoInput.class) {
             return Optional.empty();
         }
-        if (expectedType.isInstance(payload)) {
-            //noinspection unchecked
-            return Optional.of((T) payload);
+        if (payload.getClass() == expectedType) {
+            return Optional.of(expectedType.cast(payload));
         }
         try {
             return Optional.ofNullable(JsonUtil.convert(payload, expectedType));
