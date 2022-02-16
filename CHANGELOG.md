@@ -1,4 +1,4 @@
-## 1.7.2 (February 16, 2022) - Breaking changes
+## 1.7.4 (February 16, 2022) 
 
 * Use datasource url params to override hikari pool config (eg: `pg://user:password@host:port/db?schema=public&maxPoolSize=20`)
 
