@@ -46,11 +46,11 @@ public class UrlInfo {
         return params.containsKey(name);
     }
 
-    public Optional<String> getParam(String name) {
+    public Optional<String> param(String name) {
         return Optional.ofNullable(params.get(name));
     }
 
-    public String getParam(String name, String defaultValue) {
+    public String param(String name, String defaultValue) {
         return Optional.ofNullable(params.get(name)).orElse(defaultValue);
     }
 

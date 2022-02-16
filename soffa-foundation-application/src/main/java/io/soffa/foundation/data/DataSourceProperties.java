@@ -45,7 +45,7 @@ public class DataSourceProperties {
         }
 
         UrlInfo urlInfo = UrlInfo.parse(databaseUrl);
-        String schema = urlInfo.getParam("schema", null);
+        String schema = urlInfo.param("schema", null);
         if (schema != null) {
             if (provider.equals(H2)) {
                 schema = schema.toUpperCase();
@@ -56,7 +56,7 @@ public class DataSourceProperties {
         JdbcInfo jdbcInfo = createJdbcUrl(applicationName, provider, urlInfo, schema, databaseUrl);
 
         return DataSourceProperties.builder()
-            .name(applicationName + "-" + name)
+            .name(applicationName + "_" + name)
             .username(jdbcInfo.getUsername())
             .password(jdbcInfo.getPassword())
             .schema(schema)

@@ -58,7 +58,7 @@ public class EmailTest {
         assertEquals("pass", url.getPassword());
         assertEquals("mail.google.com", url.getHostname());
         assertEquals(963, url.getPort());
-        assertEquals("true", url.param("tls"));
+        assertEquals("true", url.param("tls", null));
     }
 
     @Test
