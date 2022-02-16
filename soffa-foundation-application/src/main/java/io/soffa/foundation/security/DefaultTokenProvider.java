@@ -20,6 +20,7 @@ import io.soffa.foundation.api.ApiHeaders;
 import io.soffa.foundation.commons.IOUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.errors.ConfigurationException;
 import io.soffa.foundation.errors.InvalidTokenException;
 import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.UnauthorizedException;
@@ -64,7 +65,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
                     claims,
                     Duration.ofSeconds(ttl)
                 );
-            } else {
+            } else if (TextUtil.isNotEmpty(config.getSecret())) {
                 token = TokenUtil.createJwt(
                     config.getIssuer(),
                     config.getSecret(),
@@ -72,6 +73,8 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
                     claims,
                     ttl
                 );
+            }else {
+                throw new ConfigurationException("No secret or private jwks configured");
             }
         } else {
             throw new NotImplementedException("Token type not supported yet: %s", type.name());

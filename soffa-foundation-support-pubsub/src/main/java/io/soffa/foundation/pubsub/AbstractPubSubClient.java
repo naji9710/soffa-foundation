@@ -2,9 +2,10 @@ package io.soffa.foundation.pubsub;
 
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.ClassUtil;
-import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.errors.ErrorUtil;
+import io.soffa.foundation.model.CallResponse;
 import io.soffa.foundation.model.Message;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -27,17 +28,14 @@ public abstract class AbstractPubSubClient implements PubSubClient {
                 if ("equals".equals(method.getName())) {
                     return method.equals(args[0]);
                 }
-                Object payload = args[0];
-                String payloadType = (payload != null) ? payload.getClass().getName() : null;
                 RequestContext context = (RequestContext) args[1];
-                Message msg = new Message(
-                    IdGenerator.shortUUID("msg"),
-                    operationClass.getSimpleName(),
-                    ObjectUtil.serialize(args[0]),
-                    payloadType,
-                    context.getHeaders()
-                );
-                return request(subjet, msg, returnType).get(ASYNC_TIMEOUT_SECONDS.get(), TimeUnit.SECONDS);
+                Message msg = new Message(operationClass.getSimpleName(), args[0], context);
+                CallResponse callResponse = request(subjet, msg, CallResponse.class).get(ASYNC_TIMEOUT_SECONDS.get(), TimeUnit.SECONDS);
+                if (callResponse.isSuccess()) {
+                    return ObjectUtil.deserialize(callResponse.getData(), returnType);
+                } else {
+                    throw ErrorUtil.getException(callResponse.getErrorCode(), callResponse.getError());
+                }
             });
     }
 

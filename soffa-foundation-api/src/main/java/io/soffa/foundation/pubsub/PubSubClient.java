@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public interface PubSubClient {
 
-    AtomicLong ASYNC_TIMEOUT_SECONDS = new AtomicLong(10);
+    AtomicLong ASYNC_TIMEOUT_SECONDS = new AtomicLong(30);
 
     @SneakyThrows
     void subscribe(@NonNull String subject, boolean broadcast, MessageHandler messageHandler);

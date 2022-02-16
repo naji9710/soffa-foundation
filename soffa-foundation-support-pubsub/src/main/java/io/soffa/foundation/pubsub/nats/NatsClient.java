@@ -11,8 +11,8 @@ import io.soffa.foundation.errors.ForbiddenException;
 import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
+import io.soffa.foundation.model.CallResponse;
 import io.soffa.foundation.model.Message;
-import io.soffa.foundation.model.Payload;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
 import io.soffa.foundation.pubsub.MessageHandler;
 import io.soffa.foundation.pubsub.PubSubClient;
@@ -108,15 +108,15 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     public <T> CompletableFuture<T> request(@NonNull String subject, @NotNull Message message, Class<T> responseClass) {
         return connection.request(NatsUtil.createNatsMessage(subject, message))
             .thenApply(msg -> {
-                Payload response = ObjectUtil.deserialize(msg.getData(), Payload.class);
+                CallResponse response = ObjectUtil.deserialize(msg.getData(), CallResponse.class);
                 if (response.isSuccess()) {
                     return ObjectUtil.deserialize(response.getData(), responseClass);
                 } else {
                     switch (response.getErrorCode()) {
-                        case HttpStatus.UNAUTHORIZED: throw new UnauthorizedException(response.getMessage());
-                        case HttpStatus.FORBIDDEN: throw new ForbiddenException(response.getMessage());
-                        case HttpStatus.BAD_REQUEST: throw new FunctionalException(response.getMessage());
-                        default:throw new TechnicalException(response.getMessage());
+                        case HttpStatus.UNAUTHORIZED: throw new UnauthorizedException(response.getError());
+                        case HttpStatus.FORBIDDEN: throw new ForbiddenException(response.getError());
+                        case HttpStatus.BAD_REQUEST: throw new FunctionalException(response.getError());
+                        default:throw new TechnicalException(response.getError());
                     }
                 }
             });

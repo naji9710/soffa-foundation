@@ -6,10 +6,8 @@ import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.errors.ManagedException;
-import io.soffa.foundation.model.Payload;
+import io.soffa.foundation.model.CallResponse;
 import lombok.AllArgsConstructor;
-
-import java.util.Optional;
 
 @AllArgsConstructor
 public class NatsMessageHandler implements MessageHandler {
@@ -20,20 +18,24 @@ public class NatsMessageHandler implements MessageHandler {
 
     @Override
     public void onMessage(Message msg) {
+        boolean hasReply = TextUtil.isNotEmpty(msg.getReplyTo());
         try {
             io.soffa.foundation.model.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
-            Optional<Object> response = handler.handle(message);
-            if (TextUtil.isNotEmpty(msg.getReplyTo())) {
-                Object data = response.orElseGet(() -> null);
-                msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(Payload.create(data)));
+            CallResponse response = CallResponse.create(handler.handle(message).orElse(null));
+            if (hasReply) {
+                msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(response));
             } else {
                 msg.ack();
             }
         } catch (Exception e) {
+            LOG.error("Nats event handling failed with error", e);
             if (e instanceof ManagedException) {
-                msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(Payload.create(e)));
+                if (hasReply) {
+                    msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(CallResponse.error(e)));
+                } else {
+                    msg.ack();
+                }
             } else {
-                LOG.error("Nats event handling failed with error", e);
                 msg.nak();
             }
         }

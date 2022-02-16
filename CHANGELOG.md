@@ -1,3 +1,7 @@
+## 1.7.1 (February 16, 2022) - Breaking changes
+
+* Improvements and stability
+
 ## 1.7.0 (February 16, 2022) - Breaking changes 
 
 * Refactoring

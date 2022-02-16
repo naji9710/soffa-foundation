@@ -66,7 +66,11 @@ public class DefaultMessageHandler implements MessageHandler {
                         LOG.debug("Invoking operation %s with empty payload of type %s", operation.getClass().getSimpleName(), payload.getClass().getSimpleName());
                     }
                     //noinspection unchecked
-                    return Optional.ofNullable(((Operation<Object, ?>) operation).handle(payload, context));
+                    Object result = ((Operation<Object, ?>) operation).handle(payload, context);
+                    if (result==null) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(result);
                 }
             });
     }

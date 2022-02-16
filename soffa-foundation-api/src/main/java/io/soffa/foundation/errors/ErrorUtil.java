@@ -70,6 +70,23 @@ public final class ErrorUtil {
         return error.getMessage();
     }
 
+    public static Exception getException(int errorCode, String message) {
+        switch (errorCode) {
+            case HttpStatus.BAD_REQUEST:
+                return new FunctionalException(message);
+            case HttpStatus.CONFLICT:
+                return new ConflictException(message);
+            case HttpStatus.FORBIDDEN:
+                return new ForbiddenException(message);
+            case HttpStatus.UNAUTHORIZED:
+                return new UnauthorizedException(message);
+            case HttpStatus.TIMEOUT:
+                return new TimeoutException(message);
+            default:
+                return new TechnicalException(message);
+        }
+    }
+
     public static int resolveErrorCode(Throwable e) {
         for (Map.Entry<Class<?>, Integer> entry : MAPPED_STATUS.entrySet()) {
             if (entry.getKey().isAssignableFrom(e.getClass())) {
@@ -85,12 +102,12 @@ public final class ErrorUtil {
         MAPPED_STATUS.put(ConflictException.class, HttpStatus.CONFLICT);
         MAPPED_STATUS.put(ForbiddenException.class, HttpStatus.FORBIDDEN);
         MAPPED_STATUS.put(UnauthorizedException.class, HttpStatus.UNAUTHORIZED);
-        MAPPED_STATUS.put(InvalidTokenException.class, 401);
-        MAPPED_STATUS.put(InvalidAuthException.class, 401);
-        MAPPED_STATUS.put(ResourceNotFoundException.class, 404);
+        MAPPED_STATUS.put(InvalidTokenException.class, HttpStatus.UNAUTHORIZED);
+        MAPPED_STATUS.put(InvalidAuthException.class, HttpStatus.UNAUTHORIZED);
+        MAPPED_STATUS.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
         MAPPED_STATUS.put(NoContentException.class, 204);
-        MAPPED_STATUS.put(TodoException.class, 501);
-        MAPPED_STATUS.put(SocketException.class, 408);
-        MAPPED_STATUS.put(TimeoutException.class, 408);
+        MAPPED_STATUS.put(TodoException.class, HttpStatus.NOT_IMLEMENTED);
+        MAPPED_STATUS.put(SocketException.class, HttpStatus.TIMEOUT );
+        MAPPED_STATUS.put(TimeoutException.class, HttpStatus.TIMEOUT);
     }
 }
