@@ -6,7 +6,7 @@ import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.errors.ManagedException;
-import io.soffa.foundation.model.CallResponse;
+import io.soffa.foundation.model.OperationResult;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -21,7 +21,7 @@ public class NatsMessageHandler implements MessageHandler {
         boolean hasReply = TextUtil.isNotEmpty(msg.getReplyTo());
         try {
             io.soffa.foundation.model.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
-            CallResponse response = CallResponse.create(handler.handle(message).orElse(null), null);
+            OperationResult response = OperationResult.create(handler.handle(message).orElse(null), null);
             if (hasReply) {
                 msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(response));
             } else {
@@ -31,7 +31,7 @@ public class NatsMessageHandler implements MessageHandler {
             LOG.error("Nats event handling failed with error", e);
             if (e instanceof ManagedException) {
                 if (hasReply) {
-                    msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(CallResponse.create(null, e)));
+                    msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(OperationResult.create(null, e)));
                 } else {
                     msg.ack();
                 }

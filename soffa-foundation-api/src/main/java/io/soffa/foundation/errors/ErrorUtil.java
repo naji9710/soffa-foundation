@@ -88,6 +88,9 @@ public final class ErrorUtil {
     }
 
     public static int resolveErrorCode(Throwable e) {
+        if (e == null) {
+            return -1;
+        }
         for (Map.Entry<Class<?>, Integer> entry : MAPPED_STATUS.entrySet()) {
             if (entry.getKey().isAssignableFrom(e.getClass())) {
                 return entry.getValue();

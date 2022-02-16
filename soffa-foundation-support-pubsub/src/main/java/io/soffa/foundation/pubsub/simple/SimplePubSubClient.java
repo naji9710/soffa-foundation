@@ -1,7 +1,9 @@
 package io.soffa.foundation.pubsub.simple;
 
+import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.errors.ConfigurationException;
 import io.soffa.foundation.model.Message;
+import io.soffa.foundation.model.OperationResult;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
 import io.soffa.foundation.pubsub.MessageHandler;
 import io.soffa.foundation.pubsub.PubSubClient;
@@ -21,12 +23,13 @@ public class SimplePubSubClient extends AbstractPubSubClient implements PubSubCl
         subscriptions.putIfAbsent(subject, messageHandler);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public <T> CompletableFuture<T> request(@NonNull String subject, Message message, Class<T> expectedClass) {
+    public CompletableFuture<byte[]> internalRequest(@NonNull String subject, Message message) {
         checkSubject(subject);
         return CompletableFuture.supplyAsync(() -> {
-            return (T) subscriptions.get(subject).handle(message);
+            Object result = subscriptions.get(subject).handle(message).orElse(null);
+            OperationResult opr = OperationResult.create(ObjectUtil.serialize(result), null);
+            return ObjectUtil.serialize(opr);
         });
     }
 

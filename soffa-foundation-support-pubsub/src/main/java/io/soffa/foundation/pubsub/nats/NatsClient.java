@@ -3,15 +3,9 @@ package io.soffa.foundation.pubsub.nats;
 import io.nats.client.*;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
-import io.soffa.foundation.api.HttpStatus;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.errors.ForbiddenException;
-import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;
-import io.soffa.foundation.errors.UnauthorizedException;
-import io.soffa.foundation.model.CallResponse;
 import io.soffa.foundation.model.Message;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
 import io.soffa.foundation.pubsub.MessageHandler;
@@ -105,21 +99,8 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     }
 
     @Override
-    public <T> CompletableFuture<T> request(@NonNull String subject, @NotNull Message message, Class<T> responseClass) {
-        return connection.request(NatsUtil.createNatsMessage(subject, message))
-            .thenApply(msg -> {
-                CallResponse response = ObjectUtil.deserialize(msg.getData(), CallResponse.class);
-                if (response.isSuccess()) {
-                    return ObjectUtil.deserialize(response.getData(), responseClass);
-                } else {
-                    switch (response.getErrorCode()) {
-                        case HttpStatus.UNAUTHORIZED: throw new UnauthorizedException(response.getError());
-                        case HttpStatus.FORBIDDEN: throw new ForbiddenException(response.getError());
-                        case HttpStatus.BAD_REQUEST: throw new FunctionalException(response.getError());
-                        default:throw new TechnicalException(response.getError());
-                    }
-                }
-            });
+    public CompletableFuture<byte[]> internalRequest(@NonNull String subject, Message message) {
+        return connection.request(NatsUtil.createNatsMessage(subject, message)).thenApply(io.nats.client.Message::getData);
     }
 
     @Override

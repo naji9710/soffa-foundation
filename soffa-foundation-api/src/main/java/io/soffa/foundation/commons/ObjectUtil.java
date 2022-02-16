@@ -19,6 +19,9 @@ public final class ObjectUtil {
         if (input == null) {
             return null;
         }
+        if (input instanceof byte[]) {
+            return (byte[]) input;
+        }
         if (input instanceof Optional) {
             Optional<?> opt = (Optional<?>) input;
             return opt.map(ObjectUtil::serialize).orElse(null);
