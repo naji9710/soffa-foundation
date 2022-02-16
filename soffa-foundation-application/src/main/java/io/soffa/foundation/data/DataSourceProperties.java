@@ -93,9 +93,9 @@ public class DataSourceProperties {
             jdbcUrl.append(String.format("jdbc:postgresql://%1$s/%2$s", hostname, path));
             if (TextUtil.isNotEmpty(schema)) {
                 createSchema(jdbcUrl.toString(), url.getUsername(), url.getPassword(), schema);
-                jdbcUrl.append("?currentSchema=").append(schema).append("&");
+                jdbcUrl.append("?currentSchema=").append(schema).append('&');
             }else {
-                jdbcUrl.append("?");
+                jdbcUrl.append('?');
             }
             jdbcUrl.append("ApplicationName=").append(applicationName);
         }
