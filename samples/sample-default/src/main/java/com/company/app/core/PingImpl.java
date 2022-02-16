@@ -1,7 +1,7 @@
 package com.company.app.core;
 
+import io.soffa.foundation.errors.FakeException;
 import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.exceptions.FakeException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.inject.Named;

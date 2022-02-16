@@ -2,9 +2,9 @@ package io.soffa.foundation.service.aop;
 
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.errors.UnauthorizedException;
+import io.soffa.foundation.errors.ValidationException;
 import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.exceptions.UnauthorizedException;
-import io.soffa.foundation.exceptions.ValidationException;
 import lombok.SneakyThrows;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;

@@ -15,8 +15,9 @@ import java.util.Set;
 public class Authentication   {
 
     private String application;
+    private String userId;
     private String username;
-    private UserProfile profile;
+    private UserInfo profile;
     private String tenantId;
     private Set<String> roles;
     private Set<String> groups;

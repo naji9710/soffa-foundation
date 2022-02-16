@@ -1,16 +1,18 @@
 package io.soffa.foundation.context;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.soffa.foundation.api.ApiHeaders;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.exceptions.ConfigurationException;
 import io.soffa.foundation.model.Authentication;
-import lombok.Getter;
+import lombok.Data;
 import lombok.SneakyThrows;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Getter
+@Data
 public class RequestContext {
 
     private static String serviceName = "app";
@@ -21,8 +23,6 @@ public class RequestContext {
     private String traceId;
     private String spanId;
 
-    @JsonIgnore
-    private static transient String serviceToken = "";
     @JsonIgnore
     private transient Authentication authentication;
 
@@ -37,12 +37,12 @@ public class RequestContext {
     }
 
     public boolean hasAuthorization() {
-        return TextUtil.isNotEmpty(authorization);
+        return authorization != null && !authorization.isEmpty();
     }
 
     @SneakyThrows
     public static void setServiceName(String value) {
-        if (isEmpty(value)) {
+        if (TextUtil.isEmpty(value)) {
             throw new IllegalArgumentException("Service name cannot be empty");
         }
         serviceName = value;
@@ -50,15 +50,6 @@ public class RequestContext {
 
     public String getSender() {
         return sender;
-    }
-
-    @SneakyThrows
-    public static void setServiceToken(String value) {
-        serviceToken = value;
-    }
-
-    private static boolean isEmpty(String value) {
-        return value == null || value.isEmpty();
     }
 
     public RequestContext withTenant(String tenantId) {
@@ -71,22 +62,6 @@ public class RequestContext {
         return this;
     }
 
-    public RequestContext withAuthorization(String username, String password) {
-        this.authorization = AuthUtil.createBasicAuthorization(username, password);
-        return this;
-    }
-
-    public RequestContext withServiceToken() {
-        if (TextUtil.isEmpty(serviceToken)) {
-            throw new ConfigurationException("Service token is not configured");
-        }
-        if (TextUtil.isEmpty(serviceName)) {
-            throw new ConfigurationException("Service name is not configured");
-        }
-        this.authorization = AuthUtil.createBasicAuthorization(serviceName, serviceToken);
-        return this;
-    }
-
     public String getTenant() {
         if (tenantId == null) {
             return null;
@@ -94,36 +69,13 @@ public class RequestContext {
         return tenantId;
     }
 
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setAuthorization(String authorization) {
-        this.authorization = authorization;
-    }
 
     public boolean hasTenant() {
-        return TextUtil.isNotEmpty(tenantId);
+        return tenantId != null && !tenantId.isEmpty();
     }
 
     public boolean isAuthenticated() {
         return authentication != null;
-    }
-
-    public void setTenantId(String tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-    }
-
-    public void setTraceId(String traceId) {
-        this.traceId = traceId;
-    }
-
-    public void setSpanId(String spanId) {
-        this.spanId = spanId;
     }
 
     public void setAuthentication(Authentication auth) {
@@ -147,4 +99,85 @@ public class RequestContext {
     public void sync() {
         this.sender = serviceName;
     }
+
+
+    @SneakyThrows
+    public Map<String, String> getContextMap() {
+        Map<String, String> contextMap = new HashMap<>();
+        if (TextUtil.isNotEmpty(getApplicationName())) {
+            contextMap.put("application", getApplicationName());
+        }
+        if (TextUtil.isNotEmpty(getTenant())) {
+            contextMap.put("tenant", getTenant());
+        }
+        if (TextUtil.isNotEmpty(getTraceId())) {
+            contextMap.put("traceId", getTraceId());
+        }
+        if (TextUtil.isNotEmpty(getSpanId())) {
+            contextMap.put("spanId", getSpanId());
+        }
+        if (TextUtil.isNotEmpty(getSender())) {
+            contextMap.put("sender", getSender());
+        }
+        if (getAuthentication() != null && TextUtil.isNotEmpty(getAuthentication().getUsername())) {
+            contextMap.put("user", getAuthentication().getUsername());
+        }
+        contextMap.put("service_name", serviceName);
+        return contextMap;
+    }
+
+    @SneakyThrows
+    public static RequestContext fromHeaders(Map<String, String> headers) {
+        RequestContext context = new RequestContext();
+        if (headers == null) {
+            return context;
+        }
+        for (Map.Entry<String, String> e : headers.entrySet()) {
+            String value = e.getValue();
+            if (TextUtil.isEmpty(value)) {
+                continue;
+            }
+            String key = e.getKey();
+            if (key.equalsIgnoreCase(ApiHeaders.APPLICATION)) {
+                context.setApplicationName(value);
+            } else if (key.equalsIgnoreCase(ApiHeaders.TENANT_ID)) {
+                context.setTenantId(value);
+            } else if (key.equalsIgnoreCase(ApiHeaders.SPAN_ID)) {
+                context.setTraceId(value);
+            } else if (key.equalsIgnoreCase(ApiHeaders.TRACE_ID)) {
+                context.setSpanId(value);
+            } else if (key.equalsIgnoreCase(ApiHeaders.SERVICE_NAME)) {
+                context.setSender(value);
+            } else if (key.equalsIgnoreCase(ApiHeaders.AUTHORIZATION)) {
+                context.setAuthorization(value);
+            }
+        }
+        return context;
+    }
+
+    @SneakyThrows
+    public Map<String, String> getHeaders() {
+        Map<String, String> headers = new HashMap<>();
+
+        if (TextUtil.isNotEmpty(getApplicationName())) {
+            headers.put(ApiHeaders.APPLICATION, getApplicationName());
+        }
+        if (TextUtil.isNotEmpty(getTenant())) {
+            headers.put(ApiHeaders.TENANT_ID, getTenant());
+        }
+        if (TextUtil.isNotEmpty(getTraceId())) {
+            headers.put(ApiHeaders.TRACE_ID, getTraceId());
+        }
+        if (TextUtil.isNotEmpty(getSpanId())) {
+            headers.put(ApiHeaders.SPAN_ID, getSpanId());
+        }
+        if (TextUtil.isNotEmpty(getSender())) {
+            headers.put(ApiHeaders.SERVICE_NAME, getSender());
+        }
+        if (TextUtil.isNotEmpty(getAuthorization())) {
+            headers.put(ApiHeaders.AUTHORIZATION, getAuthorization());
+        }
+        return headers;
+    }
+
 }

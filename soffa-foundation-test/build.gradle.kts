@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly(project(":soffa-foundation-core"))
+    compileOnly(project(":soffa-foundation-application"))
     compileOnly(project(":soffa-foundation-service"))
     // api("org.springframework:spring-test")
     api("org.springframework.boot:spring-boot-starter-test") {

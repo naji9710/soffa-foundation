@@ -1,7 +1,7 @@
 package io.soffa.foundation.service.state;
 
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.errors.TechnicalException;
 import lombok.Data;
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockConfiguration;

@@ -7,5 +7,8 @@ import java.lang.annotation.*;
 @Inherited
 @Documented
 public @interface Publish {
-    String value();
+
+    String event();
+    String target() default "*";
+
 }

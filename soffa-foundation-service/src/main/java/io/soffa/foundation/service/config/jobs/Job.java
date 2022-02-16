@@ -1,5 +1,6 @@
 package io.soffa.foundation.service.config.jobs;
 
+/*
 import io.soffa.foundation.messages.Message;
 import io.soffa.foundation.model.TenantId;
 import lombok.AllArgsConstructor;
@@ -24,3 +25,5 @@ public class Job implements JobRequest {
     }
 
 }
+
+ */

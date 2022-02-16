@@ -1,5 +1,6 @@
 package io.soffa.foundation.service.config.jobs;
 
+/*
 import io.soffa.foundation.messages.MessageHandler;
 import io.soffa.foundation.service.data.DBImpl;
 import org.jobrunr.configuration.JobRunr;
@@ -40,3 +41,6 @@ public class JobsRunrConfig {
         return new JobManager(handler, config);
     }
 }
+
+
+ */

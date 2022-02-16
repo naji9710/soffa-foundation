@@ -4,13 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContextUtil;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.exceptions.InvalidAuthException;
-import io.soffa.foundation.exceptions.InvalidTokenException;
+import io.soffa.foundation.errors.InvalidAuthException;
+import io.soffa.foundation.errors.InvalidTokenException;
 import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.context.RequestContext;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -76,7 +76,7 @@ public class RequestFilter extends OncePerRequestFilter {
             @Override
             public void accept(String value) {
                 try {
-                    authManager.process(context, value);
+                    authManager.handle(context, value);
                 }catch (InvalidAuthException | InvalidTokenException e) {
                     proceed.set(false);
                     response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());

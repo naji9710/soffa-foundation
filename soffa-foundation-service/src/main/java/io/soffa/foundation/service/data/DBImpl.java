@@ -12,9 +12,9 @@ import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.data.DB;
 import io.soffa.foundation.data.DataSourceProperties;
 import io.soffa.foundation.data.TenantsLoader;
-import io.soffa.foundation.exceptions.DatabaseException;
-import io.soffa.foundation.exceptions.NotImplementedException;
-import io.soffa.foundation.exceptions.TechnicalException;
+import io.soffa.foundation.errors.InvalidTenantException;
+import io.soffa.foundation.errors.NotImplementedException;
+import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.model.TenantId;
 import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
@@ -109,7 +109,6 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
                 applyMigrations(ds);
             }
         }
-
     }
 
     @Override
@@ -130,7 +129,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
             lookupKey = lookupKey.toString().toLowerCase();
         }
         if (!dataSources.containsKey(lookupKey)) {
-            throw new DatabaseException("%s is not a valid database link", lookupKey);
+            throw new InvalidTenantException("%s is not a valid database link", lookupKey);
         }
         return (DataSource) dataSources.get(lookupKey);
     }
@@ -141,12 +140,11 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
             if (dataSources.containsKey(TenantId.DEFAULT_VALUE)) {
                 return TenantId.DEFAULT_VALUE;
             }
-            throw new DatabaseException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
+            throw new InvalidTenantException("Missing database link. Don't forget to set active tenant with TenantHolder.set()");
         }
         linkId = linkId.toLowerCase();
         if (!dataSources.containsKey(linkId) && dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
-            registerDatasource(linkId, dsConfigs.get(TENANT_PLACEHOLDER), true);
-            // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
+            throw new InvalidTenantException("No datasource registered for tenant %s", linkId);
         }
         return linkId;
     }

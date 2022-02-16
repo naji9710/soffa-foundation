@@ -1,9 +1,9 @@
 package io.soffa.foundation.service.aop;
 
-import io.soffa.foundation.commons.ErrorUtil;
+import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.exceptions.DatabaseException;
-import io.soffa.foundation.exceptions.ManagedException;
+import io.soffa.foundation.errors.DatabaseException;
+import io.soffa.foundation.errors.ManagedException;
 import lombok.AllArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -25,6 +25,9 @@ public class JpaRepositoryAspect {
                 throw e;
             } else {
                 Throwable error = ErrorUtil.unwrap(e);
+                if (error instanceof ManagedException) {
+                    throw error;
+                }
                 String msg = error.getMessage().toLowerCase();
                 boolean hasMissingTable = msg.contains("table") && msg.contains("not found") || msg.contains("relation") && msg.contains("does not exist");
                 if (hasMissingTable) {

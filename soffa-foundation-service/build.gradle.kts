@@ -6,7 +6,10 @@ plugins {
 
 
 dependencies {
-    api(project(":soffa-foundation-core"))
+    api(project(":soffa-foundation-application"))
+    api(project(":soffa-foundation-commons"))
+    //compileOnly(project(":soffa-foundation-commons-pubsub"))
+
     api("org.springframework.boot:spring-boot-starter-web") {
         exclude(module = "spring-boot-starter-tomcat")
     }
@@ -18,28 +21,29 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.cloud:spring-cloud-starter-sleuth")
     implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
-    implementation("com.auth0:java-jwt:3.18.3")
-    implementation("com.nimbusds:nimbus-jose-jwt:9.18")
+    
     api("org.springframework.boot:spring-boot-starter-data-jpa") {
         exclude(group = "com.zaxxer")
     }
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    //implementation("org.springframework.boot:spring-boot-starter-amqp")
     api("org.springframework.cloud:spring-cloud-starter-vault-config")
     api("org.springframework.boot:spring-boot-starter-thymeleaf")
     compileOnly("javax.servlet:javax.servlet-api:4.0.1")
-    api("com.github.fridujo:rabbitmq-mock:1.1.1")
+
     @Suppress("GradlePackageUpdate")
     implementation("com.zaxxer:HikariCP:4.0.3")
-    implementation("io.nats:jnats:2.13.2")
+
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.33.0")
     implementation("net.javacrumbs.shedlock:shedlock-spring:4.33.0")
 
 
+    /*
     api("org.jobrunr:jobrunr:4.0.7") {
         exclude(group = "com.zaxxer")
         exclude(group = "com.h2database")
-
     }
+
+     */
     api("org.jdbi:jdbi3-core:3.27.1") {
         exclude(group = "com.github.ben-manes.caffeine")
     }
@@ -53,7 +57,5 @@ dependencies {
     }
     implementation("io.github.classgraph:classgraph:4.8.138")
     testImplementation(project(":soffa-foundation-test"))
-//     testImplementation("io.nats:jnats-server-runner:1.0.8")
-
 }
 

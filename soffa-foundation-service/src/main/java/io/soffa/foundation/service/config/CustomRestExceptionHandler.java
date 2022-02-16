@@ -1,9 +1,11 @@
 package io.soffa.foundation.service.config;
 
-import io.soffa.foundation.commons.ErrorUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContextHolder;
-import io.soffa.foundation.exceptions.*;
+import io.soffa.foundation.errors.ErrorUtil;
+import io.soffa.foundation.errors.FakeException;
+import io.soffa.foundation.errors.FunctionalException;
+import io.soffa.foundation.errors.TechnicalException;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
@@ -22,7 +24,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.lang.reflect.UndeclaredThrowableException;
-import java.net.SocketException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -32,7 +33,6 @@ import java.util.Optional;
 @ControllerAdvice
 class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Map<Class<?>, HttpStatus> MAPPED_STATUS = new LinkedHashMap<>();
     private static final Logger LOG = Logger.get(CustomRestExceptionHandler.class);
     private final Environment environment;
 
@@ -92,10 +92,16 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private HttpStatus deriveStatus(Throwable exception) {
-        for (Map.Entry<Class<?>, HttpStatus> entry : MAPPED_STATUS.entrySet()) {
-            if (entry.getKey().isAssignableFrom(exception.getClass())) {
-                return entry.getValue();
-            }
+        int code = ErrorUtil.resolveErrorCode(exception);
+        if (code > -1) {
+            return HttpStatus.valueOf(code);
+        }
+
+        if (exception instanceof AccessDeniedException) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        if (exception instanceof MethodArgumentNotValidException) {
+            return HttpStatus.BAD_REQUEST;
         }
         if (exception instanceof FunctionalException) {
             return HttpStatus.NOT_IMPLEMENTED;
@@ -108,20 +114,5 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
 
 
 
-    static {
-        MAPPED_STATUS.put(ValidationException.class, HttpStatus.BAD_REQUEST);
-        MAPPED_STATUS.put(MethodArgumentNotValidException.class, HttpStatus.BAD_REQUEST);
-        MAPPED_STATUS.put(ConflictException.class, HttpStatus.CONFLICT);
-        MAPPED_STATUS.put(ForbiddenException.class, HttpStatus.FORBIDDEN);
-        MAPPED_STATUS.put(UnauthorizedException.class, HttpStatus.UNAUTHORIZED);
-        MAPPED_STATUS.put(InvalidTokenException.class, HttpStatus.UNAUTHORIZED);
-        MAPPED_STATUS.put(InvalidAuthException.class, HttpStatus.UNAUTHORIZED);
-        MAPPED_STATUS.put(AccessDeniedException.class, HttpStatus.UNAUTHORIZED);
-        MAPPED_STATUS.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
-        MAPPED_STATUS.put(NoContentException.class, HttpStatus.NO_CONTENT);
-        MAPPED_STATUS.put(TodoException.class, HttpStatus.NOT_IMPLEMENTED);
-        MAPPED_STATUS.put(SocketException.class, HttpStatus.REQUEST_TIMEOUT);
-        MAPPED_STATUS.put(TimeoutException.class, HttpStatus.REQUEST_TIMEOUT);
-    }
 
 }

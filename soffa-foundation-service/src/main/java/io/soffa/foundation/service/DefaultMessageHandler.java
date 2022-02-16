@@ -3,11 +3,13 @@ package io.soffa.foundation.service;
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContextUtil;
-import io.soffa.foundation.exceptions.TechnicalException;
-import io.soffa.foundation.messages.Message;
-import io.soffa.foundation.messages.MessageHandler;
+import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.metrics.MetricsRegistry;
+import io.soffa.foundation.model.Message;
+import io.soffa.foundation.pubsub.MessageHandler;
+import io.soffa.foundation.messages.MessageFactory;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
@@ -22,19 +24,20 @@ public class DefaultMessageHandler implements MessageHandler {
     private static final Logger LOG = Logger.get(DefaultMessageHandler.class);
     private final OperationsMapping mapping;
     private final MetricsRegistry metricsRegistry;
-
-    @Override
-    public boolean accept(String operation) {
-        return mapping.getInternal().containsKey(operation);
-    }
+    private final PlatformAuthManager authManager;
 
     @Override
     public Optional<Object> handle(Message message) {
-        final RequestContext context = Optional.ofNullable(message.getContext()).orElse(new RequestContext());
+        final RequestContext context = message.getContext();
+        RequestContextHolder.set(context);
         Object operation = mapping.getInternal().get(message.getOperation());
         if (operation == null) {
             LOG.debug("Message %s skipped, no local handler registered", message.getOperation());
             return Optional.empty();
+        }
+
+        if (authManager != null && context.hasAuthorization()) {
+            authManager.handle(context);
         }
 
         LOG.debug("New message received with operation %s#%s", message.getOperation(), message.getId());
@@ -42,14 +45,13 @@ public class DefaultMessageHandler implements MessageHandler {
         if (!(operation instanceof Operation)) {
             throw new TechnicalException("Unsupported operation type: " + operation.getClass().getName());
         }
-        /*
+
         Class<?> inputType = mapping.getInputTypes().get(message.getOperation());
         if (inputType == null) {
             throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
         }
-         */
 
-        Object payload = message.deserialize();
+        Object payload = MessageFactory.getPayload(message, inputType);
         //noinspection Convert2Lambda
         return metricsRegistry.track(
             "app_operation_" + message.getOperation(),

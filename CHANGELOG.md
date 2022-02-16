@@ -1,3 +1,10 @@
+## 1.7.0 (February 16, 2022) - Breaking changes 
+
+* Refactoring
+* Separation of concerns
+* Modularity
+* Improvements and stability
+
 ## 1.5.10 (February 14, 2022)
 
 * Improvements and stability

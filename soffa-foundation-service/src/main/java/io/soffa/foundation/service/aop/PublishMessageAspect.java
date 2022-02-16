@@ -2,8 +2,9 @@ package io.soffa.foundation.service.aop;
 
 import io.soffa.foundation.annotations.Publish;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.messages.Message;
-import io.soffa.foundation.messages.PubSubClient;
+import io.soffa.foundation.model.Message;
+import io.soffa.foundation.pubsub.PubSubClient;
+import io.soffa.foundation.messages.MessageFactory;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -22,20 +23,25 @@ public class PublishMessageAspect {
         this.pubSub = pubSub;
     }
 
-
     @SneakyThrows
-    @Around("@annotation(message)")
-    public Object publishMessage(ProceedingJoinPoint pjp, Publish message) {
+    @Around("@annotation(publish)")
+    public Object publishMessage(ProceedingJoinPoint pjp, Publish publish) {
         Object result = pjp.proceed(pjp.getArgs());
         if (pubSub == null) {
             LOG.warn("Unable to honor @Publish annotation because no PubSubClient is registered");
         } else {
             try {
-                String eventId = message.value();
-                pubSub.broadcast(new Message(eventId, result));
-                LOG.info("Message dispatched: %s", eventId);
+                String event = publish.event();
+                String subject = publish.target();
+                Message msg = MessageFactory.create(event, result);
+                if ("*".equalsIgnoreCase(subject)) {
+                    pubSub.broadcast(subject, msg);
+                }else {
+                    pubSub.publish(subject, msg);
+                }
+                LOG.info("Message dispatched: %s", event);
             } catch (Exception e) {
-                LOG.error(e, "Failed to publish message %s -- %s", message.value(), e.getMessage());
+                LOG.error(e, "Failed to publish message %s -- %s", publish.event(), e.getMessage());
                 //TODO: we should requeue the message and retry later
             }
         }

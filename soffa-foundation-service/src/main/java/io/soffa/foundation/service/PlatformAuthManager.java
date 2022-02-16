@@ -6,9 +6,9 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.model.Authentication;
 import io.soffa.foundation.security.AuthManager;
-import io.soffa.foundation.security.roles.GrantedRole;
-import io.soffa.foundation.tokens.TokenProvider;
-import lombok.AllArgsConstructor;
+import io.soffa.foundation.security.GrantedRole;
+import io.soffa.foundation.security.TokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,41 +20,37 @@ import java.util.Base64;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
 public class PlatformAuthManager {
 
     private static final Logger LOG = Logger.get(PlatformAuthManager.class);
-    private final TokenProvider tp;
+    private final TokenProvider tokens;
     private final AuthManager authManger;
+
+    public PlatformAuthManager(@Autowired AuthManager authManger, @Autowired(required = false) TokenProvider tokens) {
+        this.tokens = tokens;
+        this.authManger = authManger;
+    }
 
     private Authentication authenticate(RequestContext context, String token) {
         Authentication auth = authManger.authenticate(context, token);
         if (auth != null) {
             return auth;
         }
-        if (tp == null) {
+        if (tokens == null) {
             return null;
         }
-        return tp.decode(token);
+        return tokens.decode(token);
     }
 
     private Authentication authenticate(RequestContext context, String username, String password) {
         return authManger.authenticate(context, username, password);
     }
 
-    public boolean isEnabled() {
-        return tp.getConfig().isActive();
+    public void handle(RequestContext context) {
+        handle(context, context.getAuthorization());
     }
 
-    public boolean isServiceAuthorization(String token) {
-        return token.equals(tp.getConfig().getServiceToken());
-    }
-
-    public void process(RequestContext context) {
-        process(context, context.getAuthorization());
-    }
-
-    public void process(RequestContext context, String token) {
+    public void handle(RequestContext context, String token) {
 
         if (TextUtil.isEmpty(token)) {
             return;
@@ -71,7 +67,7 @@ public class PlatformAuthManager {
             String username = credentials[0];
             boolean hasPassword = credentials.length > 1;
             String pasword = hasPassword ? credentials[1] : "";
-            if (isServiceAuthorization(pasword)) {
+            if (tokens!=null && pasword.equals(tokens.getConfig().getSecret())) {
                 auth = Authentication.builder()
                     .application(username)
                     //.username(username)

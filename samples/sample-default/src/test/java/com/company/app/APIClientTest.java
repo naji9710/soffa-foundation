@@ -2,7 +2,7 @@ package com.company.app;
 
 import com.company.app.core.PingResponse;
 import com.company.app.gateways.API;
-import io.soffa.foundation.api.RestClient;
+import io.soffa.foundation.application.RestClient;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.test.DatabaseTest;
 import lombok.SneakyThrows;
