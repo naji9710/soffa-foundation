@@ -102,7 +102,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         String url = link.getUrl().replace(TENANT_PLACEHOLDER, id).replace(TENANT_PLACEHOLDER.toUpperCase(), id);
         dsConfigs.put(id.toLowerCase(), link);
         if (!TENANT_PLACEHOLDER.equalsIgnoreCase(id)) {
-            DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(id, url), link);
+            DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(appicationName, id, url), link);
             dsConfigs.put(ds, link);
             dataSources.put(id.toLowerCase(), ds);
             if (migrate) {

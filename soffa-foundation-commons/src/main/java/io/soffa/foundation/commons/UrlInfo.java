@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Data
 @NoArgsConstructor
@@ -24,8 +25,9 @@ public class UrlInfo {
     private String username;
     private String password;
     private String path;
-    private Map<String,Object> params;
-    private static final Map<String,Integer> DEFAULT_PORTS = new HashMap<>();
+    private Map<String, String> params;
+    private static final Map<String, Integer> DEFAULT_PORTS = new HashMap<>();
+
     static {
         DEFAULT_PORTS.put("http", 80);
         DEFAULT_PORTS.put("https", 443);
@@ -44,8 +46,12 @@ public class UrlInfo {
         return params.containsKey(name);
     }
 
-    public Object getParam(String name) {
-        return params.get(name);
+    public Optional<String> getParam(String name) {
+        return Optional.ofNullable(params.get(name));
+    }
+
+    public String getParam(String name, String defaultValue) {
+        return Optional.ofNullable(params.get(name)).orElse(defaultValue);
     }
 
     public String getHostnameWithPort() {
@@ -83,7 +89,7 @@ public class UrlInfo {
         String userInfos = url.getUserInfo();
         String username = null;
         String password = null;
-        Map<String,Object> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         if (userInfos != null) {
             if (userInfos.contains(":")) {
                 String[] userAndPassword = userInfos.trim().split(":");
@@ -103,10 +109,5 @@ public class UrlInfo {
         }
         return new UrlInfo(url.getProtocol(), url.getPort(), url.getHost(), username, password, url.getPath(), params);
     }
-
-    public Object param(String name){
-        return params.get(name);
-    }
-
 
 }

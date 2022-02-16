@@ -14,6 +14,7 @@ public class AppConfig {
 
     private boolean sysLogs = true;
     private String name;
+    private String version;
     private DbConfig db;
     private OpenAPIDesc openapi;
     private SecurityConfig security;

@@ -8,13 +8,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.Value;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.jdbi.v3.core.Jdbi;
 
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -30,10 +27,11 @@ public class DataSourceProperties {
     private String password;
     private String driverClassName;
     private String schema;
+    private Map<String,String> properties;
     private List<String> migrations;
 
     @SneakyThrows
-    public static DataSourceProperties create(final String name, final String datasourceUrl) {
+    public static DataSourceProperties create(final String applicationName, final String name, final String datasourceUrl) {
 
         String databaseUrl = datasourceUrl.trim();
         String provider;
@@ -46,17 +44,8 @@ public class DataSourceProperties {
             throw new TechnicalException("Database protocol not implemented yet: " + databaseUrl);
         }
 
-        URL url = new URL(databaseUrl.replaceAll("^([^:]+)://(.*)$", "https://$2"));
-
-        List<NameValuePair> params = URLEncodedUtils.parse(url.toURI(), StandardCharsets.UTF_8);
-        String schema = null;
-
-        for (NameValuePair param : params) {
-            if ("schema".equalsIgnoreCase(param.getName())) {
-                schema = TextUtil.trimToEmpty(param.getValue());
-                break;
-            }
-        }
+        UrlInfo urlInfo = UrlInfo.parse(databaseUrl);
+        String schema = urlInfo.getParam("schema", null);
         if (schema != null) {
             if (provider.equals(H2)) {
                 schema = schema.toUpperCase();
@@ -64,28 +53,29 @@ public class DataSourceProperties {
                 schema = schema.toLowerCase();
             }
         }
-        JdbcInfo jdbcInfo = createJdbcUrl(provider, url, schema, databaseUrl);
+        JdbcInfo jdbcInfo = createJdbcUrl(applicationName, provider, urlInfo, schema, databaseUrl);
+
         return DataSourceProperties.builder()
-            .name(name)
+            .name(applicationName + "-" + name)
             .username(jdbcInfo.getUsername())
             .password(jdbcInfo.getPassword())
             .schema(schema)
             .url(jdbcInfo.getUrl())
             .driverClassName(jdbcInfo.getDriver())
+            .properties(urlInfo.getParams())
             .build();
     }
 
     @SneakyThrows
-    private static JdbcInfo createJdbcUrl(String provider, URL url, String schema, String initialUrl) {
-        UrlInfo urlInfo = UrlInfo.parse(url);
-        if (TextUtil.isEmpty(urlInfo.getUsername())) {
+    private static JdbcInfo createJdbcUrl(String applicationName, String provider, UrlInfo url, String schema, String initialUrl) {
+        if (TextUtil.isEmpty(url.getUsername())) {
             LOG.warn("No username found in database url: %s", initialUrl);
-        } else if (TextUtil.isEmpty(urlInfo.getPassword())) {
+        } else if (TextUtil.isEmpty(url.getPassword())) {
             LOG.warn("No password found in database url: %s", initialUrl);
         }
         StringBuilder jdbcUrl = new StringBuilder();
         String jdbcDriver;
-        StringBuilder hostname = new StringBuilder(url.getHost());
+        StringBuilder hostname = new StringBuilder(url.getHostname());
         String path = url.getPath().replaceAll("^/", "");
         if (H2.equals(provider)) {
             jdbcDriver = H2_DRIVER;
@@ -102,12 +92,15 @@ public class DataSourceProperties {
             }
             jdbcUrl.append(String.format("jdbc:postgresql://%1$s/%2$s", hostname, path));
             if (TextUtil.isNotEmpty(schema)) {
-                createSchema(jdbcUrl.toString(), urlInfo.getUsername(), urlInfo.getPassword(), schema);
-                jdbcUrl.append("?currentSchema=").append(schema);
+                createSchema(jdbcUrl.toString(), url.getUsername(), url.getPassword(), schema);
+                jdbcUrl.append("?currentSchema=").append(schema).append("&");
+            }else {
+                jdbcUrl.append("?");
             }
+            jdbcUrl.append("ApplicationName=").append(applicationName);
         }
 
-        return new JdbcInfo(jdbcDriver, jdbcUrl.toString(), urlInfo.getUsername(), urlInfo.getPassword(), schema);
+        return new JdbcInfo(jdbcDriver, jdbcUrl.toString(), url.getUsername(), url.getPassword(), schema);
     }
 
     private static void createSchema(String jdbcUrl, String username, String password, String schema) {
@@ -126,6 +119,10 @@ public class DataSourceProperties {
 
     public boolean hasSchema() {
         return TextUtil.isNotEmpty(schema);
+    }
+
+    public String property(String name) {
+        return properties.get(name);
     }
 
     @Value

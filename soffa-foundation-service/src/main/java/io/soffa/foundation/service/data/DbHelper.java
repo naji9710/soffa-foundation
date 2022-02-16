@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.Properties;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.config.DataSourceConfig;
 import io.soffa.foundation.data.DataSourceProperties;
@@ -40,11 +41,15 @@ public final class DbHelper {
         hc.setPoolName(IdGenerator.shortUUID(config.getName() + "_"));
         hc.setConnectionTestQuery("select 1");
 
-        hc.setMinimumIdle(10_000);
-        hc.setConnectionTimeout(30_000);
-        hc.setIdleTimeout(35_000);
-        hc.setMaxLifetime(45_000);
-        hc.setMaximumPoolSize(20);
+        Properties props = new Properties(config.getProperties());
+
+        hc.setMinimumIdle(props.getInt("minimumIdle", 10_000));
+        hc.setConnectionTimeout(props.getInt("connectionTimeout", 30_000));
+        hc.setIdleTimeout(props.getInt("idleTimeout", 35_000));
+        hc.setMaxLifetime(props.getInt("maxLifetime", 45_000));
+        hc.setMaximumPoolSize(props.getInt("maxPoolSize", 10));
+
+        LOG.debug("Using jdbcUrl: %s", config.getUrl());
 
         if (config.getUrl().contains(":h2:")) {
             hc.addDataSourceProperty("ignore_startup_parameters", "search_path");
@@ -113,11 +118,11 @@ public final class DbHelper {
         } catch (Exception e) {
             String msg = e.getMessage().toLowerCase();
             if (msg.contains("changelog") && msg.contains("already exists")) {
-                boolean isTestDb = ((HikariDataSource)lqb.getDataSource()).getJdbcUrl().startsWith("jdbc:h2:mem");
+                boolean isTestDb = ((HikariDataSource) lqb.getDataSource()).getJdbcUrl().startsWith("jdbc:h2:mem");
                 if (!isTestDb) {
                     LOG.warn("Looks like migrations are being ran twice for %s.%s, ignore this error", dsName, schema);
                 }
-            }else {
+            } else {
                 throw new DatabaseException(e, "Migration failed for %s", schema);
             }
         }
