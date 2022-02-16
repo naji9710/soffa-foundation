@@ -20,19 +20,12 @@ public class CallResponse {
         return !hasError();
     }
 
-    public static CallResponse error(Exception e) {
+    public static CallResponse create(Object payload, Exception e) {
         CallResponse response = new CallResponse();
         response.setErrorCode(ErrorUtil.resolveErrorCode(e));
         response.setError(e.getMessage());
-        response.setData(null);
-        return response;
-    }
-
-    public static CallResponse create(Object payload) {
-        CallResponse response = new CallResponse();
         response.setData(ObjectUtil.serialize(payload));
         return response;
     }
-
 
 }
