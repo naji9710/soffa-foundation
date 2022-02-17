@@ -5,7 +5,6 @@ import com.company.app.core.PingResponse;
 import com.company.app.operations.SendEmailHandler;
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.messages.MessageFactory;
 import io.soffa.foundation.model.Message;
 import io.soffa.foundation.models.mail.Email;
@@ -43,7 +42,6 @@ public class PubSubTest {
     @SneakyThrows
     @Test
     public void testPubSub() {
-        ErrorUtil.setRelevantPackage("*");
         assertNotNull(messenger);
         // Awaitility.await().atMost(3, TimeUnit.SECONDS).until(() -> pubSubClient.isReady());
 

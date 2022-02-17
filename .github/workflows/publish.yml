@@ -22,7 +22,7 @@ jobs:
           java-version: '8'
           distribution: 'adopt'
       - name: Run checks
-        run: NO_PUBLISH=true gradle check
+        run: NO_PUBLISH=true gradle clean check
 
   publish-to-sonatype:
     needs: check
