@@ -18,6 +18,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
@@ -38,7 +39,8 @@ public class PlatformBeansFactory {
         return new OperationsMapping(operations);
     }
 
-    @Bean@ConditionalOnMissingBean(AuthManager.class)
+    @Bean
+    @ConditionalOnMissingBean(AuthManager.class)
     public AuthManager createDefaultAuthManager() {
         return new NoopAuthManager();
     }
@@ -57,8 +59,9 @@ public class PlatformBeansFactory {
     @Bean
     @Primary
     @ConfigurationProperties(prefix = "app")
-    public AppConfig createAppConfig(@Value("${spring.application.name}") String applicationName) {
+    public AppConfig createAppConfig(@Value("${spring.application.name}") String applicationName, Environment env) {
         RequestContext.setServiceName(applicationName);
+        io.soffa.foundation.context.Environment.addProfiles(env.getActiveProfiles());
         return new AppConfig(applicationName);
     }
 
