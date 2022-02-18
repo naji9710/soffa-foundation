@@ -1,10 +1,10 @@
 package io.soffa.foundation.support.email;
 
 import io.soffa.foundation.commons.UrlInfo;
+import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.support.email.adapters.FakeEmailSender;
 import io.soffa.foundation.support.email.adapters.MailerConfig;
 import io.soffa.foundation.support.email.adapters.SmtpEmailSender;
-import io.soffa.foundation.errors.NotImplementedException;
 
 public final class EmailSenderFactory {
 

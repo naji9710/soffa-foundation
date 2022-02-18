@@ -2,9 +2,9 @@ package io.soffa.foundation.messages;
 
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.ObjectUtil;
+import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.model.Message;
-import io.soffa.foundation.context.RequestContext;
 import lombok.SneakyThrows;
 
 import java.util.Map;

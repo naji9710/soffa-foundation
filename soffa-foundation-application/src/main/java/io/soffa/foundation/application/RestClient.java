@@ -5,12 +5,12 @@ import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.http.HttpClient;
 import io.soffa.foundation.commons.http.HttpRequest;
 import io.soffa.foundation.commons.http.HttpResponse;
+import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.errors.ForbiddenException;
 import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
 import io.soffa.foundation.model.ApiInfo;
-import io.soffa.foundation.context.RequestContext;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

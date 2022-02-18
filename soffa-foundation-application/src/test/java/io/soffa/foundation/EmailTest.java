@@ -2,12 +2,12 @@ package io.soffa.foundation;
 
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.commons.UrlInfo;
+import io.soffa.foundation.models.mail.Email;
+import io.soffa.foundation.models.mail.EmailAddress;
 import io.soffa.foundation.support.email.EmailSender;
 import io.soffa.foundation.support.email.EmailSenderFactory;
 import io.soffa.foundation.support.email.adapters.FakeEmailSender;
 import io.soffa.foundation.support.email.adapters.SmtpEmailSender;
-import io.soffa.foundation.models.mail.Email;
-import io.soffa.foundation.models.mail.EmailAddress;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

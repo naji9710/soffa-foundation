@@ -1,7 +1,7 @@
 package io.soffa.foundation.security;
 
-import io.soffa.foundation.model.Authentication;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.model.Authentication;
 
 public interface AuthManager {
 

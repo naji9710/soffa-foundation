@@ -26,7 +26,9 @@ import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.UnauthorizedException;
 import io.soffa.foundation.model.Authentication;
 import io.soffa.foundation.model.UserInfo;
-import io.soffa.foundation.security.model.*;
+import io.soffa.foundation.security.model.Token;
+import io.soffa.foundation.security.model.TokenType;
+import io.soffa.foundation.security.model.TokensConfig;
 import lombok.Data;
 import lombok.SneakyThrows;
 

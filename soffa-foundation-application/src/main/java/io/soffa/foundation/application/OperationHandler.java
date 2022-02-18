@@ -1,8 +1,8 @@
 package io.soffa.foundation.application;
 
 import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.context.RequestContextHolder;
 
 public interface OperationHandler {
 

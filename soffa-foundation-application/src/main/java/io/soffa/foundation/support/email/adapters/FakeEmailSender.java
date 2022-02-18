@@ -3,9 +3,9 @@ package io.soffa.foundation.support.email.adapters;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.RandomUtil;
-import io.soffa.foundation.support.email.EmailSender;
 import io.soffa.foundation.models.mail.Email;
 import io.soffa.foundation.models.mail.EmailId;
+import io.soffa.foundation.support.email.EmailSender;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

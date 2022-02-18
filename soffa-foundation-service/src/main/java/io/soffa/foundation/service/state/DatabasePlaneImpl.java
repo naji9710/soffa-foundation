@@ -1,20 +1,18 @@
 package io.soffa.foundation.service.state;
 
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.data.DatabasePlane;
 import io.soffa.foundation.errors.TechnicalException;
 import lombok.Data;
 import lombok.SneakyThrows;
-import net.javacrumbs.shedlock.core.LockConfiguration;
-import net.javacrumbs.shedlock.core.LockProvider;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Objects;
 
 @Data
 @Component
-public class DatabasePlane {
+public class DatabasePlaneImpl implements DatabasePlane {
 
     public static final String READY = "READY";
     public static final String PENDING = "PENDING";
@@ -22,12 +20,13 @@ public class DatabasePlane {
 
     private String state = "PENDING";
     private String message;
-    private LockProvider lockProvider;
 
+    @Override
     public boolean isReady() {
         return Objects.equals(state, READY);
     }
 
+    @Override
     public String getMessage() {
         if (TextUtil.isNotEmpty(message)) {
             return message;
@@ -44,6 +43,7 @@ public class DatabasePlane {
         return state;
     }
 
+    @Override
     public boolean isPending() {
         return Objects.equals(state, PENDING);
     }
@@ -52,47 +52,26 @@ public class DatabasePlane {
         return Objects.equals(state, FAILED);
     }
 
+    @Override
     public void setPending() {
         state = PENDING;
         message = "";
     }
 
+    @Override
     public void setReady() {
         state = READY;
         message = "";
     }
 
-
-    public void setLockProvider(LockProvider lp) {
-        this.lockProvider = lp;
-    }
-
+    @Override
     public void setFailed(String message) {
         state = FAILED;
         this.message = message;
     }
 
-    public void withLock(String name, int atMostSeconds, int atLeastSeconds, Runnable runnable) {
-        withLock(name, Duration.ofSeconds(atMostSeconds), Duration.ofSeconds(atLeastSeconds), runnable);
-    }
-
-    public void withLock(String name, Duration atMost, Duration atLeast, Runnable runnable) {
-        LockConfiguration config = new LockConfiguration(Instant.now(), name, atMost, atLeast);
-        lockProvider.lock(config).ifPresent(simpleLock -> {
-            try {
-                runnable.run();
-            } finally {
-                simpleLock.unlock();
-            }
-        });
-    }
-
     @SneakyThrows
-    public void await() {
-        await(Duration.ofSeconds(5));
-    }
-
-    @SneakyThrows
+    @Override
     public void await(Duration atMost) {
         Duration duration = atMost;
         while (!isReady()) {

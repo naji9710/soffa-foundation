@@ -1,6 +1,6 @@
 package io.soffa.foundation.service.controllers;
 
-import io.soffa.foundation.service.state.DatabasePlane;
+import io.soffa.foundation.data.DatabasePlane;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;

@@ -2,9 +2,9 @@ package io.soffa.foundation.service.aop;
 
 import io.soffa.foundation.annotations.Publish;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.messages.MessageFactory;
 import io.soffa.foundation.model.Message;
 import io.soffa.foundation.pubsub.PubSubClient;
-import io.soffa.foundation.messages.MessageFactory;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

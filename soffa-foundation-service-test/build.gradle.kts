@@ -6,12 +6,14 @@ plugins {
 
 dependencies {
     compileOnly(project(":soffa-foundation-application"))
-    compileOnly(project(":soffa-foundation-service"))
+    // compileOnly(project(":soffa-foundation-service"))
     // api("org.springframework:spring-test")
+    api(project(":soffa-foundation-commons"))
+    api("com.intuit.karate:karate-junit5:1.2.0.RC4")
+
     api("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "com.vaadin.external.google")
     }
-
 
     compileOnly("org.springframework.boot:spring-boot-starter-web")
 

@@ -2,14 +2,14 @@ package io.soffa.foundation.service;
 
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.application.OperationHandler;
-import io.soffa.foundation.errors.ErrorUtil;
+import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContextUtil;
+import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
 import io.soffa.foundation.metrics.CoreMetrics;
 import io.soffa.foundation.metrics.MetricsRegistry;
-import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.model.Validatable;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;

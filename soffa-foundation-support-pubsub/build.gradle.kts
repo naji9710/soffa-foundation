@@ -11,7 +11,8 @@ dependencies {
 
     implementation("io.nats:jnats:2.13.2")
     implementation("com.github.fridujo:rabbitmq-mock:1.1.1")
-
+    implementation("org.springframework.kafka:spring-kafka")
+    //implementation("org.apache.kafka:kafka_2.13:3.1.0")
     implementation("org.springframework.boot:spring-boot-autoconfigure")
 
 }

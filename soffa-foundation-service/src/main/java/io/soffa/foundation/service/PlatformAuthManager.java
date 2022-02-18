@@ -64,20 +64,23 @@ public class PlatformAuthManager {
         } else if (token.toLowerCase().startsWith("basic ")) {
             String basicAuth = token.substring("basic ".length()).trim();
             String[] credentials = new String(Base64.getDecoder().decode(basicAuth)).split(":");
-            String username = credentials[0];
-            boolean hasPassword = credentials.length > 1;
-            String pasword = hasPassword ? credentials[1] : "";
-            if (tokens!=null && pasword.equals(tokens.getConfig().getSecret())) {
-                auth = Authentication.builder()
-                    .application(username)
-                    //.username(username)
-                    .tenantId(context.getTenantId())
-                    .principal(username)
-                    .permissions(ImmutableSet.of("service"))
-                    .roles(ImmutableSet.of("service"))
-                    .build();
-            } else {
-                auth = authenticate(context, username, pasword);
+            boolean isValid = credentials.length >= 1;
+            if (isValid) {
+                String username = credentials[0];
+                boolean hasPassword = credentials.length > 1;
+                String pasword = hasPassword ? credentials[1] : "";
+                if (tokens != null && pasword.equals(tokens.getConfig().getSecret())) {
+                    auth = Authentication.builder()
+                        .application(username)
+                        //.username(username)
+                        .tenantId(context.getTenantId())
+                        .principal(username)
+                        .permissions(ImmutableSet.of("service"))
+                        .roles(ImmutableSet.of("service"))
+                        .build();
+                } else {
+                    auth = authenticate(context, username, pasword);
+                }
             }
         } else {
             LOG.warn("An authorization header was found but it is not a bearer or basic authorization header");

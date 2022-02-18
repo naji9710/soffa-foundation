@@ -4,7 +4,7 @@ import io.soffa.foundation.config.AppConfig;
 import io.soffa.foundation.data.DB;
 import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.service.data.DBImpl;
-import io.soffa.foundation.service.state.DatabasePlane;
+import io.soffa.foundation.service.state.DatabasePlaneImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +25,7 @@ public class DBConfiguration {
 
     @Bean
     public DB createDB(AppConfig appConfig,
-                       DatabasePlane dbState,
+                       DatabasePlaneImpl dbState,
                        ApplicationContext context,
                        @Value("${spring.application.name}") String applicationName) {
 

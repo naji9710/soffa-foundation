@@ -11,13 +11,14 @@ import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.data.DB;
 import io.soffa.foundation.data.DataSourceProperties;
+import io.soffa.foundation.data.DatabasePlane;
 import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.errors.InvalidTenantException;
 import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.model.TenantId;
-import io.soffa.foundation.service.state.DatabasePlane;
 import lombok.SneakyThrows;
+import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -35,6 +36,8 @@ import org.springframework.jdbc.datasource.AbstractDataSource;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -47,7 +50,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final String tablesPrefix;
     private final String appicationName;
     private final String tenanstListQuery;
-
+    private LockProvider lockProvider;
     private static final String TENANT_PLACEHOLDER = "__tenant__";
     private static final String DEFAULT_DS = "default";
     private final Map<String, Boolean> migrated = new ConcurrentHashMap<>();
@@ -281,13 +284,27 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
             // Will ignore because the table might have been created by another instance of the service
             LOG.warn(e.getMessage(), e);
         }
-        dbState.setLockProvider(lockProvider);
+        this.lockProvider = lockProvider;
     }
+
+
+    @Override
+    public void withLock(String name, Duration atMost, Duration atLeast, Runnable runnable) {
+        LockConfiguration config = new LockConfiguration(Instant.now(), name, atMost, atLeast);
+        lockProvider.lock(config).ifPresent(simpleLock -> {
+            try {
+                runnable.run();
+            } finally {
+                simpleLock.unlock();
+            }
+        });
+    }
+
 
     public void configure() {
         DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
 
-        dbState.withLock("db-migration", 60, 30, () -> {
+        withLock("db-migration", 60, 30, () -> {
             // Migrate static tenants
 
             dataSources.forEach((key, value) -> {

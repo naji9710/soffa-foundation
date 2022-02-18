@@ -49,13 +49,13 @@ dependencies {
     }
     api("io.micrometer:micrometer-registry-prometheus")
     implementation("org.postgresql:postgresql:42.3.2")
-    api("org.springdoc:springdoc-openapi-ui:1.6.5"){
+    api("org.springdoc:springdoc-openapi-ui:1.6.6"){
         exclude(group = "io.github.classgraph")
     }
     implementation("org.springdoc:springdoc-openapi-security:1.6.5"){
         exclude(group = "io.github.classgraph")
     }
     implementation("io.github.classgraph:classgraph:4.8.138")
-    testImplementation(project(":soffa-foundation-test"))
+    testImplementation(project(":soffa-foundation-service-test"))
 }
 
