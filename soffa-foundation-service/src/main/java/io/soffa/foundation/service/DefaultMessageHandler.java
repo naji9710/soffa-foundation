@@ -85,7 +85,8 @@ public class DefaultMessageHandler implements MessageHandler {
                         LOG.debug("Invoking operation %s with payload of type %s", operation.getClass().getSimpleName(), payload.get().getClass().getSimpleName());
                     }
                     //noinspection unchecked
-                    Object result = ((Operation<Object, ?>) operation).handle(payload.get(), context);
+                    @SuppressWarnings("unchecked")
+                    Object result = ((Operation<Object, Object>) operation).handle(payload.get(), context);
                     if (result==null) {
                         return Optional.empty();
                     }

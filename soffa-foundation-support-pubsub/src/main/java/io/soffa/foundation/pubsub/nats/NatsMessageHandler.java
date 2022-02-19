@@ -45,7 +45,6 @@ public class NatsMessageHandler implements MessageHandler {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
             LOG.error("Nats event handling failed with error", e);
             if (e instanceof ManagedException) {
                 if (hasReply) {

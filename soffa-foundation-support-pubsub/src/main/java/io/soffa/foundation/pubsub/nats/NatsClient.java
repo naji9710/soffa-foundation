@@ -43,14 +43,13 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
 
         NatsMessageHandler h = new NatsMessageHandler(connection, messageHandler);
         @SuppressWarnings("PMD")
-        Dispatcher dispatcher = connection.createDispatcher(h);
+        Dispatcher dispatcher = connection.createDispatcher();
 
         if (!broadcast) {
-            dispatcher.subscribe(subject, subject + "-group");
+            dispatcher.subscribe(subject, subject + "-group", h);
         } else {
-            PushSubscribeOptions so = PushSubscribeOptions.builder().build();
             configureStream(subject);
-            stream.subscribe(subject, dispatcher, h, true, so);
+            stream.subscribe(subject, dispatcher, h, true);
         }
     }
 

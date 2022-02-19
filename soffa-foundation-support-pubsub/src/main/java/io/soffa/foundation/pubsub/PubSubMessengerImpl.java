@@ -1,13 +1,8 @@
 package io.soffa.foundation.pubsub;
 
-import com.google.common.eventbus.Subscribe;
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.EventBus;
-import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.data.DatabaseReadyEvent;
 import io.soffa.foundation.model.Message;
-import io.soffa.foundation.pubsub.config.PubSubClientConfig;
-import io.soffa.foundation.pubsub.config.PubSubConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,16 +11,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class PubSubMessengerImpl implements PubSubMessenger {
 
-    private final PubSubConfig config;
     private final Map<String, PubSubClient> clients;
     private final PubSubClient defaultClient;
-    private final MessageHandler messageHandler;
     public static final String DEFAULT = "default";
 
-    public PubSubMessengerImpl(PubSubConfig config, MessageHandler messageHandler, Map<String, PubSubClient> clients) {
-        this.config = config;
+    public PubSubMessengerImpl(Map<String, PubSubClient> clients) {
         this.clients = clients;
-        this.messageHandler = messageHandler;
         if (clients.containsKey(DEFAULT)) {
             defaultClient = clients.get(DEFAULT);
         } else {
@@ -75,6 +66,7 @@ public class PubSubMessengerImpl implements PubSubMessenger {
         getDefaultClient().setDefaultBroadcast(value);
     }
 
+    /*
     @Subscribe
     public void onDatabaseReady(DatabaseReadyEvent ignore) {
         EventBus.unregister(this);
@@ -82,6 +74,7 @@ public class PubSubMessengerImpl implements PubSubMessenger {
             String subjects = e.getValue().getSubjects();
             configureListeners(clients.get(e.getKey()), subjects);
         }
+        PubSubReadiness.setReady();
     }
 
     private void configureListeners(PubSubClient client, String subjects) {
@@ -100,5 +93,7 @@ public class PubSubMessengerImpl implements PubSubMessenger {
             }
         }
     }
+
+     */
 
 }

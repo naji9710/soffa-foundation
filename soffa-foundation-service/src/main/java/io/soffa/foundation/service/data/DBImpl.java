@@ -1,15 +1,17 @@
 package io.soffa.foundation.service.data;
 
-import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariDataSource;
-import io.soffa.foundation.commons.EventBus;
 import io.soffa.foundation.commons.CollectionUtil;
+import io.soffa.foundation.commons.EventBus;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.config.DataSourceConfig;
 import io.soffa.foundation.config.DbConfig;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.data.*;
+import io.soffa.foundation.data.DB;
+import io.soffa.foundation.data.DataSourceProperties;
+import io.soffa.foundation.data.DatabaseReadyEvent;
+import io.soffa.foundation.data.TenantsLoader;
 import io.soffa.foundation.errors.InvalidTenantException;
 import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.TechnicalException;
@@ -37,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public final class DBImpl extends AbstractDataSource implements ApplicationListener<ContextRefreshedEvent>, DB {
@@ -52,38 +55,33 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private static final String DEFAULT_DS = "default";
     private final Map<String, Boolean> migrated = new ConcurrentHashMap<>();
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
-    private final DatabasePlane dbState;
     private final ApplicationContext context;
     // private final PubSubClient binaryClient;
+    private static final AtomicReference<String> LOCK = new AtomicReference("DB_LOCK");
 
     @SneakyThrows
-    public DBImpl(final DatabasePlane dbState,
-                  final ApplicationContext context,
+    public DBImpl(final ApplicationContext context,
                   final DbConfig dbConfig,
                   final String appicationName) {
 
         super();
 
-        Preconditions.checkNotNull(dbState, "DatabasePlane is required");
-
         this.context = context;
-        this.dbState = dbState;
         this.appicationName = appicationName;
         this.tenanstListQuery = dbConfig.getTenantListQuery();
         this.tablesPrefix = dbConfig.getTablesPrefix();
 
         // setLenientFallback(false);
-        dbState.setPending();
         createDatasources(dbConfig.getDatasources());
         TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
         // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
         createLockTable();
+        configure();
     }
 
     private void createDatasources(Map<String, DataSourceConfig> datasources) {
         if (datasources == null || datasources.isEmpty()) {
             LOG.warn("No datasources configured for this service.");
-            dbState.setReady();
         } else {
             for (Map.Entry<String, DataSourceConfig> dbLink : datasources.entrySet()) {
                 registerDatasource(dbLink.getKey(), dbLink.getValue(), false);
@@ -100,15 +98,15 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
             return;
         }
         String url = link.getUrl().replace(TENANT_PLACEHOLDER, id).replace(TENANT_PLACEHOLDER.toUpperCase(), id);
-        dsConfigs.put(id.toLowerCase(), link);
         if (!TENANT_PLACEHOLDER.equalsIgnoreCase(id)) {
             DataSource ds = DbHelper.createDataSource(DataSourceProperties.create(appicationName, id, url), link);
             dsConfigs.put(ds, link);
-            dataSources.put(id.toLowerCase(), ds);
             if (migrate) {
                 applyMigrations(ds);
             }
+            dataSources.put(id.toLowerCase(), ds);
         }
+        dsConfigs.put(id.toLowerCase(), link);
     }
 
     @Override
@@ -162,20 +160,8 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
     @Override
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        if (dbState.isPending()) {
-            new Thread(() -> {
-                try {
-                    configure();
-                    dbState.setReady();
-                    EventBus.post(new DatabaseReadyEvent());
-                } catch (Exception e) {
-                    dbState.setFailed(e.getMessage());
-                    logger.fatal("Database migration has failed: " + e.getMessage(), e);
-                }
-            }).start();
-        }else if (dbState.isReady()) {
-            EventBus.post(new DatabaseReadyEvent());
-        }
+        EventBus.post(new DatabaseReadyEvent());
+        new Thread(this::configureTenants).start();
     }
 
     @Override
@@ -229,14 +215,24 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
     private void applyMigrations(HikariDataSource dataSource) {
         DataSourceConfig link = dsConfigs.get(dataSource);
+        String linkId = link.getName().toLowerCase();
         if (migrated.containsKey(link.getName().toLowerCase())) {
             return;
         }
-        String changelogPath = findChangeLogPath(link);
-        if (TextUtil.isNotEmpty(changelogPath)) {
-            DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
+        synchronized (LOCK) {
+            withLock("db-migration-" + linkId, 60, 30, () -> {
+                try {
+                    String changelogPath = findChangeLogPath(link);
+                    if (TextUtil.isNotEmpty(changelogPath)) {
+                        DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
+                    }
+                    migrated.put(link.getName().toLowerCase(), true);
+                    LOG.info("Migrations applied for %s", link.getName());
+                } catch (Exception e) {
+                    LOG.error(e, "Migrations failed %s", link.getName());
+                }
+            });
         }
-        migrated.put(link.getName().toLowerCase(), true);
     }
 
     public DataSource get(String tenant) {
@@ -299,50 +295,47 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
 
     public void configure() {
+        dataSources.forEach((key, value) -> {
+            final DataSource datasource = (DataSource) value;
+            applyMigrations(datasource);
+        });
+    }
+
+    public void configureTenants() {
         DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
 
-        withLock("db-migration", 60, 30, () -> {
-            // Migrate static tenants
+        if (!dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
+            LOG.debug("No TenantDS provided, skipping tenants migration.");
+        }
 
-            dataSources.forEach((key, value) -> {
-                final DataSource datasource = (DataSource) value;
-                applyMigrations(datasource);
+        final Set<String> tenants = new HashSet<>();
+        if (TextUtil.isNotEmpty(tenanstListQuery)) {
+            LOG.info("Loading tenants from database");
+            Jdbi jdbi = Jdbi.create(defaultDs);
+            jdbi.useHandle(handle -> {
+                LOG.info("Loading tenants from query: %s", tenanstListQuery);
+                List<String> results = handle.createQuery(tenanstListQuery).mapTo(String.class).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(results)) {
+                    tenants.addAll(results);
+                }
             });
-
-
-            if (dsConfigs.containsKey(TENANT_PLACEHOLDER)) {
-                final Set<String> tenants = new HashSet<>();
-                if (TextUtil.isNotEmpty(tenanstListQuery)) {
-                    LOG.info("Loading tenants from database");
-                    Jdbi jdbi = Jdbi.create(defaultDs);
-                    jdbi.useHandle(handle -> {
-                        LOG.info("Loading tenants from query: %s", tenanstListQuery);
-                        List<String> results = handle.createQuery(tenanstListQuery).mapTo(String.class).collect(Collectors.toList());
-                        if (CollectionUtil.isNotEmpty(results)) {
-                            tenants.addAll(results);
-                        }
-                    });
-                } else {
-                    LOG.info("Loading tenants with TenantsLoader");
-                    try {
-                        TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
-                        tenants.addAll(tenantsLoader.getTenantList());
-                    } catch (NoSuchBeanDefinitionException e) {
-                        LOG.error("No TenantsLoader defined");
-                    } catch (Exception e) {
-                        LOG.error("Error loading tenants", e);
-                    }
-                }
-
-                LOG.info("Tenants loaded: %d", tenants.size());
-                for (String tenant : tenants) {
-                    registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
-                }
-                LOG.info("Database is now configured");
-            } else {
-                LOG.debug("No TenantDS provided, skipping tenants migration.");
+        } else {
+            LOG.info("Loading tenants with TenantsLoader");
+            try {
+                TenantsLoader tenantsLoader = context.getBean(TenantsLoader.class);
+                tenants.addAll(tenantsLoader.getTenantList());
+            } catch (NoSuchBeanDefinitionException e) {
+                LOG.error("No TenantsLoader defined");
+            } catch (Exception e) {
+                LOG.error("Error loading tenants", e);
             }
-        });
+        }
+
+        LOG.info("Tenants loaded: %d", tenants.size());
+        for (String tenant : tenants) {
+            registerDatasource(tenant, dsConfigs.get(TENANT_PLACEHOLDER), true);
+        }
+        LOG.info("Database is now configured");
     }
 
 }
