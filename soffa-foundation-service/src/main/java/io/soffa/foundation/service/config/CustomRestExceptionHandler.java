@@ -3,7 +3,6 @@ package io.soffa.foundation.service.config;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.errors.ErrorUtil;
-import io.soffa.foundation.errors.FakeException;
 import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -77,7 +76,7 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
             }
         });
 
-        if (status.value() >= 500) {
+        if (status.value() >= HttpStatus.INTERNAL_SERVER_ERROR.value()) {
             LOG.error(error);
         }else {
             LOG.error(error.getMessage());
