@@ -2,20 +2,21 @@ package io.soffa.foundation.service;
 
 import com.google.common.collect.ImmutableMap;
 import io.soffa.foundation.commons.IdGenerator;
+import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContextUtil;
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.errors.InvalidAuthException;
-import io.soffa.foundation.errors.InvalidTokenException;
+import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.metrics.MetricsRegistry;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -68,7 +69,6 @@ public class RequestFilter extends OncePerRequestFilter {
             new AnonymousAuthenticationToken("guest", context,
                 Collections.singletonList(new SimpleGrantedAuthority("guest")))
         );
-        processTracing(context);
         AtomicBoolean proceed = new AtomicBoolean(true);
         //noinspection Convert2Lambda
         lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(new Consumer<String>() {
@@ -77,13 +77,20 @@ public class RequestFilter extends OncePerRequestFilter {
             public void accept(String value) {
                 try {
                     authManager.handle(context, value);
-                }catch (InvalidAuthException | InvalidTokenException e) {
-                    proceed.set(false);
-                    response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
                 }catch (Exception e) {
                     proceed.set(false);
-                    LOG.error(e);
-                    response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+                    int statusCode = ErrorUtil.resolveErrorCode(e);
+                    if (statusCode > -1) {
+                        response.setContentType("application/json");
+                        response.sendError(statusCode, JsonUtil.serialize(ImmutableMap.of(
+                            "message", e.getMessage()
+                        )));
+                    }else if (e instanceof AccessDeniedException) {
+                        response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+                    }else {
+                        LOG.error(e);
+                        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
+                    }
                 }
             }
         });
@@ -99,6 +106,7 @@ public class RequestFilter extends OncePerRequestFilter {
                 @Override
                 public void run() {
                     try {
+                        processTracing(context);
                         RequestContextHolder.set(context);
                         chain.doFilter(request, response);
                     } finally {
