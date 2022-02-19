@@ -1,6 +1,8 @@
 package com.company.app;
 
 import io.soffa.foundation.errors.DatabaseException;
+import io.soffa.foundation.features.intents.Journal;
+import io.soffa.foundation.features.intents.JournalRepository;
 import io.soffa.foundation.features.jobs.PendingJob;
 import io.soffa.foundation.features.jobs.PendingJobRepository;
 import org.junit.jupiter.api.Test;
@@ -12,10 +14,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
-public class PendingJobRepositoryTest {
+public class FeatureRepositoriesTest {
 
     @Autowired
     private PendingJobRepository pendingJobs;
+    @Autowired
+    private JournalRepository journal;
 
     public static final String EVENT = "accounts.send_activation_email";
     public static final String ACCOUNT_ID = "123456789";
@@ -45,6 +49,22 @@ public class PendingJobRepositoryTest {
         assertEquals(0, pendingJobs.count());
 
         assertFalse(pendingJobs.consume(EVENT, ACCOUNT_ID));
+
+    }
+
+
+    @Test
+    public void testJournal() {
+        assertNotNull(journal);
+        assertEquals(0, journal.count());
+
+        Journal record = Journal.builder()
+            .event("accounts.email.activation")
+            .subject("account:123456789")
+            .status("pending")
+            .build();
+        journal.save(record);
+        assertEquals(1, journal.count());
 
     }
 
