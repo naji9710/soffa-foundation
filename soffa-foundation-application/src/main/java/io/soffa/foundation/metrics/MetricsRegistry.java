@@ -29,7 +29,6 @@ public interface MetricsRegistry {
             increment(prefix, tags);
             return result;
         } catch (Exception e) {
-            LOG.error(e.getMessage(), e);
             increment(prefix + FAILED_SUFFIX, tags);
             if (e instanceof ManagedException) {
                 throw e;
