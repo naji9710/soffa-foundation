@@ -6,17 +6,16 @@ import io.soffa.foundation.features.jobs.PendingJob;
 import io.soffa.foundation.features.jobs.PendingJobRepository;
 import io.soffa.foundation.service.data.JdbiRepository;
 import org.jdbi.v3.core.statement.Query;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
-@ConditionalOnBean(DB.class)
 @Component
 public class PendingJobRepositoryImpl extends JdbiRepository<PendingJob> implements PendingJobRepository {
 
     private static final String Q_INSERT = "INSERT INTO <table>(id,operation,subject,data,created_at) VALUES(:id, :operation, :subject, :data, :createdAt)";
 
-    public PendingJobRepositoryImpl(DB db) {
+    public PendingJobRepositoryImpl(@Autowired(required = false) DB db) {
         super(db, "f_pending_jobs");
     }
 

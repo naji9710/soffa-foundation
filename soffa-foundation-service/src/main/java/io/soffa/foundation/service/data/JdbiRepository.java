@@ -4,6 +4,7 @@ import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.data.DB;
 import io.soffa.foundation.data.EntityModel;
+import io.soffa.foundation.errors.ConfigurationException;
 import io.soffa.foundation.errors.DatabaseException;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
@@ -23,7 +24,17 @@ public abstract class JdbiRepository<T extends EntityModel> {
 
     public JdbiRepository(DB db, String tableName) {
         this.db = db;
-        this.tableName = TextUtil.trimToEmpty(db.getTablesPrefix()) + tableName;
+        if (db!=null) {
+            this.tableName = TextUtil.trimToEmpty(db.getTablesPrefix()) + tableName;
+        }else {
+            this.tableName = tableName;
+        }
+    }
+
+    public void checkDb() {
+        if (this.db==null) {
+            throw new ConfigurationException("No database configuration found in the project");
+        }
     }
 
     public long count() {
@@ -53,6 +64,7 @@ public abstract class JdbiRepository<T extends EntityModel> {
     }
 
     protected Jdbi link() {
+        checkDb();
         return Jdbi.create(new TransactionAwareDataSourceProxy(db.determineTargetDataSource()));
     }
 
