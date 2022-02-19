@@ -25,17 +25,14 @@ public class NatsMessageHandler implements MessageHandler {
             if (hasReply) {
                 msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(response));
             }
-            msg.ack();
         } catch (Exception e) {
             LOG.error("Nats event handling failed with error", e);
             if (e instanceof ManagedException) {
                 if (hasReply) {
                     msg.getConnection().publish(msg.getReplyTo(), ObjectUtil.serialize(OperationResult.create(null, e)));
-                } else {
-                    msg.ack();
                 }
             } else {
-                msg.nak();
+                throw e;
             }
         }
     }

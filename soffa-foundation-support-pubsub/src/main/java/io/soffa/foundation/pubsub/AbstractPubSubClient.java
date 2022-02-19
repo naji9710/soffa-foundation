@@ -5,6 +5,7 @@ import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.ClassUtil;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.ObjectUtil;
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.errors.ForbiddenException;
 import io.soffa.foundation.errors.FunctionalException;
@@ -12,6 +13,7 @@ import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
 import io.soffa.foundation.model.Message;
 import io.soffa.foundation.model.OperationResult;
+import io.soffa.foundation.pubsub.config.PubSubClientConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.validation.constraints.NotNull;
@@ -19,6 +21,33 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractPubSubClient implements PubSubClient {
+
+    protected String broadcasting;
+    protected String applicationName;
+
+    public AbstractPubSubClient(String applicationName, PubSubClientConfig config, String broadcasting) {
+        this.applicationName = applicationName;
+        this.broadcasting = config.getBroadcasting();
+        if (TextUtil.isEmpty(this.broadcasting)) {
+            this.broadcasting = broadcasting;
+        }
+    }
+
+    @Override
+    public void setDefaultBroadcast(String value) {
+        if (TextUtil.isEmpty(this.broadcasting)) {
+            this.broadcasting = value;
+        }
+    }
+
+    protected String resolveBroadcast(String target) {
+        String sub = target;
+        boolean isWildcard = "*".equals(sub);
+        if (TextUtil.isEmpty(sub) || isWildcard) {
+            sub = broadcasting;
+        }
+        return sub;
+    }
 
     @SuppressWarnings("unchecked")
     @Override

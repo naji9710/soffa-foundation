@@ -3,8 +3,8 @@ package io.soffa.foundation.pubsub.nats;
 import io.nats.client.*;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
+import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.model.Message;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
@@ -26,25 +26,14 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
 
     private Connection connection;
     private JetStream stream;
-    private String broadcasting;
 
-    public NatsClient(PubSubClientConfig config, String broadcasting) {
-        super();
+
+    public NatsClient(String applicationName, PubSubClientConfig config, String broadcasting) {
+        super(applicationName, config, broadcasting);
         this.config = config;
-        this.broadcasting = config.getBroadcasting();
-        if (TextUtil.isEmpty(this.broadcasting)) {
-            this.broadcasting = broadcasting;
-        }
         configure();
     }
 
-
-    @Override
-    public void setDefaultBroadcast(String value) {
-        if (TextUtil.isEmpty(this.broadcasting)) {
-            this.broadcasting = value;
-        }
-    }
 
     @SneakyThrows
     @Override
@@ -68,7 +57,9 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     private void configure() {
         try {
             String[] addresses = config.getAddresses().split(",");
-            Options o = new Options.Builder().servers(addresses).maxReconnects(-1).build();
+            Options o = new Options.Builder().servers(addresses)
+                .connectionName(IdGenerator.shortUUID(applicationName))
+                .maxReconnects(-1).build();
             connection = Nats.connect(o);
             JetStreamOptions jso = JetStreamOptions.defaultOptions();
             this.stream = connection.jetStream(jso);
@@ -111,11 +102,7 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     @SneakyThrows
     @Override
     public void broadcast(@NonNull String target, @NotNull Message message) {
-        String sub = target;
-        boolean isWildcard = "*".equals(sub);
-        if (TextUtil.isEmpty(sub) || isWildcard) {
-            sub = broadcasting;
-        }
+        String sub = resolveBroadcast(target);
         PublishAck ack = stream.publish(NatsUtil.createNatsMessage(sub, message));
         if (ack.hasError()) {
             throw new TechnicalException(ack.getError());
