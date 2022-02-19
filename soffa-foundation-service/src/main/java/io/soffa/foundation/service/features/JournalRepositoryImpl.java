@@ -14,7 +14,7 @@ public class JournalRepositoryImpl extends JdbiRepository<Journal> implements Jo
     private static final String Q_INSERT = "INSERT INTO <table>(id,event,subject,data,status,created_at) VALUES(:id, :event, :subject, :data, :status, :createdAt)";
 
     public JournalRepositoryImpl(@Autowired(required = false) DB db) {
-        super(db, "f_journal");
+        super(db, "f_journal", "jrn_");
     }
 
     @Override

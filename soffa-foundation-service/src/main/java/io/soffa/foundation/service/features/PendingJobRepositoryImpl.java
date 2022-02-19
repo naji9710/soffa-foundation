@@ -16,7 +16,7 @@ public class PendingJobRepositoryImpl extends JdbiRepository<PendingJob> impleme
     private static final String Q_INSERT = "INSERT INTO <table>(id,operation,subject,data,created_at) VALUES(:id, :operation, :subject, :data, :createdAt)";
 
     public PendingJobRepositoryImpl(@Autowired(required = false) DB db) {
-        super(db, "f_pending_jobs");
+        super(db, "f_pending_jobs", "pj_");
     }
 
     @Override
@@ -28,7 +28,7 @@ public class PendingJobRepositoryImpl extends JdbiRepository<PendingJob> impleme
     public boolean isPending(String operation, String subject) {
         return link().withHandle(h -> {
             String q = "WHERE operation=:operation AND subject=:subject";
-            return count(h, q, ImmutableMap.of("operation", operation, "subject", subject))> 0;
+            return count(h, q, ImmutableMap.of("operation", operation, "subject", subject)) > 0;
         });
     }
 

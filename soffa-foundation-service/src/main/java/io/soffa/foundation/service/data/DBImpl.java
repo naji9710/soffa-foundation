@@ -269,12 +269,12 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         DataSource defaultDs = (DataSource) dataSources.get(DEFAULT_DS);
         LockProvider lockProvider = new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
             .withJdbcTemplate(new JdbcTemplate(defaultDs))
-            .withTableName(tablesPrefix + "shedlock")
+            .withTableName(tablesPrefix + "f_shedlock")
             .usingDbTime()
             .build());
         try {
             Jdbi.create(defaultDs).useTransaction(handle -> {
-                handle.execute("CREATE TABLE IF NOT EXISTS " + tablesPrefix + "shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))");
+                handle.execute("CREATE TABLE IF NOT EXISTS " + tablesPrefix + "f_shedlock(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))");
             });
         } catch (Exception e) {
             // Will ignore because the table might have been created by another instance of the service

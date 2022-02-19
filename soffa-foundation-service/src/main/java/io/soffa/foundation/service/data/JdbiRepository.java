@@ -21,9 +21,11 @@ public abstract class JdbiRepository<T extends EntityModel> {
 
     private final DB db;
     private final String tableName;
+    private final String idPrefix;
 
-    public JdbiRepository(DB db, String tableName) {
+    public JdbiRepository(DB db, String tableName, String idPrefix) {
         this.db = db;
+        this.idPrefix = idPrefix;
         if (db!=null) {
             this.tableName = TextUtil.trimToEmpty(db.getTablesPrefix()) + tableName;
         }else {
@@ -46,7 +48,7 @@ public abstract class JdbiRepository<T extends EntityModel> {
 
     public final void save(T record) {
         if (record.getId() == null) {
-            record.setId(IdGenerator.shortUUID("jrn"));
+            record.setId(IdGenerator.shortUUID(idPrefix));
         }
         if (record.getCreatedAt() == null) {
             record.setCreatedAt(new Date());
