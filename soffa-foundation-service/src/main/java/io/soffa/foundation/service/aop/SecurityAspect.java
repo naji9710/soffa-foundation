@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,7 +19,10 @@ import java.util.Optional;
 
 @Aspect
 @Component
+@Order(SecurityAspect.ORDER)
 public class SecurityAspect {
+
+    public static final int ORDER = 100;
 
     private static final Logger LOG = Logger.get(SecurityAspect.class);
     private static final Throwable ERR_AUTH_REQUIRED = new UnauthorizedException("Authentication is required to access this resource.");

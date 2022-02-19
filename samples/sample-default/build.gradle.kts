@@ -1,7 +1,7 @@
 plugins {
     id("soffa.java8")
     id("soffa.springboot")
-    id("soffa.qa.coverage.l2")
+    id("soffa.qa.coverage.l6")
 }
 
 dependencies {
