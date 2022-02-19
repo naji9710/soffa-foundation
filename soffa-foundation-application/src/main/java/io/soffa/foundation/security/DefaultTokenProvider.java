@@ -111,6 +111,8 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
             }
         });
 
+        Object principal = token.lookupClaim("principal").orElse(null);
+
         token.lookupClaim("roles").ifPresent(s -> {
             for (String item : s.split(",")) {
                 if (TextUtil.isNotEmpty(item)) {
@@ -127,6 +129,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
             application(token.lookupClaim("applicationName", "application", "applicationId", "app").orElse(null)).
             profile(profile).
             roles(roles).
+            principal(principal).
             permissions(permissions).
             build();
     }
