@@ -18,6 +18,7 @@ public class PendingJobRepositoryTest {
     private PendingJobRepository pendingJobs;
 
     public static final String EVENT = "accounts.send_activation_email";
+    public static final String ACCOUNT_ID = "123456789";
 
     @Test
     public void testPendingJobs() {
@@ -26,7 +27,7 @@ public class PendingJobRepositoryTest {
 
         PendingJob record = PendingJob.builder()
             .operation(EVENT)
-            .subject("123456789")
+            .subject(ACCOUNT_ID)
             .build();
 
         pendingJobs.save(record);
@@ -37,13 +38,13 @@ public class PendingJobRepositoryTest {
 
         assertEquals(1, pendingJobs.count());
 
-        assertTrue(pendingJobs.isPending(EVENT, "123456789"));
+        assertTrue(pendingJobs.isPending(EVENT, ACCOUNT_ID));
         assertFalse(pendingJobs.isPending(EVENT, "000000"));
 
-        assertTrue(pendingJobs.consume(EVENT, "123456789"));
+        assertTrue(pendingJobs.consume(EVENT, ACCOUNT_ID));
         assertEquals(0, pendingJobs.count());
 
-        assertFalse(pendingJobs.consume(EVENT, "123456789"));
+        assertFalse(pendingJobs.consume(EVENT, ACCOUNT_ID));
 
     }
 
