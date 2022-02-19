@@ -33,6 +33,9 @@ public class SimplePubSubClient extends AbstractPubSubClient implements PubSubCl
         checkSubject(subject);
         return CompletableFuture.supplyAsync(() -> {
             Object result = subscriptions.get(subject).handle(message).orElse(null);
+            if (result == null) {
+                return null;
+            }
             OperationResult opr = OperationResult.create(ObjectUtil.serialize(result), null);
             return ObjectUtil.serialize(opr);
         });

@@ -80,6 +80,9 @@ public abstract class AbstractPubSubClient implements PubSubClient {
     public abstract CompletableFuture<byte[]> internalRequest(@NonNull String subject, Message message);
 
     public <T> T unwrapResponse(byte[] data, final Class<T> responseClass) {
+        if (data==null) {
+            return null;
+        }
         OperationResult response = ObjectUtil.deserialize(data, OperationResult.class);
         if (response.isSuccess()) {
             return JsonUtil.deserialize(response.getData(), responseClass);
