@@ -1,4 +1,4 @@
-package io.soffa.foundation.service.data;
+package io.soffa.foundation.data;
 
 import lombok.NoArgsConstructor;
 

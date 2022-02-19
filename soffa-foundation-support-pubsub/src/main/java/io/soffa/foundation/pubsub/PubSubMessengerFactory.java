@@ -29,15 +29,12 @@ public final class PubSubMessengerFactory {
         for (Map.Entry<String, PubSubClientConfig> e : config.getClients().entrySet()) {
             PubSubClient client = createClient(applicationName, e.getValue(), config.getBroadcasting());
             String subjects = e.getValue().getSubjects();
-            if (TextUtil.isNotEmpty(subjects)) {
-                if (handler == null) {
-                    throw new ConfigurationException("A MessageHandler is required when  pubsub.subjects is set");
-                }
-                configureListeners(client, subjects, handler);
+            if (TextUtil.isNotEmpty(subjects) && handler == null) {
+                throw new ConfigurationException("A MessageHandler is required when pubsub.subjects is set (client: %s)", e.getKey());
             }
             clients.put(e.getKey(), client);
         }
-        return new PubSubMessengerImpl(clients);
+        return new PubSubMessengerImpl(config, handler, clients);
     }
 
     private static PubSubClient createClient(String applicationName, PubSubClientConfig config, String broadcasting) {
@@ -58,22 +55,5 @@ public final class PubSubMessengerFactory {
         return client;
     }
 
-    private static void configureListeners(PubSubClient client, String subjects, MessageHandler handler) {
-        if (TextUtil.isEmpty(subjects)) {
-            return;
-        }
-        String[] subs = subjects.split(",");
-        for (String sub : subs) {
-            LOG.info("Adding listener: %s", sub);
-            if (TextUtil.isNotEmpty(sub)) {
-                boolean isBroadcast = sub.endsWith("*");
-                String rsub = sub.replaceAll("\\*", "");
-                if (isBroadcast) {
-                    client.setDefaultBroadcast(rsub);
-                }
-                client.subscribe(rsub, isBroadcast, handler);
-            }
-        }
-    }
 
 }

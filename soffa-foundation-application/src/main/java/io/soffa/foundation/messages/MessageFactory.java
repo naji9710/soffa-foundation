@@ -21,7 +21,7 @@ public final class MessageFactory {
         if (message.getPayload() == null) {
             return null;
         }
-        return (T) ObjectUtil.deserialize(message.getPayload(), Class.forName(message.getPayloadType()));
+        return (T) JsonUtil.deserialize(message.getPayload(), Class.forName(message.getPayloadType()));
     }
 
     @SneakyThrows

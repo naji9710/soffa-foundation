@@ -13,6 +13,7 @@ import io.soffa.foundation.model.Message;
 import io.soffa.foundation.pubsub.MessageHandler;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class DefaultMessageHandler implements MessageHandler {
     private final PlatformAuthManager authManager;
 
     @Override
-    public Optional<Object> handle(Message message) {
+    public Optional<Object> handle(@NonNull Message message) {
         final RequestContext context = message.getContext();
         RequestContextHolder.set(context);
         Object operation = mapping.getInternal().get(message.getOperation());
@@ -81,7 +82,7 @@ public class DefaultMessageHandler implements MessageHandler {
                     if (payload.get() == null) {
                         LOG.debug("Invoking operation %s with empty payload", operation.getClass().getSimpleName());
                     } else {
-                        LOG.debug("Invoking operation %s with empty payload of type %s", operation.getClass().getSimpleName(), payload.get().getClass().getSimpleName());
+                        LOG.debug("Invoking operation %s with payload of type %s", operation.getClass().getSimpleName(), payload.get().getClass().getSimpleName());
                     }
                     //noinspection unchecked
                     Object result = ((Operation<Object, ?>) operation).handle(payload.get(), context);

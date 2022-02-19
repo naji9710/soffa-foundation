@@ -1,4 +1,4 @@
-package io.soffa.foundation.application;
+package io.soffa.foundation.commons;
 
 @SuppressWarnings("PMD.ClassNamingConventions")
 public final class EventBus {

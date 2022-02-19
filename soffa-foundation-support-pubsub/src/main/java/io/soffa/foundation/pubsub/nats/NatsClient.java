@@ -41,7 +41,7 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
         // String subject, boolean broadcast, io.soffa.foundation.pubsub.MessageHandler handler
         LOG.info("Configuring subscription to %s", subject);
 
-        NatsMessageHandler h = new NatsMessageHandler(messageHandler);
+        NatsMessageHandler h = new NatsMessageHandler(connection, messageHandler);
         @SuppressWarnings("PMD")
         Dispatcher dispatcher = connection.createDispatcher(h);
 

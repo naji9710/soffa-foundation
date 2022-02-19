@@ -25,7 +25,7 @@ public class Logger {
     }
 
     public static void setContext(Map<String,String> context) {
-        if (context == null) {
+        if (context == null || context.isEmpty()) {
             org.slf4j.MDC.clear();
         } else {
             org.slf4j.MDC.setContextMap(context);
