@@ -38,9 +38,12 @@ public class PublishMessageAspect {
                 String event = publish.event();
                 String subject = publish.target();
                 Message msg = MessageFactory.create(event, result);
+                if (msg.getContext() != null) {
+                    msg.getContext().setAuthorization(null);
+                }
                 if ("*".equalsIgnoreCase(subject)) {
                     pubSub.broadcast(subject, msg);
-                }else {
+                } else {
                     pubSub.publish(subject, msg);
                 }
                 LOG.info("Message dispatched: %s", event);

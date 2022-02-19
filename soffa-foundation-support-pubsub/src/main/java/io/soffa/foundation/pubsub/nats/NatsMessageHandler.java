@@ -38,11 +38,22 @@ public class NatsMessageHandler implements MessageHandler {
         }
         boolean sendReply = !msg.isJetStream() && TextUtil.isNotEmpty(msg.getReplyTo());
         LOG.info("Message received: SID=%s Jetstream:%s", msg.getSID(), msg.isJetStream());
+
+        io.soffa.foundation.model.Message message;
+
         try {
-            io.soffa.foundation.model.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
-            if (message == null) {
-                return;
-            }
+            message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
+        }catch (Exception e) {
+            //TODO: handle lost payloads (audit)
+            LOG.error(e, "Invalid payload, message will be discarded -- %s", e.getMessage());
+            return;
+        }
+
+        if (message == null) {
+            return;
+        }
+
+        try {
             Optional<Object> operationResult = handler.handle(message);
             if (operationResult.isPresent() && sendReply) {
                 Object result = operationResult.get();
