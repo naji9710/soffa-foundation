@@ -21,20 +21,30 @@ public class NatsMessageHandler implements MessageHandler {
     private final Connection connection;
     private final io.soffa.foundation.pubsub.MessageHandler handler;
 
+    private boolean accept(Message msg) {
+        if (msg == null) {
+            return false;
+        }
+        if (msg.isStatusMessage()) {
+            return false;
+        }
+        return msg.getData() != null;
+    }
+
     @Override
     public void onMessage(Message msg) {
-        boolean hasReply = TextUtil.isNotEmpty(msg.getReplyTo());
+        if (!accept(msg)) {
+            return;
+        }
+        boolean sendReply = !msg.isJetStream() && TextUtil.isNotEmpty(msg.getReplyTo());
+        LOG.info("Message received: SID=%s Jetstream:%s lastAck:%s", msg.getSID(), msg.isJetStream());
         try {
-            byte[] data = msg.getData();
-            if (data==null) {
-                return;
-            }
-            io.soffa.foundation.model.Message message = ObjectUtil.deserialize(data, io.soffa.foundation.model.Message.class);
-            if (message==null) {
+            io.soffa.foundation.model.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
+            if (message == null) {
                 return;
             }
             Optional<Object> operationResult = handler.handle(message);
-            if (operationResult.isPresent() && hasReply) {
+            if (operationResult.isPresent() && sendReply) {
                 Object result = operationResult.get();
                 Class<?> className = result.getClass();
                 boolean isNoop = className == Unit.class || className == Void.class;
@@ -44,10 +54,11 @@ public class NatsMessageHandler implements MessageHandler {
                     connection.publish(msg.getReplyTo(), msg.getSubject(), ObjectUtil.serialize(response));
                 }
             }
+            LOG.info("Message SID=%s processed with no error", msg.getSID());
         } catch (Exception e) {
             LOG.error("Nats event handling failed with error", e);
             if (e instanceof ManagedException) {
-                if (hasReply) {
+                if (sendReply) {
                     connection.publish(msg.getReplyTo(), msg.getSubject(), ObjectUtil.serialize(OperationResult.create(null, e)));
                 }
             } else {
@@ -55,5 +66,6 @@ public class NatsMessageHandler implements MessageHandler {
             }
         }
     }
+
 
 }

@@ -1,3 +1,8 @@
+## 1.8.0 (February 19, 2022) 
+
+* Feature:PendingJobs added
+* Feature:Journal added
+
 ## 1.7.8 (February 19, 2022) 
 
 * Improvements and stability

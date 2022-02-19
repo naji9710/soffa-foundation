@@ -1,9 +1,10 @@
 package io.soffa.foundation.pubsub.nats;
 
 import io.nats.client.*;
+import io.nats.client.api.AckPolicy;
+import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
-import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.model.Message;
@@ -16,6 +17,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -49,7 +51,13 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
             dispatcher.subscribe(subject, subject + "-group", h);
         } else {
             configureStream(subject);
-            stream.subscribe(subject, dispatcher, h, true);
+            ConsumerConfiguration c = ConsumerConfiguration.builder()
+                .durable(applicationName)
+                .ackWait(Duration.ofSeconds(5))
+                .ackPolicy(AckPolicy.Explicit)
+                .build();
+            PushSubscribeOptions pso = PushSubscribeOptions.builder().configuration(c).build();
+            stream.subscribe(subject, dispatcher, h, true, pso);
         }
     }
 
@@ -57,9 +65,21 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
         try {
             String[] addresses = config.getAddresses().split(",");
             Options o = new Options.Builder().servers(addresses)
-                .connectionName(IdGenerator.shortUUID(applicationName))
+                //.connectionName(IdGenerator.shortUUID(applicationName))
+                .errorListener(new ErrorListener() {
+                    @Override
+                    public void errorOccurred(Connection conn, String error) {
+                        LOG.error("[nats.error]: %s", error);
+                    }
+
+                    @Override
+                    public void exceptionOccurred(Connection conn, Exception exp) {
+                        LOG.error("[nats.error] and exception occured", exp);
+                    }
+                })
                 .maxReconnects(-1).build();
             connection = Nats.connect(o);
+            // connection.flush(Duration.ofSeconds(1));
             JetStreamOptions jso = JetStreamOptions.defaultOptions();
             this.stream = connection.jetStream(jso);
             LOG.info("Connected to NATS servers: %s", config.getAddresses());
@@ -71,17 +91,12 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
 
     @SneakyThrows
     private void configureStream(@NonNull String subject) {
-        StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
-            .name(subject);
-        try {
-            Subscription sub = stream.subscribe(subject);
-            sub.unsubscribe();
-        } catch (IllegalStateException e) {
-            LOG.warn(e.getMessage());
-            scBuilder.addSubjects(subject);
-        }
+
         JetStreamManagement jsm = connection.jetStreamManagement();
         try {
+            StreamConfiguration.Builder scBuilder = StreamConfiguration.builder()
+                .name(subject)
+                .addSubjects(subject);
             jsm.addStream(scBuilder.build());
         } catch (JetStreamApiException ignore) {
             LOG.warn("Stream %s already configured", subject);

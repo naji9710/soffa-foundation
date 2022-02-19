@@ -19,6 +19,8 @@ public interface DB {
 
     DataSource determineTargetDataSource();
 
+    String getTablesPrefix();
+
     default void withLock(String name, int atMostSeconds, int atLeastSeconds, Runnable runnable) {
         withLock(name, Duration.ofSeconds(atMostSeconds), Duration.ofSeconds(atLeastSeconds), runnable);
     }

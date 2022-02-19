@@ -79,6 +79,11 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         configure();
     }
 
+    @Override
+    public String getTablesPrefix() {
+        return tablesPrefix;
+    }
+
     private void createDatasources(Map<String, DataSourceConfig> datasources) {
         if (datasources == null || datasources.isEmpty()) {
             LOG.warn("No datasources configured for this service.");
@@ -221,16 +226,12 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         }
         synchronized (LOCK) {
             withLock("db-migration-" + linkId, 60, 30, () -> {
-                try {
-                    String changelogPath = findChangeLogPath(link);
-                    if (TextUtil.isNotEmpty(changelogPath)) {
-                        DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
-                    }
-                    migrated.put(link.getName().toLowerCase(), true);
-                    LOG.info("Migrations applied for %s", link.getName());
-                } catch (Exception e) {
-                    LOG.error(e, "Migrations failed %s", link.getName());
+                String changelogPath = findChangeLogPath(link);
+                if (TextUtil.isNotEmpty(changelogPath)) {
+                    DbHelper.applyMigrations(dataSource, changelogPath, tablesPrefix, appicationName);
                 }
+                migrated.put(link.getName().toLowerCase(), true);
+                LOG.info("Migrations applied for %s", link.getName());
             });
         }
     }

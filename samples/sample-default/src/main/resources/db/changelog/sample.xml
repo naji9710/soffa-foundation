@@ -5,6 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd"
     logicalFilePath="foundation-test">
 
+    <include file="classpath:/db/changelog/foundation/journal.xml" />
+    <include file="classpath:/db/changelog/foundation/pending_jobs.xml" />
+
     <changeSet id="20210921_Messages" author="gahissy.titus">
         <createTable tableName="${table_prefix}messages">
             <column name="id" type="varchar(64)">

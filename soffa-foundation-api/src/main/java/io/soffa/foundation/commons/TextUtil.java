@@ -37,10 +37,11 @@ public final class TextUtil {
         if (args == null || args.length == 0) {
             return pattern;
         }
-        if (pattern.contains("{}")) {
-            return String.format(pattern.replaceAll("\\{}", "%s"), args);
+        String p = pattern;
+        if (p.contains("{}")) {
+            p = p.replaceAll("\\{}", "%s");
         }
-        return String.format(pattern, args);
+        return String.format(p, args);
     }
 
 }
