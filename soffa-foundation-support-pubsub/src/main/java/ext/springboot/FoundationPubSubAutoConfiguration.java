@@ -5,6 +5,7 @@ import io.soffa.foundation.pubsub.PubSubMessenger;
 import io.soffa.foundation.pubsub.PubSubMessengerFactory;
 import io.soffa.foundation.pubsub.config.PubSubConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +24,10 @@ public class FoundationPubSubAutoConfiguration {
 
     @Bean
     @Primary
-    public PubSubMessenger createPubSubMessenger(PubSubConfig config, @Autowired(required = false) MessageHandler handler) {
-        PubSubMessenger messenger = PubSubMessengerFactory.create(config, handler);
+    public PubSubMessenger createPubSubMessenger(@Value("${spring.application.name}") String applicationName,
+                                                 PubSubConfig config,
+                                                 @Autowired(required = false) MessageHandler handler) {
+        PubSubMessenger messenger = PubSubMessengerFactory.create(applicationName, config, handler);
         messenger.afterPropertiesSet();
         return messenger;
     }

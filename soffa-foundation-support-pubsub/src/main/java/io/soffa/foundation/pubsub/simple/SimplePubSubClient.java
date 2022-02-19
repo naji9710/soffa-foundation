@@ -18,6 +18,11 @@ public class SimplePubSubClient extends AbstractPubSubClient implements PubSubCl
 
     private final Map<String, MessageHandler> subscriptions = new ConcurrentHashMap<>();
 
+
+    public SimplePubSubClient() {
+        super(null, null, null);
+    }
+
     @Override
     public void subscribe(@NonNull String subject, boolean broadcast, MessageHandler messageHandler) {
         subscriptions.putIfAbsent(subject, messageHandler);

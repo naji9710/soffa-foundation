@@ -21,13 +21,13 @@ public final class PubSubMessengerFactory {
     private PubSubMessengerFactory() {
     }
 
-    public static PubSubMessenger create(PubSubConfig config, MessageHandler handler) {
+    public static PubSubMessenger create(String applicationName, PubSubConfig config, MessageHandler handler) {
         if (config.getClients() == null || config.getClients().isEmpty()) {
             throw new ConfigurationException("No pubsub clients configured");
         }
         Map<String, PubSubClient> clients = new HashMap<>();
         for (Map.Entry<String, PubSubClientConfig> e : config.getClients().entrySet()) {
-            PubSubClient client = createClient(e.getValue(), config.getBroadcasting());
+            PubSubClient client = createClient(applicationName, e.getValue(), config.getBroadcasting());
             String subjects = e.getValue().getSubjects();
             if (TextUtil.isNotEmpty(subjects)) {
                 if (handler == null) {
@@ -40,12 +40,12 @@ public final class PubSubMessengerFactory {
         return new PubSubMessengerImpl(clients);
     }
 
-    private static PubSubClient createClient(PubSubClientConfig config, String broadcasting) {
+    private static PubSubClient createClient(String applicationName, PubSubClientConfig config, String broadcasting) {
         config.afterPropertiesSet();
         PubSubClient client;
         if (config.getAddresses().contains("nats://")) {
             LOG.info("Creating NATS client for @%s", config.getAddresses());
-            client = new NatsClient(config, broadcasting);
+            client = new NatsClient(applicationName, config, broadcasting);
         } else if ("simple".equalsIgnoreCase(config.getAddresses())) {
             client = new SimplePubSubClient();
         } else if (config.getAddresses().contains("amqp://")) {

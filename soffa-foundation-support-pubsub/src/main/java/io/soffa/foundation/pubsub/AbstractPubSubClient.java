@@ -27,7 +27,9 @@ public abstract class AbstractPubSubClient implements PubSubClient {
 
     public AbstractPubSubClient(String applicationName, PubSubClientConfig config, String broadcasting) {
         this.applicationName = applicationName;
-        this.broadcasting = config.getBroadcasting();
+        if (config!=null) {
+            this.broadcasting = config.getBroadcasting();
+        }
         if (TextUtil.isEmpty(this.broadcasting)) {
             this.broadcasting = broadcasting;
         }
