@@ -95,6 +95,9 @@ public class PlatformAuthManager {
             LOG.debug("auth.username: %s", auth.getUsername());
             LOG.debug("auth.tenant: %s", context.getTenant());
             LOG.debug("auth.app: %s", context.getApplicationName());
+            if (auth.getClaims() != null) {
+                LOG.debug("auth.claims: %d", auth.getClaims().size());
+            }
         }
 
         context.setAuthentication(auth);
