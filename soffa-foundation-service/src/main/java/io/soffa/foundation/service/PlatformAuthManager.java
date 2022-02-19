@@ -59,7 +59,7 @@ public class PlatformAuthManager {
 
         if (token.toLowerCase().startsWith("bearer ")) {
             String lToken = token.substring("bearer ".length()).trim();
-            LOG.debug("Bearer authorization header found: %s", lToken);
+            LOG.debug("Bearer authorization header received");
             auth = authenticate(context, lToken);
         } else if (token.toLowerCase().startsWith("basic ")) {
             String basicAuth = token.substring("basic ".length()).trim();
@@ -87,7 +87,14 @@ public class PlatformAuthManager {
         }
 
         if (auth == null) {
+            LOG.debug("auth.username: guest");
             return;
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("auth.username: %s", auth.getUsername());
+            LOG.debug("auth.tenant: %s", context.getTenant());
+            LOG.debug("auth.app: %s", context.getApplicationName());
         }
 
         context.setAuthentication(auth);
