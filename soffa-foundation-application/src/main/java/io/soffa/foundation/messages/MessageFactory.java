@@ -1,6 +1,7 @@
 package io.soffa.foundation.messages;
 
 import io.soffa.foundation.commons.IdGenerator;
+import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
@@ -28,7 +29,7 @@ public final class MessageFactory {
         if (type == Void.class) {
             return null;
         }
-        return ObjectUtil.deserialize(message.getPayload(), type);
+        return JsonUtil.deserialize(message.getPayload(), type);
     }
 
     public static Message create(String operation, Object payload) {
