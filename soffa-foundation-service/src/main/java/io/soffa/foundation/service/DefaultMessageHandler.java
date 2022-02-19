@@ -2,6 +2,7 @@ package io.soffa.foundation.service;
 
 import io.soffa.foundation.api.Operation;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.context.RequestContextHolder;
 import io.soffa.foundation.context.RequestContextUtil;
@@ -15,6 +16,7 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 @Component
@@ -51,7 +53,23 @@ public class DefaultMessageHandler implements MessageHandler {
             throw new TechnicalException("Unable to find input type for operation " + message.getOperation());
         }
 
-        Object payload = MessageFactory.getPayload(message, inputType);
+        final AtomicReference<Object> payload = new AtomicReference<>();
+
+        if (message.getPayload() != null) {
+            if (TextUtil.isNotEmpty(message.getPayloadType())) {
+                try {
+                    LOG.debug("Deserializing message content into %s", message.getPayloadType());
+                    payload.set(MessageFactory.getPayload(message, Class.forName(message.getPayloadType())));
+                } catch (ClassNotFoundException e) {
+                    LOG.error("Unable to deserialize message into %s", message.getPayloadType());
+                }
+            }
+            if (payload.get() == null) {
+                LOG.debug("Deserializing message content into %s", inputType.getName());
+                payload.set(MessageFactory.getPayload(message, inputType));
+            }
+        }
+
         //noinspection Convert2Lambda
         return metricsRegistry.track(
             "app_operation_" + message.getOperation(),
@@ -60,13 +78,13 @@ public class DefaultMessageHandler implements MessageHandler {
                 @SneakyThrows
                 @Override
                 public Optional<Object> get() {
-                    if (payload == null) {
+                    if (payload.get() == null) {
                         LOG.debug("Invoking operation %s with empty payload", operation.getClass().getSimpleName());
                     } else {
-                        LOG.debug("Invoking operation %s with empty payload of type %s", operation.getClass().getSimpleName(), payload.getClass().getSimpleName());
+                        LOG.debug("Invoking operation %s with empty payload of type %s", operation.getClass().getSimpleName(), payload.get().getClass().getSimpleName());
                     }
                     //noinspection unchecked
-                    Object result = ((Operation<Object, ?>) operation).handle(payload, context);
+                    Object result = ((Operation<Object, ?>) operation).handle(payload.get(), context);
                     if (result==null) {
                         return Optional.empty();
                     }
