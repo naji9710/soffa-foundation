@@ -65,18 +65,6 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
         try {
             String[] addresses = config.getAddresses().split(",");
             Options o = new Options.Builder().servers(addresses)
-                //.connectionName(IdGenerator.shortUUID(applicationName))
-                .errorListener(new ErrorListener() {
-                    @Override
-                    public void errorOccurred(Connection conn, String error) {
-                        LOG.error("[nats.error]: %s", error);
-                    }
-
-                    @Override
-                    public void exceptionOccurred(Connection conn, Exception exp) {
-                        LOG.error("[nats.error] and exception occured", exp);
-                    }
-                })
                 .maxReconnects(-1).build();
             connection = Nats.connect(o);
             // connection.flush(Duration.ofSeconds(1));

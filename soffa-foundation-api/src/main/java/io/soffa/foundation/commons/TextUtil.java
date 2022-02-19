@@ -2,6 +2,8 @@ package io.soffa.foundation.commons;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.MessageFormat;
+
 public final class TextUtil {
 
     private TextUtil() {
@@ -37,11 +39,10 @@ public final class TextUtil {
         if (args == null || args.length == 0) {
             return pattern;
         }
-        String p = pattern;
-        if (p.contains("{}")) {
-            p = p.replaceAll("\\{}", "%s");
+        if (pattern.contains("{}") && !pattern.contains("%")) {
+            return MessageFormat.format(pattern, args);
         }
-        return String.format(p, args);
+        return String.format(pattern, args);
     }
 
 }

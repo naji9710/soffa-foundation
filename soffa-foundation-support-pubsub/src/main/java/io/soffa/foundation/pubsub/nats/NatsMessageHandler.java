@@ -37,7 +37,7 @@ public class NatsMessageHandler implements MessageHandler {
             return;
         }
         boolean sendReply = !msg.isJetStream() && TextUtil.isNotEmpty(msg.getReplyTo());
-        LOG.info("Message received: SID=%s Jetstream:%s lastAck:%s", msg.getSID(), msg.isJetStream());
+        LOG.info("Message received: SID=%s Jetstream:%s", msg.getSID(), msg.isJetStream());
         try {
             io.soffa.foundation.model.Message message = ObjectUtil.deserialize(msg.getData(), io.soffa.foundation.model.Message.class);
             if (message == null) {

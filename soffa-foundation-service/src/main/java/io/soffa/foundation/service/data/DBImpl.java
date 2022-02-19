@@ -47,9 +47,9 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     // public static final String NONE = "none";
     private static final Logger LOG = Logger.get(DBImpl.class);
     private final Map<Object, Object> dataSources = new ConcurrentHashMap<>();
-    private final String tablesPrefix;
+    private String tablesPrefix;
     private final String appicationName;
-    private final String tenanstListQuery;
+    private String tenanstListQuery;
     private LockProvider lockProvider;
     private static final String TENANT_PLACEHOLDER = "__tenant__";
     private static final String DEFAULT_DS = "default";
@@ -57,7 +57,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     private final Map<Object, DataSourceConfig> dsConfigs = new ConcurrentHashMap<>();
     private final ApplicationContext context;
     // private final PubSubClient binaryClient;
-    private static final AtomicReference<String> LOCK = new AtomicReference("DB_LOCK");
+    private static final AtomicReference<String> LOCK = new AtomicReference<>("DB_LOCK");
 
     @SneakyThrows
     public DBImpl(final ApplicationContext context,
@@ -68,15 +68,17 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
 
         this.context = context;
         this.appicationName = appicationName;
-        this.tenanstListQuery = dbConfig.getTenantListQuery();
-        this.tablesPrefix = dbConfig.getTablesPrefix();
+        if (dbConfig != null) {
+            this.tenanstListQuery = dbConfig.getTenantListQuery();
+            this.tablesPrefix = dbConfig.getTablesPrefix();
 
-        // setLenientFallback(false);
-        createDatasources(dbConfig.getDatasources());
-        TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
-        // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
-        createLockTable();
-        configure();
+            // setLenientFallback(false);
+            createDatasources(dbConfig.getDatasources());
+            TenantHolder.hasDefault = dataSources.containsKey(TenantId.DEFAULT_VALUE);
+            // super.setTargetDataSources(ImmutableMap.copyOf(dataSources));
+            createLockTable();
+            configure();
+        }
     }
 
     @Override

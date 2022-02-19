@@ -14,6 +14,9 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     //implementation("org.apache.kafka:kafka_2.13:3.1.0")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure")
+    testImplementation(project(":soffa-foundation-service"))
+    testImplementation(project(":soffa-foundation-service-test"))
+    testImplementation("berlin.yuna:nats-server-embedded:2.2.72")
 
 }
 
