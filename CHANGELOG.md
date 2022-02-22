@@ -1,4 +1,8 @@
-## 1.9.1 (February 22, 2022) - Breaking changes 
+## 1.9.3 (February 22, 2022)  
+
+* Automatic event dispatch: OnServiceStarted
+
+## 1.9.1 (February 22, 2022) - Breaking changes (Stable API) 
 
 * Reafactoring
 * Improvements and stability

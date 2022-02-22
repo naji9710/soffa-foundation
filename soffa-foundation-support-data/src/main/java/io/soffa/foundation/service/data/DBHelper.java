@@ -13,20 +13,24 @@ import io.soffa.foundation.errors.DatabaseException;
 import io.soffa.foundation.errors.TechnicalException;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.SneakyThrows;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
+import org.jdbi.v3.core.Jdbi;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class DbHelper {
+public final class DBHelper {
 
-    private static final Logger LOG = Logger.get(DbHelper.class);
+    private static final Logger LOG = Logger.get(DBHelper.class);
     private static final ResourceLoader RL = new DefaultResourceLoader();
 
-    private DbHelper() {
+    private DBHelper() {
     }
 
     @SneakyThrows
@@ -63,7 +67,7 @@ public final class DbHelper {
     }
 
 
-    public static void applyMigrations(DataSource dataSource, String changeLogPath, String tablesPrefix, String appicationName) {
+    public static void applyMigrations(DatasourceInfo dsInfo, String changeLogPath, String tablesPrefix, String appicationName) {
         SpringLiquibase lqb = new SpringLiquibase();
         lqb.setDropFirst(false);
         lqb.setResourceLoader(RL);
@@ -94,16 +98,17 @@ public final class DbHelper {
             throw new TechnicalException("Liquibase changeLog was not found: %s", changeLogPath);
         }
         lqb.setChangeLog(changeLogPath);
-        doApplyMigration(lqb, changeLogParams, (HikariDataSource) dataSource);
+        doApplyMigration(dsInfo, lqb, changeLogParams);
     }
 
-    private static void doApplyMigration(SpringLiquibase lqb, Map<String, String> changeLogParams, final HikariDataSource ds) {
+    private static void doApplyMigration(DatasourceInfo dsInfo, SpringLiquibase lqb, Map<String, String> changeLogParams) {
+        @SuppressWarnings("PMD.CloseResource")
+        HikariDataSource ds = (HikariDataSource)dsInfo.getDataSource();
         String schema = ds.getSchema();
-        String dsName = ds.getPoolName().split("__")[0];
-        if (TenantId.DEFAULT_VALUE.equals(dsName)) {
+        if (TenantId.DEFAULT_VALUE.equals(dsInfo.getName())) {
             lqb.setContexts(TenantId.DEFAULT_VALUE);
         } else {
-            lqb.setContexts("tenant," + dsName.toLowerCase());
+            lqb.setContexts("tenant," + dsInfo.getName());
         }
         if (TextUtil.isNotEmpty(schema)) {
             lqb.setDefaultSchema(schema);
@@ -114,18 +119,58 @@ public final class DbHelper {
             lqb.setDataSource(ds);
 
             lqb.afterPropertiesSet(); // Run migrations
-            LOG.info("[datasource:%s] migration '%s' successfully applied", dsName, lqb.getChangeLog());
+            LOG.info("[datasource:%s] migration '%s' successfully applied", dsInfo.getName(), lqb.getChangeLog());
         } catch (Exception e) {
             String msg = e.getMessage().toLowerCase();
             if (msg.contains("changelog") && msg.contains("already exists")) {
                 boolean isTestDb = ((HikariDataSource) lqb.getDataSource()).getJdbcUrl().startsWith("jdbc:h2:mem");
                 if (!isTestDb) {
-                    LOG.warn("Looks like migrations are being ran twice for %s.%s, ignore this error", dsName, schema);
+                    LOG.warn("Looks like migrations are being ran twice for %s.%s, ignore this error", dsInfo.getName(), schema);
                 }
             } else {
                 throw new DatabaseException(e, "Migration failed for %s", schema);
             }
         }
+    }
+
+    public static String findChangeLogPath(String applicationName, DataSourceConfig config) {
+        String changelogPath = null;
+        boolean hasMigration = !("false".equals(config.getMigration()) || "no".equals(config.getMigration()));
+        if (hasMigration) {
+            if (TextUtil.isNotEmpty(config.getMigration()) && !"true".equals(config.getMigration())) {
+                changelogPath = "/db/changelog/" + config.getMigration() + ".xml";
+            } else {
+                changelogPath = "/db/changelog/" + applicationName + ".xml";
+            }
+            if (TextUtil.isNotEmpty(changelogPath)) {
+                ResourceLoader resourceLoader = new DefaultResourceLoader();
+                if (!resourceLoader.getResource(changelogPath).exists()) {
+                    throw new TechnicalException("Changelog file not found: " + changelogPath);
+                }
+            }
+        }
+        return changelogPath;
+    }
+
+    @SneakyThrows
+    public static LockProvider createLockTable(DataSource ds, String tablePrefix) {
+        LockProvider lockProvider = new JdbcTemplateLockProvider(JdbcTemplateLockProvider.Configuration.builder()
+            .withJdbcTemplate(new JdbcTemplate(ds))
+            .withTableName(tablePrefix + "f_shedlock")
+            .usingDbTime()
+            .build());
+        try {
+            Jdbi.create(ds).useTransaction(handle -> {
+                // EL
+                handle.createUpdate("CREATE TABLE IF NOT EXISTS <table>(name VARCHAR(64) NOT NULL, lock_until TIMESTAMP NOT NULL, locked_at TIMESTAMP NOT NULL, locked_by VARCHAR(255) NOT NULL, PRIMARY KEY (name))")
+                    .define("table", tablePrefix + "f_shedlock")
+                    .execute();
+            });
+        } catch (Exception e) {
+            // Will ignore because the table might have been created by another instance of the service
+            LOG.warn(e.getMessage(), e);
+        }
+        return lockProvider;
     }
 
 }

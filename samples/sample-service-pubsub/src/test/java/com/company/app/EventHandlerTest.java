@@ -43,6 +43,7 @@ public class EventHandlerTest {
 
         assertEquals(pingCount + 2, getCounterValue(ping));
         assertEquals(echoCount + 1, getCounterValue(echo));
+
     }
 
 

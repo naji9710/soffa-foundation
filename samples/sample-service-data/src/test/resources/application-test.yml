@@ -10,5 +10,8 @@ app.db:
     T2:
       url: h2://mem/tenant2
       migration: sample
+    __tenant__:
+      url: h2://mem/db__TENANT__
+      migration: false
 
 app.consul.discovery: false

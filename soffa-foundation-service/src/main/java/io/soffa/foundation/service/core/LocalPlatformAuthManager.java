@@ -2,11 +2,11 @@ package io.soffa.foundation.service.core;
 
 import com.google.common.collect.ImmutableSet;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.Permissions;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.models.Authentication;
 import io.soffa.foundation.core.security.AuthManager;
-import io.soffa.foundation.core.security.GrantedRole;
 import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.core.security.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,8 +78,8 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
                         //.username(username)
                         .tenantId(context.getTenantId())
                         .principal(username)
-                        .permissions(ImmutableSet.of("service"))
-                        .roles(ImmutableSet.of("service"))
+                        .permissions(ImmutableSet.of(Permissions.SERVICE))
+                        .roles(ImmutableSet.of(Permissions.SERVICE))
                         .build();
                 } else {
                     auth = authenticate(context, username, pasword);
@@ -112,13 +112,13 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
 
     private List<GrantedAuthority> createPermissions(RequestContext context, Authentication auth) {
         List<GrantedAuthority> permissions = new ArrayList<>();
-        permissions.add(new SimpleGrantedAuthority(GrantedRole.USER));
-        permissions.add(new SimpleGrantedAuthority(GrantedRole.AUTHENTICATED));
+        permissions.add(new SimpleGrantedAuthority(Permissions.USER));
+        permissions.add(new SimpleGrantedAuthority(Permissions.AUTHENTICATED));
         if (TextUtil.isNotEmpty(context.getApplicationName())) {
-            permissions.add(new SimpleGrantedAuthority(GrantedRole.HAS_APPLICATION));
+            permissions.add(new SimpleGrantedAuthority(Permissions.HAS_APPLICATION));
         }
         if (context.getTenantId() != null) {
-            permissions.add(new SimpleGrantedAuthority(GrantedRole.HAS_TENANT_ID));
+            permissions.add(new SimpleGrantedAuthority(Permissions.HAS_TENANT_ID));
         }
         if (auth.getRoles() != null) {
             for (String role : auth.getRoles()) {

@@ -1,5 +1,6 @@
 package com.company.app;
 
+import com.company.app.core.DoHandleServiceStart;
 import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.operations.SendEmailHandler;
@@ -72,6 +73,9 @@ public class PubSubTest {
         resp = binaryAPI.ping(new RequestContext());
         assertEquals("PONG", resp.getValue());
         */
+
+        Awaitility.await().atMost(500, TimeUnit.MILLISECONDS).until(DoHandleServiceStart.RECEIVED::get);
+
     }
 
 

@@ -1,9 +1,6 @@
 package io.soffa.foundation.service.pubsub;
 
-import io.soffa.foundation.commons.HttpStatus;
-import io.soffa.foundation.commons.JsonUtil;
-import io.soffa.foundation.commons.ObjectUtil;
-import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.commons.*;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.operation.OperationResult;
 import io.soffa.foundation.core.pubsub.PubSubClient;
@@ -18,6 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class AbstractPubSubClient implements PubSubClient {
 
+    private static final Logger LOG = Logger.get(PubSubClient.class);
     protected String broadcasting;
     protected String applicationName;
 
@@ -43,6 +41,9 @@ public abstract class AbstractPubSubClient implements PubSubClient {
         boolean isWildcard = "*".equals(sub);
         if (TextUtil.isEmpty(sub) || isWildcard) {
             sub = broadcasting;
+            if (TextUtil.isEmpty(sub)) {
+                LOG.warn("No broadcast target defined, broacasting will be ignored.");
+            }
         }
         return sub;
     }

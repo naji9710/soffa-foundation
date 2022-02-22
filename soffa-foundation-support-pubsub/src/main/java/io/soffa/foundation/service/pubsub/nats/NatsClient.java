@@ -6,6 +6,7 @@ import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.pubsub.MessageHandler;
 import io.soffa.foundation.core.pubsub.PubSubClient;
@@ -105,6 +106,10 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     @Override
     public void broadcast(@NonNull String target, @NotNull Message message) {
         String sub = resolveBroadcast(target);
+        if (TextUtil.isEmpty(sub)) {
+            LOG.warn("Broadcasting ignored: %s, target is empy.", message.getOperation());
+            return;
+        }
         PublishAck ack = stream.publish(NatsUtil.createNatsMessage(sub, message));
         if (ack.hasError()) {
             throw new TechnicalException(ack.getError());
