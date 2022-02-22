@@ -1,0 +1,5 @@
+spring.application.name: sample-pubsub
+
+app.package: io.soffa.foundation.pubsub
+spring.config.import:
+  - classpath:application-foundation.yml
