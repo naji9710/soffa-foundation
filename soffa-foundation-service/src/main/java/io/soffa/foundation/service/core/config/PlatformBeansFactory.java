@@ -1,17 +1,17 @@
 package io.soffa.foundation.service.core.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.soffa.foundation.application.AppConfig;
-import io.soffa.foundation.application.Operation;
-import io.soffa.foundation.application.RequestContext;
-import io.soffa.foundation.application.context.DefaultRequestContext;
-import io.soffa.foundation.application.operation.OperationsMapping;
-import io.soffa.foundation.application.security.AuthManager;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.AppConfig;
+import io.soffa.foundation.core.Operation;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.context.DefaultRequestContext;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.openapi.OpenApiBuilder;
+import io.soffa.foundation.core.operation.OperationsMapping;
+import io.soffa.foundation.core.security.AuthManager;
 import io.soffa.foundation.errors.ErrorUtil;
-import io.soffa.foundation.exposition.openapi.OpenApiBuilder;
-import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.springdoc.core.SpringDocUtils;
 import org.springframework.beans.factory.annotation.Value;

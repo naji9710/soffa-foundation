@@ -1,14 +1,14 @@
 package io.soffa.foundation.service.core.aop;
 
 import com.google.common.base.Supplier;
-import io.soffa.foundation.application.RequestContext;
-import io.soffa.foundation.application.context.RequestContextUtil;
-import io.soffa.foundation.application.model.Validatable;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.context.RequestContextUtil;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.models.Validatable;
 import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.errors.ManagedException;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
-import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-import static io.soffa.foundation.application.CoreMetrics.OPERATION_PREFIX;
+import static io.soffa.foundation.core.CoreMetrics.OPERATION_PREFIX;
 
 @Aspect
 @Component
@@ -29,7 +29,7 @@ public class OperationHandlerAspect {
     private MetricsRegistry metricsRegistry;
 
     @SneakyThrows
-    @Around("execution(* io.soffa.foundation.application.Operation*.*(..))")
+    @Around("execution(* io.soffa.foundation.core.Operation*.*(..))")
     public Object handleOperation(ProceedingJoinPoint jp) {
         Object[] args = jp.getArgs();
 

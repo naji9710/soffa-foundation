@@ -22,7 +22,6 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:7.0.1")
     implementation("org.springframework.cloud:spring-cloud-starter-vault-config")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.postgresql:postgresql:42.3.2")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.6"){
         exclude(group = "io.github.classgraph")
     }

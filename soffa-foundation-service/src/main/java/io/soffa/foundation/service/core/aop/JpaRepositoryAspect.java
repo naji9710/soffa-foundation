@@ -1,6 +1,6 @@
 package io.soffa.foundation.service.core.aop;
 
-import io.soffa.foundation.application.context.RequestContextHolder;
+import io.soffa.foundation.core.context.RequestContextHolder;
 import io.soffa.foundation.errors.DatabaseException;
 import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.errors.ManagedException;

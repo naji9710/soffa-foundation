@@ -1,7 +1,7 @@
 package io.soffa.foundation.service.data;
 
-import io.soffa.foundation.application.AppConfig;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.AppConfig;
 import lombok.AllArgsConstructor;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
 import org.hibernate.boot.model.naming.Identifier;

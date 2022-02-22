@@ -1,8 +1,8 @@
 package io.soffa.foundation.errors;
 
 import com.mgnt.utils.TextUtils;
+import io.soffa.foundation.commons.HttpStatus;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.exposition.HttpStatus;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;

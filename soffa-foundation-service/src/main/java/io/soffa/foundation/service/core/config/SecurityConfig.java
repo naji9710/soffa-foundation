@@ -1,7 +1,7 @@
 package io.soffa.foundation.service.core.config;
 
-import io.soffa.foundation.application.security.PlatformAuthManager;
-import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.service.core.RequestFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

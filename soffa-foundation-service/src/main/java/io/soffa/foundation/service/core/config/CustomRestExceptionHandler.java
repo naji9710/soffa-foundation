@@ -1,7 +1,7 @@
 package io.soffa.foundation.service.core.config;
 
-import io.soffa.foundation.application.context.RequestContextHolder;
 import io.soffa.foundation.commons.Logger;
+import io.soffa.foundation.core.context.RequestContextHolder;
 import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;

@@ -1,8 +1,8 @@
 package io.soffa.foundation.service.core.aop;
 
 import io.soffa.foundation.annotations.DefaultTenant;
-import io.soffa.foundation.application.context.RequestContextHolder;
-import io.soffa.foundation.application.model.TenantId;
+import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.core.models.TenantId;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;

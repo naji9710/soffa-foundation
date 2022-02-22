@@ -1,8 +1,8 @@
 package io.soffa.foundation.pubsub;
 
 import berlin.yuna.natsserver.embedded.annotation.EnableNatsServer;
-import io.soffa.foundation.application.messages.MessageFactory;
-import io.soffa.foundation.infrastructure.pubsub.PubSubMessenger;
+import io.soffa.foundation.core.messages.MessageFactory;
+import io.soffa.foundation.core.pubsub.PubSubMessenger;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

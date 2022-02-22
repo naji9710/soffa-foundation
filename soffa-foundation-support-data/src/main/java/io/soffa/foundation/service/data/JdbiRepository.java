@@ -2,10 +2,10 @@ package io.soffa.foundation.service.data;
 
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.db.DB;
+import io.soffa.foundation.core.db.model.EntityModel;
 import io.soffa.foundation.errors.ConfigurationException;
 import io.soffa.foundation.errors.DatabaseException;
-import io.soffa.foundation.infrastructure.db.DB;
-import io.soffa.foundation.infrastructure.db.model.EntityModel;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.Query;

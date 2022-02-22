@@ -1,3 +1,10 @@
+## 1.9.1 (February 22, 2022) - Breaking changes 
+
+* Reafactoring
+* Improvements and stability
+* Separation of concerns
+* Dependencies cleanup
+ 
 ## 1.8.0 (February 19, 2022) 
 
 * Feature:PendingJobs added

@@ -6,9 +6,7 @@ plugins {
 
 
 dependencies {
-    //api(project(":soffa-foundation-api"))
-    //api(project(":soffa-foundation-commons"))
-    compileOnly(project(":soffa-foundation-application"))
+    api(project(":soffa-foundation-application"))
 
     implementation("io.nats:jnats:2.13.2")
     implementation("com.github.fridujo:rabbitmq-mock:1.1.1")

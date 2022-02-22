@@ -1,8 +1,8 @@
 package ext.springboot;
 
-import io.soffa.foundation.application.security.DefaultTokenProvider;
-import io.soffa.foundation.application.security.TokenProvider;
-import io.soffa.foundation.application.security.model.TokensConfig;
+import io.soffa.foundation.core.security.DefaultTokenProvider;
+import io.soffa.foundation.core.security.TokenProvider;
+import io.soffa.foundation.core.security.model.TokensConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

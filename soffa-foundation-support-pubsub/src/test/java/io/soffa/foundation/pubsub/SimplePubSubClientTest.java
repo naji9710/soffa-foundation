@@ -1,9 +1,9 @@
 package io.soffa.foundation.pubsub;
 
-import io.soffa.foundation.application.context.DefaultRequestContext;
-import io.soffa.foundation.application.messages.Message;
-import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
-import io.soffa.foundation.pubsub.simple.SimplePubSubClient;
+import io.soffa.foundation.core.context.DefaultRequestContext;
+import io.soffa.foundation.core.messages.Message;
+import io.soffa.foundation.core.pubsub.PubSubClient;
+import io.soffa.foundation.service.pubsub.simple.SimplePubSubClient;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

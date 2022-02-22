@@ -1,17 +1,17 @@
 package io.soffa.foundation.service.core;
 
 import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.application.RequestContext;
-import io.soffa.foundation.application.context.DefaultRequestContext;
-import io.soffa.foundation.application.context.RequestContextHolder;
-import io.soffa.foundation.application.context.RequestContextUtil;
-import io.soffa.foundation.application.security.PlatformAuthManager;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.context.DefaultRequestContext;
+import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.core.context.RequestContextUtil;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.errors.ErrorUtil;
-import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -31,7 +31,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static io.soffa.foundation.application.CoreMetrics.HTTP_REQUEST;
+import static io.soffa.foundation.core.CoreMetrics.HTTP_REQUEST;
 
 @NoArgsConstructor
 public class RequestFilter extends OncePerRequestFilter {

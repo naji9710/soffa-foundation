@@ -1,8 +1,8 @@
 package io.soffa.foundation.service.core.config;
 
-import io.soffa.foundation.infrastructure.email.EmailSender;
-import io.soffa.foundation.infrastructure.email.adapters.SmtpEmailSender;
-import io.soffa.foundation.infrastructure.email.model.MailerConfig;
+import io.soffa.foundation.core.email.EmailSender;
+import io.soffa.foundation.core.email.adapters.SmtpEmailSender;
+import io.soffa.foundation.core.email.model.MailerConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

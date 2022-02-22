@@ -2,15 +2,15 @@ package io.soffa.foundation.service.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.soffa.foundation.application.model.TenantId;
 import io.soffa.foundation.commons.IdGenerator;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.Properties;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.db.DataSourceConfig;
+import io.soffa.foundation.core.db.DataSourceProperties;
+import io.soffa.foundation.core.models.TenantId;
 import io.soffa.foundation.errors.DatabaseException;
 import io.soffa.foundation.errors.TechnicalException;
-import io.soffa.foundation.infrastructure.db.DataSourceConfig;
-import io.soffa.foundation.infrastructure.db.DataSourceProperties;
 import liquibase.integration.spring.SpringLiquibase;
 import lombok.SneakyThrows;
 import org.springframework.core.io.DefaultResourceLoader;

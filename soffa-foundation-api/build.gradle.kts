@@ -10,13 +10,11 @@ dependencies {
     api("org.checkerframework:checker-qual:3.21.2")
     api("org.checkerframework:checker:3.21.1")
     api("org.checkerframework:jdk8:3.3.0")
-    api("javax.inject:javax.inject:1")
     api("javax.annotation:javax.annotation-api:1.3.2")
     api("io.swagger.core.v3:swagger-annotations:2.1.13")
     api("io.swagger.core.v3:swagger-models:2.1.13")
     api("javax.ws.rs:javax.ws.rs-api:2.1.1")
     api("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
-    api("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")
 
 }
 

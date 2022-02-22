@@ -1,17 +1,17 @@
 package io.soffa.foundation.service.data;
 
 import com.zaxxer.hikari.HikariDataSource;
-import io.soffa.foundation.application.context.RequestContextHolder;
-import io.soffa.foundation.application.events.DatabaseReadyEvent;
-import io.soffa.foundation.application.model.TenantId;
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.EventBus;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.core.db.*;
+import io.soffa.foundation.core.events.DatabaseReadyEvent;
+import io.soffa.foundation.core.models.TenantId;
 import io.soffa.foundation.errors.InvalidTenantException;
 import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.TechnicalException;
-import io.soffa.foundation.infrastructure.db.*;
 import lombok.SneakyThrows;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;

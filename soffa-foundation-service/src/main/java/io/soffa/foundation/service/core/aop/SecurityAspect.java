@@ -1,8 +1,8 @@
 package io.soffa.foundation.service.core.aop;
 
-import io.soffa.foundation.application.RequestContext;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.errors.UnauthorizedException;
 import io.soffa.foundation.errors.ValidationException;
 import lombok.SneakyThrows;

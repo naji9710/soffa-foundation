@@ -1,14 +1,14 @@
 package io.soffa.foundation.service.core;
 
 import com.google.common.collect.ImmutableSet;
-import io.soffa.foundation.application.RequestContext;
-import io.soffa.foundation.application.model.Authentication;
-import io.soffa.foundation.application.security.AuthManager;
-import io.soffa.foundation.application.security.GrantedRole;
-import io.soffa.foundation.application.security.PlatformAuthManager;
-import io.soffa.foundation.application.security.TokenProvider;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
+import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.core.models.Authentication;
+import io.soffa.foundation.core.security.AuthManager;
+import io.soffa.foundation.core.security.GrantedRole;
+import io.soffa.foundation.core.security.PlatformAuthManager;
+import io.soffa.foundation.core.security.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

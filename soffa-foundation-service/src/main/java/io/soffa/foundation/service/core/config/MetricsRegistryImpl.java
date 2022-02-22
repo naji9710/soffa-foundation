@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.soffa.foundation.commons.MapUtil;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
+import io.soffa.foundation.core.metrics.MetricsRegistry;
 import lombok.AllArgsConstructor;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

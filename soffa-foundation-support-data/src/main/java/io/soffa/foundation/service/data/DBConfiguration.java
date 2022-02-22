@@ -1,8 +1,8 @@
 package io.soffa.foundation.service.data;
 
-import io.soffa.foundation.application.AppConfig;
-import io.soffa.foundation.infrastructure.db.DB;
-import io.soffa.foundation.infrastructure.db.TenantsLoader;
+import io.soffa.foundation.core.AppConfig;
+import io.soffa.foundation.core.db.DB;
+import io.soffa.foundation.core.db.TenantsLoader;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 import org.springframework.beans.factory.annotation.Value;
