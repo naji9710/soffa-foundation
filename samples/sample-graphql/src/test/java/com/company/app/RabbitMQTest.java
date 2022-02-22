@@ -1,8 +1,8 @@
 package com.company.app;
 
-import io.soffa.foundation.core.messages.AmqpClient;
-import io.soffa.foundation.core.messages.Message;
-import io.soffa.foundation.core.messages.MessageDispatcher;
+import io.soffa.foundation.application.messages.AmqpClient;
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.application.messages.MessageDispatcher;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

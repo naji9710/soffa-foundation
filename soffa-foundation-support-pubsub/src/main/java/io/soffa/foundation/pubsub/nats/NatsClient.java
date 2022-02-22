@@ -5,13 +5,13 @@ import io.nats.client.api.AckPolicy;
 import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.PublishAck;
 import io.nats.client.api.StreamConfiguration;
+import io.soffa.foundation.application.messages.Message;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.errors.TechnicalException;
-import io.soffa.foundation.model.Message;
+import io.soffa.foundation.infrastructure.pubsub.MessageHandler;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClientConfig;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
-import io.soffa.foundation.pubsub.MessageHandler;
-import io.soffa.foundation.pubsub.PubSubClient;
-import io.soffa.foundation.pubsub.config.PubSubClientConfig;
 import lombok.SneakyThrows;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +40,7 @@ public class NatsClient extends AbstractPubSubClient implements PubSubClient {
     @SneakyThrows
     @Override
     public void subscribe(@NonNull String subject, boolean broadcast, MessageHandler messageHandler) {
-        // String subject, boolean broadcast, io.soffa.foundation.pubsub.MessageHandler handler
+        // String subject, boolean broadcast, io.soffa.foundation.support.pubsub.MessageHandler handler
         LOG.info("Configuring subscription to %s", subject);
 
         NatsMessageHandler h = new NatsMessageHandler(connection, messageHandler);

@@ -1,9 +1,9 @@
 package ext.springboot;
 
-import io.soffa.foundation.pubsub.MessageHandler;
-import io.soffa.foundation.pubsub.PubSubMessenger;
+import io.soffa.foundation.infrastructure.pubsub.MessageHandler;
+import io.soffa.foundation.infrastructure.pubsub.PubSubConfig;
+import io.soffa.foundation.infrastructure.pubsub.PubSubMessenger;
 import io.soffa.foundation.pubsub.PubSubMessengerFactory;
-import io.soffa.foundation.pubsub.config.PubSubConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

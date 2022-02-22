@@ -16,13 +16,7 @@ dependencies {
     api("io.swagger.core.v3:swagger-models:2.1.13")
     api("javax.ws.rs:javax.ws.rs-api:2.1.1")
     api("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
-    api("org.apache.commons:commons-text:1.9")
-    implementation("com.jsoniter:jsoniter:0.9.23")  {
-        exclude(group = "com.fasterxml.jackson.core")
-        exclude(group = "com.google.code.gson")
-    }
-    implementation("com.aventrix.jnanoid:jnanoid:2.0.0")
-    implementation("com.github.michaelgantman:MgntUtils:1.6.0.1")
+    api("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")
 
 }
 

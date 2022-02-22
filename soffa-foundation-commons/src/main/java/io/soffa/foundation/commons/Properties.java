@@ -1,13 +1,19 @@
 package io.soffa.foundation.commons;
 
-import lombok.AllArgsConstructor;
-
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-@AllArgsConstructor
 public class Properties {
 
-    private Map<String, String> internal;
+    private final Map<String, String> internal;
+
+    public Properties(Map<String, String> internal) {
+        this.internal = internal;
+    }
+
+    public Properties() {
+        this(new ConcurrentHashMap<>());
+    }
 
     public boolean has(String name) {
         return internal.containsKey(name);

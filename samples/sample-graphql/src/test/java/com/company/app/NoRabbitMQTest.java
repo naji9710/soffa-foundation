@@ -1,6 +1,6 @@
 package com.company.app;
 
-import io.soffa.foundation.core.messages.AmqpClient;
+import io.soffa.foundation.application.messages.AmqpClient;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -6,6 +6,7 @@ include(":soffa-foundation-commons")
 include(":soffa-foundation-application")
 include(":soffa-foundation-service")
 include(":soffa-foundation-service-test")
+include(":soffa-foundation-support-data")
 include(":soffa-foundation-support-pubsub")
 
 include(":samples:sample-default")

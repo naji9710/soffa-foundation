@@ -1,0 +1,13 @@
+package io.soffa.foundation.application;
+
+import org.checkerframework.checker.nullness.qual.NonNull;
+
+public interface Operation<I, O> {
+
+    O handle(I input, @NonNull RequestContext context);
+
+    default O handle(@NonNull RequestContext context) {
+        return handle((I)null, context);
+    }
+
+}

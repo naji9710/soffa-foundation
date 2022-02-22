@@ -2,8 +2,8 @@ package com.company.app;
 
 import com.company.app.gateways.MessageRepository;
 import com.google.common.collect.ImmutableMap;
+import io.soffa.foundation.application.context.RequestContextHolder;
 import io.soffa.foundation.commons.IdGenerator;
-import io.soffa.foundation.context.TenantHolder;
 import io.soffa.foundation.test.HttpExpect;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -145,11 +145,11 @@ public class ApplicationTest   {
 
     @Test
     public void testConfig() {
-        TenantHolder.set("T1");
+        RequestContextHolder.setTenant("T1");
         assertTrue(messages.count() >= 0);
-        TenantHolder.set("T2");
+        RequestContextHolder.setTenant("T2");
         assertTrue(messages.count() >= 0);
-        TenantHolder.clear();
+        RequestContextHolder.clear();
         assertTrue(messages.count() >= 0);
 
     }

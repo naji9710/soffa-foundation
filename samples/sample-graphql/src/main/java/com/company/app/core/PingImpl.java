@@ -1,6 +1,6 @@
 package com.company.app.core;
 
-import io.soffa.foundation.core.RequestContext;
+import io.soffa.foundation.application.RequestContext;
 import io.soffa.foundation.errors.FakeException;
 import io.soffa.foundation.model.TenantId;
 import org.jetbrains.annotations.NotNull;

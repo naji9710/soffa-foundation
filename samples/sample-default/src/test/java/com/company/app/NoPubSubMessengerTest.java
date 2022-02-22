@@ -1,6 +1,6 @@
 package com.company.app;
 
-import io.soffa.foundation.pubsub.PubSubMessenger;
+import io.soffa.foundation.infrastructure.pubsub.PubSubMessenger;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

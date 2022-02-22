@@ -3,14 +3,14 @@ package com.company.app;
 import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.operations.SendEmailHandler;
-import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.messages.MessageFactory;
-import io.soffa.foundation.model.Message;
+import io.soffa.foundation.application.context.DefaultRequestContext;
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.application.messages.MessageFactory;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClientFactory;
+import io.soffa.foundation.infrastructure.pubsub.PubSubMessenger;
 import io.soffa.foundation.models.mail.Email;
 import io.soffa.foundation.models.mail.EmailAddress;
 import io.soffa.foundation.models.mail.EmailId;
-import io.soffa.foundation.pubsub.PubSubMessenger;
 import lombok.SneakyThrows;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
@@ -67,8 +67,8 @@ public class PubSubTest {
         messenger.broadcast("*", event);
         Awaitility.await().atMost(500, TimeUnit.MILLISECONDS).until(() -> SendEmailHandler.COUNTER.get() == counter.incrementAndGet());
 
-        Ping ping = messenger.proxy(applicationName, Ping.class);
-        PingResponse resp = ping.handle(Operation.NO_INPUT, new RequestContext());
+        Ping ping = PubSubClientFactory.of(Ping.class, applicationName, messenger);
+        PingResponse resp = ping.handle(new DefaultRequestContext());
         assertEquals("PONG", resp.getValue());
 
         /*

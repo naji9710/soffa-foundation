@@ -22,8 +22,16 @@ dependencies {
     api("com.google.guava:guava:31.0.1-jre")
     @Suppress("GradlePackageUpdate")
     implementation("commons-codec:commons-codec:1.15")
-
-
+    implementation("io.pebbletemplates:pebble:3.1.5")
+    implementation("com.auth0:java-jwt:3.18.3")
+    implementation("com.nimbusds:nimbus-jose-jwt:9.19")
+    api("org.apache.commons:commons-text:1.9")
+    implementation("com.jsoniter:jsoniter:0.9.23")  {
+        exclude(group = "com.fasterxml.jackson.core")
+        exclude(group = "com.google.code.gson")
+    }
+    implementation("com.aventrix.jnanoid:jnanoid:2.0.0")
+    implementation("com.github.michaelgantman:MgntUtils:1.6.0.1")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.1")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.13.1")

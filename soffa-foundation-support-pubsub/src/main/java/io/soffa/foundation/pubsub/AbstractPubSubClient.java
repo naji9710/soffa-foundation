@@ -1,24 +1,20 @@
 package io.soffa.foundation.pubsub;
 
-import io.soffa.foundation.api.HttpStatus;
-import io.soffa.foundation.api.Operation;
-import io.soffa.foundation.commons.ClassUtil;
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.application.operation.OperationResult;
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.context.RequestContext;
 import io.soffa.foundation.errors.ForbiddenException;
 import io.soffa.foundation.errors.FunctionalException;
 import io.soffa.foundation.errors.TechnicalException;
 import io.soffa.foundation.errors.UnauthorizedException;
-import io.soffa.foundation.model.Message;
-import io.soffa.foundation.model.OperationResult;
-import io.soffa.foundation.pubsub.config.PubSubClientConfig;
+import io.soffa.foundation.exposition.HttpStatus;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClientConfig;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import javax.validation.constraints.NotNull;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractPubSubClient implements PubSubClient {
 
@@ -51,25 +47,7 @@ public abstract class AbstractPubSubClient implements PubSubClient {
         return sub;
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public final <I, O, T extends Operation<I, O>> T proxy(@NonNull String subjet, @NotNull Class<T> operationClass) {
-        Class<?> returnType = ClassUtil.getClassFromGenericInterface(operationClass, Operation.class, 1);
-        return (T) java.lang.reflect.Proxy.newProxyInstance(
-            Thread.currentThread().getContextClassLoader(),
-            new Class[]{operationClass},
-            (proxy, method, args) -> {
-                if ("hashCode".equals(method.getName())) {
-                    return operationClass.getName().hashCode();
-                }
-                if ("equals".equals(method.getName())) {
-                    return method.equals(args[0]);
-                }
-                RequestContext context = (RequestContext) args[1];
-                Message msg = new Message(operationClass.getSimpleName(), args[0], context);
-                return request(subjet, msg, returnType).get(ASYNC_TIMEOUT_SECONDS.get(), TimeUnit.SECONDS);
-            });
-    }
+
 
     @SuppressWarnings("unchecked")
     @Override

@@ -1,7 +1,7 @@
 package io.soffa.foundation.service;
 
-import io.soffa.foundation.data.ObjectStorageClient;
-import io.soffa.foundation.data.ObjectStorageConfig;
+import io.soffa.foundation.infrastructure.storage.ObjectStorageClient;
+import io.soffa.foundation.infrastructure.storage.model.ObjectStorageConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

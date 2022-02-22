@@ -1,7 +1,8 @@
 package io.soffa.foundation.pubsub;
 
-import io.soffa.foundation.context.RequestContext;
-import io.soffa.foundation.model.Message;
+import io.soffa.foundation.application.context.DefaultRequestContext;
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
 import io.soffa.foundation.pubsub.simple.SimplePubSubClient;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ public class SimplePubSubClientTest {
             return Optional.empty();
         });
 
-        client.publish("test", new Message( "hello", new RequestContext()));
+        client.publish("test", new Message( "hello", new DefaultRequestContext()));
 
         assertEquals(1, counter.get());
     }

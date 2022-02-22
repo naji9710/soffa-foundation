@@ -1,8 +1,10 @@
 package io.soffa.foundation.pubsub;
 
-import io.soffa.foundation.api.Operation;
+import io.soffa.foundation.application.messages.Message;
 import io.soffa.foundation.commons.EventBus;
-import io.soffa.foundation.model.Message;
+import io.soffa.foundation.infrastructure.pubsub.MessageHandler;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
+import io.soffa.foundation.infrastructure.pubsub.PubSubMessenger;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,11 +56,6 @@ public class PubSubMessengerImpl implements PubSubMessenger {
     @Override
     public void broadcast(@NonNull String target, @NotNull Message message) {
         getDefaultClient().broadcast(target, message);
-    }
-
-    @Override
-    public <I, O, T extends Operation<I, O>> T proxy(@NonNull String subjet, Class<T> operationClass) {
-        return getDefaultClient().proxy(subjet, operationClass);
     }
 
     @Override

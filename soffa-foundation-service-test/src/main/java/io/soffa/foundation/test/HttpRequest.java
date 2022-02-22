@@ -1,7 +1,7 @@
 package io.soffa.foundation.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.soffa.foundation.context.AuthUtil;
+import io.soffa.foundation.commons.http.HttpUtil;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -61,7 +61,7 @@ public class HttpRequest {
     }
 
     public HttpRequest basicAuth(String username, String password) {
-        header(HttpHeaders.AUTHORIZATION, AuthUtil.createBasicAuthorization(username, password));
+        header(HttpHeaders.AUTHORIZATION, HttpUtil.createBasicAuthorization(username, password));
         return this;
     }
 

@@ -2,8 +2,9 @@ package com.company.app;
 
 import com.company.app.core.PingResponse;
 import com.company.app.gateways.API;
-import io.soffa.foundation.application.RestClient;
-import io.soffa.foundation.context.RequestContext;
+import io.soffa.foundation.application.RequestContext;
+import io.soffa.foundation.application.context.DefaultRequestContext;
+import io.soffa.foundation.infrastructure.RestClient;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +24,7 @@ public class APIClientTest  {
     @Test
     public void testAPIClient() {
         API client = RestClient.newInstance(API.class, "http://localhost:" + port);
-        RequestContext context = RequestContext.create("T1");
+        RequestContext context = DefaultRequestContext.create("T1");
         PingResponse response = client.ping(context);
         assertEquals("PONG", response.getValue());
         assertEquals("Hello", client.echo("Hello", context));

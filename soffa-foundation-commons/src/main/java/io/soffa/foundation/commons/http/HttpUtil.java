@@ -15,10 +15,8 @@ import javax.net.ssl.X509TrustManager;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public final class HttpUtil {
@@ -27,6 +25,13 @@ public final class HttpUtil {
     private static final Logger LOG = Logger.get(HttpUtil.class);
 
     private HttpUtil() {
+    }
+
+
+    public static String createBasicAuthorization(String username, String password) {
+        final String pair = username + ":" + password;
+        final String encoded = Base64.getEncoder().encodeToString(pair.getBytes(StandardCharsets.UTF_8));
+        return "Basic " + encoded;
     }
 
     @SneakyThrows

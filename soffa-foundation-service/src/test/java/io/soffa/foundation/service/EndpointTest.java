@@ -1,9 +1,9 @@
 package io.soffa.foundation.service;
 
 import com.google.common.collect.ImmutableMap;
-import io.soffa.foundation.security.TokenProvider;
-import io.soffa.foundation.security.model.Token;
-import io.soffa.foundation.security.model.TokenType;
+import io.soffa.foundation.application.model.Token;
+import io.soffa.foundation.application.model.TokenType;
+import io.soffa.foundation.application.security.TokenProvider;
 import io.soffa.foundation.test.HttpExpect;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

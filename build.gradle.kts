@@ -25,6 +25,7 @@ allprojects {
     apply(plugin = "soffa.java8")
 }
 
+/*
 tasks.withType<Test>().configureEach {
     maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
     setForkEvery(100)
@@ -35,3 +36,4 @@ tasks.withType<Test>().configureEach {
 tasks.withType<JavaCompile>().configureEach {
     options.isFork = true
 }
+*/

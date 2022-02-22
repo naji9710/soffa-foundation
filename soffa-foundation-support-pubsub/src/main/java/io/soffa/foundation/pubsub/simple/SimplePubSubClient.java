@@ -1,12 +1,12 @@
 package io.soffa.foundation.pubsub.simple;
 
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.application.operation.OperationResult;
 import io.soffa.foundation.commons.ObjectUtil;
 import io.soffa.foundation.errors.ConfigurationException;
-import io.soffa.foundation.model.Message;
-import io.soffa.foundation.model.OperationResult;
+import io.soffa.foundation.infrastructure.pubsub.MessageHandler;
+import io.soffa.foundation.infrastructure.pubsub.PubSubClient;
 import io.soffa.foundation.pubsub.AbstractPubSubClient;
-import io.soffa.foundation.pubsub.MessageHandler;
-import io.soffa.foundation.pubsub.PubSubClient;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.HashSet;

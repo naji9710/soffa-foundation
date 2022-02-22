@@ -6,8 +6,7 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.errors.ConfigurationException;
 import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.errors.TodoException;
-import io.soffa.foundation.pubsub.config.PubSubClientConfig;
-import io.soffa.foundation.pubsub.config.PubSubConfig;
+import io.soffa.foundation.infrastructure.pubsub.*;
 import io.soffa.foundation.pubsub.nats.NatsClient;
 import io.soffa.foundation.pubsub.simple.SimplePubSubClient;
 

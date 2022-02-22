@@ -1,10 +1,10 @@
 package com.company.app;
 
+import io.soffa.foundation.application.features.jobs.PendingJob;
+import io.soffa.foundation.application.features.jobs.PendingJobRepository;
+import io.soffa.foundation.application.features.journal.Journal;
+import io.soffa.foundation.application.features.journal.JournalRepository;
 import io.soffa.foundation.errors.DatabaseException;
-import io.soffa.foundation.features.intents.Journal;
-import io.soffa.foundation.features.intents.JournalRepository;
-import io.soffa.foundation.features.jobs.PendingJob;
-import io.soffa.foundation.features.jobs.PendingJobRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

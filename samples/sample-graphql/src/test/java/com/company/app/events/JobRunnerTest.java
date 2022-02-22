@@ -1,11 +1,11 @@
 package com.company.app.events;
 
 import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.core.messages.Message;
-import io.soffa.foundation.core.metrics.CoreMetrics;
-import io.soffa.foundation.core.metrics.MetricsRegistry;
-import io.soffa.foundation.service.config.jobs.Job;
-import io.soffa.foundation.service.config.jobs.JobManager;
+import io.soffa.foundation.application.messages.Message;
+import io.soffa.foundation.application.metrics.CoreMetrics;
+import io.soffa.foundation.application.metrics.MetricsRegistry;
+import io.soffa.foundation.service.core.config.jobs.Job;
+import io.soffa.foundation.service.core.config.jobs.JobManager;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

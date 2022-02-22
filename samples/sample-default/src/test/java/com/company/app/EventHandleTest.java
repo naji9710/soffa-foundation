@@ -2,10 +2,10 @@ package com.company.app;
 
 import com.company.app.core.Echo;
 import com.company.app.core.Ping;
-import io.soffa.foundation.context.TenantHolder;
-import io.soffa.foundation.messages.MessageFactory;
-import io.soffa.foundation.metrics.MetricsRegistry;
-import io.soffa.foundation.pubsub.MessageHandler;
+import io.soffa.foundation.application.context.RequestContextHolder;
+import io.soffa.foundation.application.messages.MessageFactory;
+import io.soffa.foundation.infrastructure.metrics.MetricsRegistry;
+import io.soffa.foundation.infrastructure.pubsub.MessageHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +35,7 @@ public class EventHandleTest {
         double pingCount = getCounterValue(ping);
         double echoCount = getCounterValue(Echo.class.getName());
 
-        TenantHolder.use("T1", (t1) -> {
+        RequestContextHolder.useTenant("T1", (t1) -> {
             handler.handle(MessageFactory.create(ping)); // automatic tenant
             handler.handle(MessageFactory.create(echo, "Hello"));
             handler.handle(MessageFactory.create(ping));

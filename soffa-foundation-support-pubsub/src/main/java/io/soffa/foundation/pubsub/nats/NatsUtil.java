@@ -3,8 +3,8 @@ package io.soffa.foundation.pubsub.nats;
 import io.nats.client.Connection;
 import io.nats.client.Subscription;
 import io.nats.client.impl.NatsMessage;
+import io.soffa.foundation.application.messages.Message;
 import io.soffa.foundation.commons.ObjectUtil;
-import io.soffa.foundation.model.Message;
 import lombok.SneakyThrows;
 
 import java.util.List;
