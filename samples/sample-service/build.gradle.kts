@@ -5,6 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":soffa-foundation-service"))
-    testImplementation(project(":soffa-foundation-service-test"))
+    implementation(project(":foundation-service"))
+    testImplementation(project(":foundation-service-test"))
 }

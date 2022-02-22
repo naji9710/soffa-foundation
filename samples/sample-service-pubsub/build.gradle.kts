@@ -5,7 +5,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":soffa-foundation-service"))
-    implementation(project(":soffa-foundation-support-pubsub"))
-    testImplementation(project(":soffa-foundation-service-test"))
+    implementation(project(":foundation-service"))
+    implementation(project(":foundation-support-pubsub"))
+    testImplementation(project(":foundation-service-test"))
 }

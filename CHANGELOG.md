@@ -132,7 +132,7 @@ app.db:
       migration: true | or filename
       syslog: true|false
 ```
-* Example: soffa-foundation-test-app/src/test/resources/application-test.yml
+* Example: foundation-test-app/src/test/resources/application-test.yml
 
 ## 1.2.11 (January 27, 2022)
 
