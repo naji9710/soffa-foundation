@@ -16,7 +16,11 @@ dependencies {
     implementation("org.apache.commons:commons-email:1.5")
     api("commons-validator:commons-validator:1.7")
     @Suppress("GradlePackageUpdate")
-    api("com.github.ben-manes.caffeine:caffeine:2.9.3") // Don't use version 3, it's not compatible with Java8
+    api("com.github.ben-manes.caffeine:caffeine") {  // Don't use version 3, it's not compatible with Java8
+        version {
+            strictly("2.9.3")
+        }
+    }
     @Suppress("GradlePackageUpdate")
     compileOnly("org.springframework.boot:spring-boot-autoconfigure:2.6.3")
 

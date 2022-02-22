@@ -4,16 +4,23 @@ plugins {
     id("soffa.springboot.library")
 }
 
-
 dependencies {
     api(project(":soffa-foundation-application"))
 
     api("org.springframework.boot:spring-boot-starter-data-jpa") {
         exclude(group = "com.zaxxer")
+        exclude(group = "com.github.ben-manes.caffeine")
+    }
+    implementation("com.github.ben-manes.caffeine:caffeine") {  // Don't use version 3, it's not compatible with Java8
+        version {
+            strictly("2.9.3")
+        }
     }
     implementation("org.postgresql:postgresql:42.3.2")
     @Suppress("GradlePackageUpdate")
-    implementation("com.zaxxer:HikariCP:4.0.3")
+    implementation("com.zaxxer:HikariCP:4.0.3") {
+        exclude(group = "com.github.ben-manes.caffeine")
+    }
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:4.33.0")
     implementation("net.javacrumbs.shedlock:shedlock-spring:4.33.0")
     api("org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.2.Final")

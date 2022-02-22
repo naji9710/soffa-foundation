@@ -2,6 +2,8 @@ plugins {
     idea
 }
 
+ext["caffeine.version"] = "2.9.3"
+
 buildscript {
     repositories {
         mavenLocal()
@@ -24,6 +26,7 @@ allprojects {
     }
     apply(plugin = "soffa.java8")
 }
+
 
 tasks.withType<Test>().configureEach {
     maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1

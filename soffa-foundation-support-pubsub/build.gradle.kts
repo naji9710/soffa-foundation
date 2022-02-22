@@ -4,7 +4,6 @@ plugins {
     id("soffa.springboot.library")
 }
 
-
 dependencies {
     api(project(":soffa-foundation-application"))
 
