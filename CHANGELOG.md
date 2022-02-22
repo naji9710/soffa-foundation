@@ -1,3 +1,7 @@
+## 1.9.4 (February 22, 2022)  
+
+* Prefix "soffa-" removed from artifacts name
+
 ## 1.9.3 (February 22, 2022)  
 
 * Automatic event dispatch: OnServiceStarted
