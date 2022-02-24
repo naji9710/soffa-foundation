@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import okhttp3.*;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class HttpClient {
@@ -32,11 +33,15 @@ public class HttpClient {
     @SneakyThrows
     public HttpResponse request(HttpRequest req) {
         RequestBody body = null;
+
+
         if (req.getBody() != null) {
             body = RequestBody.create(JsonUtil.serialize(req.getBody()), MediaType.parse(req.getContentType()));
         }
 
-        Headers headers = Headers.of(Optional.ofNullable(req.getHdrs()).orElse(new HashMap<>()));
+        Map<String, String> hds = Optional.ofNullable(req.getHdrs()).orElse(new HashMap<>());
+        hds.put("Content-Type", req.getContentType());
+        Headers headers = Headers.of(hds);
         Request request = new Request.Builder()
             .url(req.getUrl())
             .method(req.getMethod(), body)

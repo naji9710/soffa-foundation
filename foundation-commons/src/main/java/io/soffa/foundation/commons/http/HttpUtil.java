@@ -115,10 +115,10 @@ public final class HttpUtil {
         return builder.build();
     }
 
-    public static void mockResponse(BiFunction<URL, Map<String,List<String>>, Boolean> delegate, HttpResponseProvider handler) {
+    public static void mockResponse(BiFunction<URL, HttpHeaders, Boolean> delegate, HttpResponseProvider handler) {
         addInterceptor(chain -> {
             Request request = chain.request();
-            if (!delegate.apply(request.url().url(), chain.request().headers().toMultimap())) {
+            if (!delegate.apply(request.url().url(), HttpHeaders.of(chain.request().headers()))) {
                 return chain.proceed(request);
             }
             return handleRequest(request, handler);
@@ -127,7 +127,7 @@ public final class HttpUtil {
 
 
     private static Response handleRequest(Request request, HttpResponseProvider handler) {
-        HttpResponse res = handler.apply(request.url().url(), request.headers().toMultimap());
+        HttpResponse res = handler.apply(request.url().url(), HttpHeaders.of(request.headers()));
         MediaType contentType = MediaType.parse(res.getContentType());
         return new Response.Builder()
             .request(request)

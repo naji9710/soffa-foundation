@@ -4,8 +4,6 @@ import io.soffa.foundation.commons.IOUtil;
 import lombok.SneakyThrows;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
 
 public class HttpResourceResponse implements HttpResponseProvider {
 
@@ -22,7 +20,7 @@ public class HttpResourceResponse implements HttpResponseProvider {
     }
 
     @Override
-    public HttpResponse apply(URL url, Map<String, List<String>> headers) {
+    public HttpResponse apply(URL url, HttpHeaders headers) {
         return HttpResponse.ok(contentType, IOUtil.getResourceAsString(location));
     }
 }

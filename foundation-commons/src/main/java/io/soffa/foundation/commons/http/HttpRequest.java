@@ -84,4 +84,12 @@ public class HttpRequest {
         return this;
     }
 
+
+    public HttpRequest withContentType(String value) {
+        if (TextUtil.isNotEmpty(value)) {
+            this.contentType = value;
+        }
+        return this;
+    }
+
 }
