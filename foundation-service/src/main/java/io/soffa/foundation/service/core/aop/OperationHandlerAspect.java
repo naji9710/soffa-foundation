@@ -1,6 +1,8 @@
 package io.soffa.foundation.service.core.aop;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
+import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.context.RequestContextUtil;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
@@ -47,25 +49,27 @@ public class OperationHandlerAspect {
             context = (RequestContext) args[0];
         }
 
-        String operationId = OPERATION_PREFIX + jp.getTarget().getClass().getSimpleName();
+        String operationId = jp.getTarget().getClass().getSimpleName();
         Map<String, Object> tags = RequestContextUtil.tagify(context);
 
-        //noinspection Convert2Lambda
-        return metricsRegistry.track(operationId, tags, new Supplier<Object>() {
-            @SneakyThrows
-            @Override
-            public Object get() {
-                try {
-                    return jp.proceed(args);
-                } catch (AuthenticationCredentialsNotFoundException e) {
-                    throw new UnauthorizedException(e.getMessage(), ErrorUtil.getStacktrace(e));
-                } catch (Exception e) {
-                    if (e instanceof ManagedException) {
-                        throw e;
+        return Logger.withContext(ImmutableMap.of("operation", operationId), () -> {
+            //noinspection Convert2Lambda
+            return metricsRegistry.track(OPERATION_PREFIX + operationId, tags, new Supplier<Object>() {
+                @SneakyThrows
+                @Override
+                public Object get() {
+                    try {
+                        return jp.proceed(args);
+                    } catch (AuthenticationCredentialsNotFoundException e) {
+                        throw new UnauthorizedException(e.getMessage(), ErrorUtil.getStacktrace(e));
+                    } catch (Exception e) {
+                        if (e instanceof ManagedException) {
+                            throw e;
+                        }
+                        throw new TechnicalException(e);
                     }
-                    throw new TechnicalException(e);
                 }
-            }
+            });
         });
     }
 

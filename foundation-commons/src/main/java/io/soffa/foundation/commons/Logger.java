@@ -4,7 +4,9 @@ import com.mgnt.utils.TextUtils;
 import io.soffa.foundation.errors.ErrorUtil;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class Logger {
 
@@ -24,13 +26,36 @@ public class Logger {
         this.tag = tag;
     }
 
-    public static void setContext(Map<String,String> context) {
+    public static void withContext(Map<String, String> context, Runnable runnable) {
+        withContext(context, () -> {
+            runnable.run();
+            return null;
+        });
+    }
+
+    public static <T> T withContext(Map<String, String> context, Supplier<T> supplier) {
+        Map<String, String> current = org.slf4j.MDC.getCopyOfContextMap();
+        if (current == null) {
+            current = new HashMap<>();
+        }
+        Map<String,String> backup = new HashMap<>(current);
+        try {
+            current.putAll(context);
+            setContext(current);
+            return supplier.get();
+        }finally {
+            setContext(backup);
+        }
+    }
+
+    public static void setContext(Map<String, String> context) {
         if (context == null || context.isEmpty()) {
             org.slf4j.MDC.clear();
         } else {
             org.slf4j.MDC.setContextMap(context);
         }
     }
+
     public static void setTenantId(String tenantId) {
         if (TextUtil.isNotEmpty(tenantId)) {
             org.slf4j.MDC.put("tenant", tenantId);
