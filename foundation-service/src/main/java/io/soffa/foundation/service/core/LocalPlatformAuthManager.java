@@ -78,8 +78,8 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
                         //.username(username)
                         .tenantId(context.getTenantId())
                         .principal(username)
-                        .permissions(ImmutableSet.of(Permissions.SERVICE))
-                        .roles(ImmutableSet.of(Permissions.SERVICE))
+                        .permissions(ImmutableSet.of(Permissions.IS_SERVICE))
+                        .roles(ImmutableSet.of(Permissions.IS_SERVICE))
                         .build();
                 } else {
                     auth = authenticate(context, username, pasword);
@@ -112,13 +112,18 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
 
     private List<GrantedAuthority> createPermissions(RequestContext context, Authentication auth) {
         List<GrantedAuthority> permissions = new ArrayList<>();
-        permissions.add(new SimpleGrantedAuthority(Permissions.USER));
-        permissions.add(new SimpleGrantedAuthority(Permissions.AUTHENTICATED));
+        permissions.add(new SimpleGrantedAuthority(Permissions.IS_AUTHENTICATED));
+        if (auth.getProfile() != null) {
+            permissions.add(new SimpleGrantedAuthority(Permissions.IS_USER));
+            permissions.add(new SimpleGrantedAuthority(Permissions.HAS_USER_PROFILE));
+        }else {
+            permissions.add(new SimpleGrantedAuthority(Permissions.IS_APPLICATION));
+        }
         if (TextUtil.isNotEmpty(context.getApplicationName())) {
             permissions.add(new SimpleGrantedAuthority(Permissions.HAS_APPLICATION));
         }
         if (context.getTenantId() != null) {
-            permissions.add(new SimpleGrantedAuthority(Permissions.HAS_TENANT_ID));
+            permissions.add(new SimpleGrantedAuthority(Permissions.HAS_TENANT));
         }
         if (auth.getRoles() != null) {
             for (String role : auth.getRoles()) {

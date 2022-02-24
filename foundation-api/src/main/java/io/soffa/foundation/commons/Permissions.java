@@ -2,9 +2,14 @@ package io.soffa.foundation.commons;
 
 public interface Permissions {
 
-    String SERVICE = "service";
-    String USER = "user";
-    String AUTHENTICATED = "authenticated";
-    String HAS_APPLICATION = "ctx-application";
-    String HAS_TENANT_ID = "ctx-tenant";
+    String IS_ROOT = "root";
+    String IS_ADMIN = "admin";
+    String IS_USER = "user";
+    String IS_SERVICE = "service";
+    String IS_APPLICATION = "application";
+    String IS_AUTHENTICATED = "authenticated";
+
+    String HAS_USER_PROFILE = "has_user_profile";
+    String HAS_APPLICATION = "has_application";
+    String HAS_TENANT = "has_tenant";
 }

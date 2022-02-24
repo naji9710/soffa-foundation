@@ -9,5 +9,6 @@ public interface HttpStatus {
     int CONFLICT = 409;
     int NOT_FOUND = 404;
     int NOT_IMLEMENTED = 501;
+    int EXPECTATION_FAILED = 417;
     int TIMEOUT = 408;
 }

@@ -19,6 +19,7 @@ public class UrlInfo {
 
     public static final String PROTOCL_DIVIDER = "://";
 
+    private String url;
     private String protocol;
     private int port;
     private String hostname;
@@ -107,7 +108,24 @@ public class UrlInfo {
                 params.put(keyAndValue[0], keyAndValue[1]);
             }
         }
-        return new UrlInfo(url.getProtocol(), url.getPort(), url.getHost(), username, password, url.getPath(), params);
+
+        StringBuilder urlWithoutCreds = new StringBuilder();
+        urlWithoutCreds.append(url.getProtocol()).append("://").append(url.getHost());
+        if (url.getPort() > 0) {
+            urlWithoutCreds.append(url.getPort());
+        }
+        urlWithoutCreds.append(url.getPath());
+
+        return new UrlInfo(
+            urlWithoutCreds.toString(),
+            url.getProtocol(),
+            url.getPort(),
+            url.getHost(),
+            username,
+            password,
+            url.getPath(),
+            params
+        );
     }
 
 }

@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches-ignore: [ master,main ]
+    branches-ignore: [ main ]
 
 env:
   SONATYPE_USERNAME: ${{ secrets.OSSRH_USERNAME }}

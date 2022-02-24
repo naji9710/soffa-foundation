@@ -15,13 +15,16 @@ import java.util.function.Supplier;
 public final class RequestContextHolder {
 
     private static final ThreadLocal<RequestContext> CONTEXT = new InheritableThreadLocal<>();
-    private static final ThreadLocal<String> TENANT = new InheritableThreadLocal<>();
+    private static final ThreadLocal<String> TENANT_BACKUP = new ThreadLocal<>();
 
     private RequestContextHolder() {
     }
 
     public static Optional<String> getTenant() {
-        return Optional.ofNullable(TENANT.get());
+        if (CONTEXT.get() == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(CONTEXT.get().getTenantId());
     }
 
     public static void set(RequestContext value) {
@@ -31,9 +34,6 @@ public final class RequestContextHolder {
             Logger.setContext(null);
         } else {
             CONTEXT.set(value);
-            if (value.getTenantId() != null) {
-                TENANT.set(value.getTenantId());
-            }
             Logger.setContext(value.getContextMap());
             HttpContextHolder.set(value.getHeaders());
         }
@@ -41,7 +41,6 @@ public final class RequestContextHolder {
 
     public static void clear() {
         CONTEXT.remove();
-        TENANT.remove();
     }
 
     public static boolean isEmpty() {
@@ -68,12 +67,27 @@ public final class RequestContextHolder {
         }
     }
 
+    private static void restoreTenant() {
+        String value = TENANT_BACKUP.get();
+        if (TextUtil.isNotEmpty(value)) {
+            setTenantInternal(value, false);
+        }
+    }
+
     public static void setTenant(String value) {
+        setTenantInternal(value, true);
+    }
+
+    public static void setTenantInternal(String value, boolean backup) {
+        TENANT_BACKUP.set(getTenant().orElse(null));
         Logger.setTenantId(value);
         if (TextUtil.isEmpty(value)) {
             clear();
         } else {
-            TENANT.set(value);
+            if (CONTEXT.get() == null) {
+                set(new DefaultRequestContext());
+            }
+            CONTEXT.get().setTenantId(value);
         }
     }
 
@@ -89,21 +103,33 @@ public final class RequestContextHolder {
     }
 */
 
+    public static <T> T useDefaultTenant(Supplier<T> supplier) {
+        return useTenant(null, supplier);
+    }
+
     public static void useTenant(final String tenantId, Runnable runnable) {
         useTenant(TenantId.of(tenantId), runnable);
     }
 
     @SneakyThrows
     public static void useTenant(final TenantId tenantId, Runnable runnable) {
-        setTenant(tenantId);
-        runnable.run();
+        try {
+            setTenant(tenantId);
+            runnable.run();
+        }finally {
+            restoreTenant();
+        }
     }
 
 
     @SneakyThrows
     public static <O> O useTenant(final TenantId tenantId, Supplier<O> supplier) {
-        setTenant(tenantId);
-        return supplier.get();
+        try {
+            setTenant(tenantId);
+            return supplier.get();
+        }finally {
+            restoreTenant();
+        }
     }
 
     @SneakyThrows
@@ -113,8 +139,12 @@ public final class RequestContextHolder {
 
     @SneakyThrows
     public static void useTenant(final TenantId tenantId, Consumer<TenantId> consumer) {
-        setTenant(tenantId);
-        consumer.accept(tenantId);
+        try {
+            setTenant(tenantId);
+            consumer.accept(tenantId);
+        }finally {
+            restoreTenant();
+        }
     }
 
 

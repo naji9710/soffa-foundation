@@ -3,7 +3,7 @@ package io.soffa.foundation.service.actions;
 import io.soffa.foundation.annotations.Handle;
 import io.soffa.foundation.core.Operation;
 import io.soffa.foundation.core.RequestContext;
-import io.soffa.foundation.models.commons.Ack;
+import io.soffa.foundation.core.models.Ack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.stereotype.Component;
 

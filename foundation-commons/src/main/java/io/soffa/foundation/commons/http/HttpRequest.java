@@ -15,7 +15,7 @@ public class HttpRequest {
     private String method;
     private String url;
     private Object body;
-    private Map<String, String> headers = new HashMap<>();
+    private Map<String, String> hdrs = new HashMap<>();
     private String contentType = "application/json";
 
     public HttpRequest(String method, String url) {
@@ -65,16 +65,22 @@ public class HttpRequest {
         return new HttpRequest("PUT", url, body);
     }
 
-    public void setHeaders(Map<String, String> headers) {
+    public HttpRequest header(String name, String value) {
+        this.hdrs.put(name, value);
+        return this;
+    }
+
+    public HttpRequest headers(Map<String, String> headers) {
         for (Map.Entry<String, String> e : headers.entrySet()) {
             if (TextUtil.isNotEmpty(e.getValue())) {
-                this.headers.put(e.getKey(), e.getValue());
+                this.hdrs.put(e.getKey(), e.getValue());
             }
         }
+        return this;
     }
 
     public HttpRequest bearerAuth(String bearerToken) {
-        this.headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
+        this.hdrs.put(HttpHeaders.AUTHORIZATION, "Bearer " + bearerToken);
         return this;
     }
 

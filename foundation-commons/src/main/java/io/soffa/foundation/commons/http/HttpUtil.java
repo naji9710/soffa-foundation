@@ -3,7 +3,6 @@ package io.soffa.foundation.commons.http;
 
 import io.soffa.foundation.commons.JsonUtil;
 import io.soffa.foundation.commons.Logger;
-import io.soffa.foundation.commons.Regex;
 import io.soffa.foundation.commons.TextUtil;
 import lombok.SneakyThrows;
 import okhttp3.*;
@@ -18,6 +17,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 public final class HttpUtil {
 
@@ -26,7 +26,6 @@ public final class HttpUtil {
 
     private HttpUtil() {
     }
-
 
     public static String createBasicAuthorization(String username, String password) {
         final String pair = username + ":" + password;
@@ -116,38 +115,27 @@ public final class HttpUtil {
         return builder.build();
     }
 
-    public static void mockResponse(String host, String path, HttpResponseProvider handler) {
-        mockResponse(host, path, false, handler);
-    }
-
-    public static void mockResponse(String host, Regex path, HttpResponseProvider handler) {
-        mockResponse(host, path.getValue(), true, handler);
-    }
-
-    private static void mockResponse(String host, String path, boolean regex, HttpResponseProvider handler) {
+    public static void mockResponse(BiFunction<URL, Map<String,List<String>>, Boolean> delegate, HttpResponseProvider handler) {
         addInterceptor(chain -> {
             Request request = chain.request();
-            String encodedPath = request.url().encodedPath();
-            if (!host.equalsIgnoreCase(request.url().host())) {
+            if (!delegate.apply(request.url().url(), chain.request().headers().toMultimap())) {
                 return chain.proceed(request);
             }
-            if (regex && !encodedPath.matches(path)) {
-                return chain.proceed(request);
-            }
-            if (!regex && !encodedPath.equals(path)) {
-                return chain.proceed(request);
-            }
-            HttpResponse res = handler.apply(request.url().url());
-            MediaType contentType = MediaType.parse(res.getContentType());
-            return new Response.Builder()
-                .request(request)
-                .protocol(Protocol.HTTP_1_1)
-                .code(res.getStatus())
-                .message("Mocked response")
-                .body(ResponseBody.create(JsonUtil.serialize(res.getBody()), contentType))
-                .build();
-
+            return handleRequest(request, handler);
         });
+    }
+
+
+    private static Response handleRequest(Request request, HttpResponseProvider handler) {
+        HttpResponse res = handler.apply(request.url().url(), request.headers().toMultimap());
+        MediaType contentType = MediaType.parse(res.getContentType());
+        return new Response.Builder()
+            .request(request)
+            .protocol(Protocol.HTTP_1_1)
+            .code(res.getStatus())
+            .message("Mocked response")
+            .body(ResponseBody.create(JsonUtil.serialize(res.getBody()), contentType))
+            .build();
     }
 
     public static void addInterceptor(Interceptor interceptor) {

@@ -1,5 +1,6 @@
 package io.soffa.foundation.commons;
 
+import io.soffa.foundation.errors.TechnicalException;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -45,7 +46,12 @@ public final class IOUtil {
 
     @SneakyThrows
     public static String getResourceAsString(String path) {
-        return IOUtil.toStringSafe(IOUtil.class.getResourceAsStream(path));
+        try(InputStream stream = IOUtil.class.getResourceAsStream(path)){
+            if (stream == null) {
+                throw new TechnicalException("Resource not found: %s", path);
+            }
+            return IOUtil.toStringSafe(stream);
+        }
     }
 
     @SneakyThrows

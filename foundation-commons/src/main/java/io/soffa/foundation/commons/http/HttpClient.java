@@ -9,6 +9,7 @@ import java.util.Optional;
 
 public class HttpClient {
 
+
     private static HttpClient defaultInstance = new HttpClient();
     private final OkHttpClient client;
 
@@ -35,7 +36,7 @@ public class HttpClient {
             body = RequestBody.create(JsonUtil.serialize(req.getBody()), MediaType.parse(req.getContentType()));
         }
 
-        Headers headers = Headers.of(Optional.ofNullable(req.getHeaders()).orElse(new HashMap<>()));
+        Headers headers = Headers.of(Optional.ofNullable(req.getHdrs()).orElse(new HashMap<>()));
         Request request = new Request.Builder()
             .url(req.getUrl())
             .method(req.getMethod(), body)

@@ -79,7 +79,7 @@ public final class RestClient implements InvocationHandler {
             for (Object arg : args) {
                 if (arg instanceof RequestContext) {
                     RequestContext context = (RequestContext) arg;
-                    request.setHeaders(context.getHeaders());
+                    request.setHdrs(context.getHeaders());
                 } else {
                     request.setBody(arg);
                 }

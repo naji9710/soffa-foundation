@@ -100,6 +100,8 @@ public final class ErrorUtil {
     }
 
     static {
+        MAPPED_STATUS.put(RequirementException.class, HttpStatus.EXPECTATION_FAILED);
+        MAPPED_STATUS.put(NotImplementedException.class, HttpStatus.NOT_IMLEMENTED);
         MAPPED_STATUS.put(InvalidTenantException.class, HttpStatus.BAD_REQUEST);
         MAPPED_STATUS.put(ValidationException.class, HttpStatus.BAD_REQUEST);
         MAPPED_STATUS.put(ConflictException.class, HttpStatus.CONFLICT);
@@ -108,7 +110,7 @@ public final class ErrorUtil {
         MAPPED_STATUS.put(InvalidTokenException.class, HttpStatus.UNAUTHORIZED);
         MAPPED_STATUS.put(InvalidAuthException.class, HttpStatus.UNAUTHORIZED);
         MAPPED_STATUS.put(ResourceNotFoundException.class, HttpStatus.NOT_FOUND);
-        MAPPED_STATUS.put(NoContentException.class, 204);
+        MAPPED_STATUS.put(NoContentException.class, HttpStatus.NO_CONTENT);
         MAPPED_STATUS.put(TodoException.class, HttpStatus.NOT_IMLEMENTED);
         MAPPED_STATUS.put(SocketException.class, HttpStatus.TIMEOUT );
         MAPPED_STATUS.put(TimeoutException.class, HttpStatus.TIMEOUT);
