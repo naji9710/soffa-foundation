@@ -22,4 +22,11 @@ public class Ack {
     public Ack(String status) {
         this.status = status;
     }
+
+    public Ack(String status, String message) {
+        this.status = status;
+        this.message = message;
+    }
+
+
 }
