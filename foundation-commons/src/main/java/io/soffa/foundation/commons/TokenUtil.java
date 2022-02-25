@@ -53,6 +53,7 @@ public final class TokenUtil {
             LOG.warn("Skipping empy claim: %s", name);
             return;
         }
+        LOG.debug("Populating claim %s=%s", name, value);
         if (value instanceof Integer) {
             builder.withClaim(name, (Integer) value);
         } else if (value instanceof Double) {
