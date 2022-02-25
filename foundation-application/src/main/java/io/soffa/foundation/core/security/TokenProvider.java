@@ -16,7 +16,7 @@ public interface TokenProvider {
 
     Token create(TokenType type, String subject, Map<String, Object> claims);
 
-    Token create(TokenType type, String subject, Map<String, Object> claims, int ttlInSeconds);
+    Token create(TokenType type, String subject, Map<String, Object> claims, int ttlInMinutes);
 
     Authentication decode(String token, ClaimsExtractor extractor);
 
