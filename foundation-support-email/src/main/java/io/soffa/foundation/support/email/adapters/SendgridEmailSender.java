@@ -69,7 +69,7 @@ public class SendgridEmailSender implements EmailSender {
         if (response.getStatusCode() >= HttpStatus.BAD_REQUEST) {
             throw new TechnicalException("Failed to send email: ${response.statusCode} ${response.body}");
         }
-        LOG.info("Email with account api-key successfully sent to ${recipients[0].email}");
+        LOG.info("Email successfully sent to %s", recipients.get(0).getEmail());
         return new EmailAck("OK", "00");
     }
 }
