@@ -7,7 +7,7 @@ public interface Operation<I, O> {
     O handle(I input, @NonNull RequestContext context);
 
     default O handle(@NonNull RequestContext context) {
-        return handle((I)null, context);
+        return handle(null, context);
     }
 
 }

@@ -66,7 +66,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
                     config.getIssuer(),
                     subjet,
                     claims,
-                    Duration.ofSeconds(ttl)
+                    Duration.ofMinutes(ttl)
                 );
             } else if (TextUtil.isNotEmpty(config.getSecret())) {
                 token = TokenUtil.createJwt(

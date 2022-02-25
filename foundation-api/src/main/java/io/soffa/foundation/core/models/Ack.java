@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @JsonModel
 @NoArgsConstructor
@@ -15,6 +17,7 @@ public class Ack {
 
     private String status;
     private String message;
+    private Map<String,Object> metadata;
 
     public Ack(String status) {
         this.status = status;

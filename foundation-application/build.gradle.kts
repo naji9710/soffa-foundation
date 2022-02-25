@@ -13,8 +13,7 @@ dependencies {
     api("com.amazonaws:aws-java-sdk-s3:1.12.159")
     implementation("com.auth0:java-jwt:3.18.3")
     implementation("com.nimbusds:nimbus-jose-jwt:9.19")
-    implementation("org.apache.commons:commons-email:1.5")
-    api("commons-validator:commons-validator:1.7")
+
     @Suppress("GradlePackageUpdate")
     api("com.github.ben-manes.caffeine:caffeine") {  // Don't use version 3, it's not compatible with Java8
         version {

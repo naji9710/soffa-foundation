@@ -15,6 +15,7 @@ dependencies {
     api("io.swagger.core.v3:swagger-models:2.1.13")
     api("javax.ws.rs:javax.ws.rs-api:2.1.1")
     api("com.fasterxml.jackson.core:jackson-annotations:2.13.1")
+    api("commons-validator:commons-validator:1.7")
 
 }
 

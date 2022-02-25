@@ -6,5 +6,6 @@ plugins {
 
 dependencies {
     implementation(project(":foundation-service"))
+    implementation(project(":foundation-support-email"))
     testImplementation(project(":foundation-service-test"))
 }

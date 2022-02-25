@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -95,6 +96,9 @@ class CustomRestExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         if (exception instanceof AccessDeniedException) {
+            if (SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) {
+                return HttpStatus.FORBIDDEN;
+            }
             return HttpStatus.UNAUTHORIZED;
         }
         if (exception instanceof MethodArgumentNotValidException) {

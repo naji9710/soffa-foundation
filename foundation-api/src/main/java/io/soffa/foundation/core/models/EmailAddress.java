@@ -1,4 +1,4 @@
-package io.soffa.foundation.core.email.model;
+package io.soffa.foundation.core.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.soffa.foundation.annotations.JsonModel;

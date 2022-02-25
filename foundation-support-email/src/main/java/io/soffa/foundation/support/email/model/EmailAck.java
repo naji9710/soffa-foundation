@@ -1,4 +1,4 @@
-package io.soffa.foundation.core.email.model;
+package io.soffa.foundation.support.email.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmailId {
+public class EmailAck {
 
-    private String id;
+    private String status;
+    private String messageId;
 
 }

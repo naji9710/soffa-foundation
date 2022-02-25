@@ -8,6 +8,7 @@ include(":foundation-service-test")
 include(":foundation-support-data")
 include(":foundation-support-pubsub")
 include(":foundation-support-storage")
+include(":foundation-support-email")
 
 include(":samples:sample-service")
 include(":samples:sample-service-data")

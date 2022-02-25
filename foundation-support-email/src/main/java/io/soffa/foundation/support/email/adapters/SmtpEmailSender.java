@@ -1,13 +1,13 @@
-package io.soffa.foundation.core.email.adapters;
+package io.soffa.foundation.support.email.adapters;
 
 import io.soffa.foundation.commons.CollectionUtil;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.core.email.EmailSender;
-import io.soffa.foundation.core.email.model.Email;
-import io.soffa.foundation.core.email.model.EmailAddress;
-import io.soffa.foundation.core.email.model.EmailId;
-import io.soffa.foundation.core.email.model.MailerConfig;
+import io.soffa.foundation.support.email.EmailSender;
+import io.soffa.foundation.support.email.model.Email;
+import io.soffa.foundation.support.email.model.EmailAck;
+import io.soffa.foundation.support.email.model.MailerConfig;
+import io.soffa.foundation.core.models.EmailAddress;
 import io.soffa.foundation.errors.TechnicalException;
 import lombok.SneakyThrows;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -27,11 +27,11 @@ public class SmtpEmailSender implements EmailSender {
 
     @SneakyThrows
     @Override
-    public EmailId send(Email message) {
+    public EmailAck send(Email message) {
         check(message);
         HtmlEmail email = createMessage(message);
 
-        return new EmailId(email.send());
+        return new EmailAck("OK", email.send());
     }
 
     @NotNull

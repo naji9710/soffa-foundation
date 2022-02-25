@@ -1,6 +1,7 @@
-## 1.9.8 (February 24, 2022)  
+## 1.9.9 (February 24, 2022)  
 
-* 
+* `foundation-support-email` 
+* `@LogContext`
 
 ## 1.9.4 (February 22, 2022)  
 

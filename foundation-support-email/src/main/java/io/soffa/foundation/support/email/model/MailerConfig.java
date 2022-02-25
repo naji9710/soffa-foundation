@@ -1,4 +1,4 @@
-package io.soffa.foundation.core.email.model;
+package io.soffa.foundation.support.email.model;
 
 import io.soffa.foundation.commons.TextUtil;
 import lombok.Data;

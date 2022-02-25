@@ -94,7 +94,10 @@ public class UrlInfo {
         if (userInfos != null) {
             if (userInfos.contains(":")) {
                 String[] userAndPassword = userInfos.trim().split(":");
-                password = URLDecoder.decode(userAndPassword[1], StandardCharsets.UTF_8.toString());
+                boolean hasPassword = userAndPassword.length > 1;
+                if (hasPassword) {
+                    password = URLDecoder.decode(userAndPassword[1], StandardCharsets.UTF_8.toString());
+                }
                 username = URLDecoder.decode(userAndPassword[0], StandardCharsets.UTF_8.toString());
             } else {
                 username = userInfos.trim();

@@ -4,12 +4,12 @@ import com.company.app.core.DoHandleServiceStart;
 import com.company.app.core.Ping;
 import com.company.app.core.PingResponse;
 import com.company.app.operations.SendEmailHandler;
+import io.soffa.foundation.support.email.model.Email;
+import io.soffa.foundation.support.email.model.EmailAck;
 import io.soffa.foundation.core.context.DefaultRequestContext;
-import io.soffa.foundation.core.email.model.Email;
-import io.soffa.foundation.core.email.model.EmailAddress;
-import io.soffa.foundation.core.email.model.EmailId;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.messages.MessageFactory;
+import io.soffa.foundation.core.models.EmailAddress;
 import io.soffa.foundation.core.pubsub.PubSubClientFactory;
 import io.soffa.foundation.core.pubsub.PubSubMessenger;
 import lombok.SneakyThrows;
@@ -53,9 +53,9 @@ public class PubSubTest {
             )
         );
 
-        EmailId response = messenger.request(applicationName, event, EmailId.class).get(20, TimeUnit.SECONDS);
+        EmailAck response = messenger.request(applicationName, event, EmailAck.class).get(20, TimeUnit.SECONDS);
         assertNotNull(response);
-        assertEquals("000", response.getId());
+        assertEquals("000", response.getMessageId());
         assertEquals(counter.incrementAndGet(), SendEmailHandler.COUNTER.get());
 
         messenger.broadcast("foundation-service", event);
