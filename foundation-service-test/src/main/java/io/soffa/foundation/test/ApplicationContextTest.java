@@ -6,13 +6,14 @@ import org.springframework.context.ApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@SuppressWarnings({"PMD.AbstractClassWithoutAbstractMethod", "SpringJavaAutowiredMembersInspection"})
 public abstract class ApplicationContextTest {
 
     @Autowired
     private ApplicationContext context;
 
     @Test
-    public void testContext(){
+    public void testContext() {
         assertNotNull(context);
     }
 
