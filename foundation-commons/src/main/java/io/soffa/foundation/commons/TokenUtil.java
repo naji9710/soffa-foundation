@@ -49,6 +49,9 @@ public final class TokenUtil {
 
     @SuppressWarnings("unchecked")
     private static void populateClaims(JWTCreator.Builder builder, String name, Object value) {
+        if (value==null)  {
+            return;
+        }
         if (value instanceof Integer) {
             builder.withClaim(name, (Integer) value);
         } else if (value instanceof Double) {
