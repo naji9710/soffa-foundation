@@ -50,6 +50,7 @@ public final class TokenUtil {
     @SuppressWarnings("unchecked")
     private static void populateClaims(JWTCreator.Builder builder, String name, Object value) {
         if (value==null)  {
+            LOG.warn("Skipping empy claim: %s", name);
             return;
         }
         if (value instanceof Integer) {
