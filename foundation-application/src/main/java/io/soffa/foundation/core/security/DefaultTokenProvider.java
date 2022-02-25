@@ -169,6 +169,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
 
     public Authentication decodejwtWithJwks(String token, ClaimsExtractor extractor) {
         try {
+            LOG.debug("Decoding JWT with JWKS");
             JWTClaimsSet claimsSet = jwtProcessor.process(token, null);
             return extractor.extractInfo(new Token(token, claimsSet.getSubject(), claimsSet.getClaims()));
         } catch (ParseException | JOSEException | BadJOSEException e) {
@@ -178,7 +179,7 @@ public class DefaultTokenProvider implements TokenProvider, ClaimsExtractor {
 
     public Authentication decodeJwtWithSecret(String token, ClaimsExtractor claimsExtractor) {
         try {
-
+            LOG.debug("Decoding JWT token");
             Algorithm algorithm = Algorithm.HMAC256(config.getSecret());
             JWTVerifier verifier = JWT.require(algorithm)
                 .withIssuer(config.getIssuer())

@@ -35,11 +35,14 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
     private Authentication authenticate(RequestContext context, String token) {
         Authentication auth = authManger.authenticate(context, token);
         if (auth != null) {
+            LOG.info("Authentication provided by local %s", authManger.getClass().getName());
             return auth;
         }
         if (tokens == null) {
+            LOG.info("No tokensProvider available, retuning empty authentication");
             return null;
         }
+        LOG.info("Decoding token with TokenProvider");
         return tokens.decode(token);
     }
 
@@ -65,6 +68,7 @@ public class LocalPlatformAuthManager implements PlatformAuthManager {
             LOG.debug("Bearer authorization header received");
             auth = authenticate(context, lToken);
         } else if (token.toLowerCase().startsWith("basic ")) {
+            LOG.debug("Basic authorization header received");
             String basicAuth = token.substring("basic ".length()).trim();
             String[] credentials = new String(Base64.getDecoder().decode(basicAuth)).split(":");
             boolean isValid = credentials.length >= 1;
