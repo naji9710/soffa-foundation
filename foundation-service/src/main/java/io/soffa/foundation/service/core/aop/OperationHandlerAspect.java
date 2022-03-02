@@ -28,7 +28,7 @@ import static io.soffa.foundation.core.CoreMetrics.OPERATION_PREFIX;
 @AllArgsConstructor
 public class OperationHandlerAspect {
 
-    private MetricsRegistry metricsRegistry;
+    private final MetricsRegistry metricsRegistry;
 
     @SneakyThrows
     @Around("execution(* io.soffa.foundation.core.Operation*.*(..))")

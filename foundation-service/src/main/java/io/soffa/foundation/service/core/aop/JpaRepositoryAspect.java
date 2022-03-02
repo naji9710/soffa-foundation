@@ -1,6 +1,6 @@
 package io.soffa.foundation.service.core.aop;
 
-import io.soffa.foundation.core.context.TenantContextHolder;
+import io.soffa.foundation.core.context.TenantHolder;
 import io.soffa.foundation.errors.DatabaseException;
 import io.soffa.foundation.errors.ErrorUtil;
 import io.soffa.foundation.errors.ManagedException;
@@ -17,7 +17,7 @@ public class JpaRepositoryAspect {
 
     @Around("execution(* org.springframework.data.jpa.repository.JpaRepository*.*(..))")
     public Object catchJpaException(ProceedingJoinPoint jp) throws Throwable {
-        final String currentTenant = TenantContextHolder.get().orElse(null);
+        final String currentTenant = TenantHolder.get().orElse(null);
         try {
             return jp.proceed();
         } catch (Exception e) {

@@ -5,21 +5,27 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.models.TenantId;
 import lombok.SneakyThrows;
 
+import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class TenantContextHolder {
+@SuppressWarnings("PMD.ClassNamingConventions")
+public final class TenantHolder {
 
-    private static final Logger LOG = Logger.get(TenantContextHolder.class);
+    private static final Logger LOG = Logger.get(TenantHolder.class);
 
     private static final ThreadLocal<String> CURRENT = new InheritableThreadLocal<>();
 
-    private TenantContextHolder() {
+    private TenantHolder() {
     }
 
     public static void clear() {
-        CURRENT.remove();
+        set((String)null);
+    }
+
+    public static boolean isDefault() {
+        String value = CURRENT.get();
+        return TextUtil.isEmpty(value) || TenantId.DEFAULT_VALUE.equalsIgnoreCase(value);
     }
 
     public static Optional<String> get() {
@@ -36,7 +42,7 @@ public final class TenantContextHolder {
 
     public static void set(TenantId tenantId) {
         if (tenantId == null) {
-            set((String)null);
+            set((String) null);
         } else {
             set(tenantId.getValue());
         }
@@ -46,14 +52,16 @@ public final class TenantContextHolder {
     public static void set(String value) {
         Logger.setTenantId(value);
         if (TextUtil.isEmpty(value)) {
-            clear();
+            LOG.debug("Active tenant is set to: default");
+            CURRENT.remove();
         } else {
+            LOG.debug("Active tenant is set to: %s", value);
             CURRENT.set(value);
         }
     }
 
     public static <T> T useDefault(Supplier<T> supplier) {
-        return use(null, supplier);
+        return use((String) null, supplier);
     }
 
     public static void use(final String tenantId, Runnable runnable) {
@@ -71,26 +79,28 @@ public final class TenantContextHolder {
 
     @SneakyThrows
     public static <O> O use(final TenantId tenantId, Supplier<O> supplier) {
+        String t = tenantId == null ? null : tenantId.getValue();
+        return use(t, supplier);
+    }
+
+    @SneakyThrows
+    public static <O> O use(final String tenantId, Supplier<O> supplier) {
         String current = CURRENT.get();
+        if (Objects.equals(tenantId, current)) {
+            return supplier.get();
+        }
+        if (TextUtil.isNotEmpty(current)) {
+            LOG.debug("Tenant switch %s --> %s", current, tenantId);
+        }
         try {
             set(tenantId);
             return supplier.get();
         } finally {
             if (TextUtil.isNotEmpty(current)) {
-                LOG.debug("Tenant restored: %s", current);
-                CURRENT.set(current);
+                LOG.debug("Tenant restored %s --> %s", tenantId, current);
+                set(current);
             }
         }
-    }
-
-    @SneakyThrows
-    public static void use(final String tenantId, Consumer<TenantId> consumer) {
-        use(TenantId.of(tenantId), consumer);
-    }
-
-    @SneakyThrows
-    public static void use(final TenantId tenantId, Consumer<TenantId> consumer) {
-        use(tenantId, () -> consumer.accept(tenantId));
     }
 
 

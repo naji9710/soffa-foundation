@@ -10,15 +10,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
-@Order(PublishMessageAspect.ORDER)
 public class PublishMessageAspect {
-
-    public static final int ORDER = JournalAspect.ORDER + 100;
 
     private static final Logger LOG = Logger.get(PublishMessageAspect.class);
     private final PubSubClient pubSub;

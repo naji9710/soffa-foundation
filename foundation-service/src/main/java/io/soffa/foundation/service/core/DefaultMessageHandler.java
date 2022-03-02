@@ -6,6 +6,7 @@ import io.soffa.foundation.core.Operation;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.context.RequestContextHolder;
 import io.soffa.foundation.core.context.RequestContextUtil;
+import io.soffa.foundation.core.context.TenantHolder;
 import io.soffa.foundation.core.messages.Message;
 import io.soffa.foundation.core.messages.MessageFactory;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
@@ -35,6 +36,7 @@ public class DefaultMessageHandler implements MessageHandler {
     public Optional<Object> handle(@NonNull Message message) {
         final RequestContext context = message.getContext();
         RequestContextHolder.set(context);
+        TenantHolder.set(context.getTenantId());
         Object operation = mapping.getInternal().get(message.getOperation());
         if (operation == null) {
             LOG.debug("Message %s skipped, no local handler registered", message.getOperation());
@@ -86,6 +88,7 @@ public class DefaultMessageHandler implements MessageHandler {
                     } else {
                         LOG.debug("Invoking operation %s with payload of type %s", operation.getClass().getSimpleName(), payload.get().getClass().getSimpleName());
                     }
+                    TenantHolder.set(context.getTenantId());
                     //noinspection unchecked
                     @SuppressWarnings("unchecked")
                     Object result = ((Operation<Object, Object>) operation).handle(payload.get(), context);

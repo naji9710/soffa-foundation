@@ -5,7 +5,7 @@ import io.soffa.foundation.commons.EventBus;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.TenantsLoader;
-import io.soffa.foundation.core.context.TenantContextHolder;
+import io.soffa.foundation.core.context.TenantHolder;
 import io.soffa.foundation.core.db.DB;
 import io.soffa.foundation.core.db.DataSourceConfig;
 import io.soffa.foundation.core.db.DataSourceProperties;
@@ -145,7 +145,7 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
     }
 
     private Object determineCurrentLookupKey() {
-        String linkId = TenantContextHolder.get().orElse(null);
+        String linkId = TenantHolder.get().orElse(null);
         if (linkId == null) {
             if (registry.containsKey(TenantId.DEFAULT_VALUE)) {
                 return TenantId.DEFAULT_VALUE;

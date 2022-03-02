@@ -10,19 +10,16 @@ import java.util.Optional;
 public final class RequestContextHolder {
 
     private static final ThreadLocal<RequestContext> CURRENT = new InheritableThreadLocal<>();
-    private static final Logger LOG = Logger.get(RequestContextHolder.class);
 
     private RequestContextHolder() {
     }
 
     public static void set(RequestContext value) {
         if (value == null) {
-            LOG.debug("Clearing any active tenant");
             CURRENT.remove();
             HttpContextHolder.clear();
             Logger.setContext(null);
         } else {
-            LOG.debug("Active tenant is: %s", value.getTenantId());
             CURRENT.set(value);
             Logger.setContext(value.getContextMap());
             HttpContextHolder.set(value.getHeaders());

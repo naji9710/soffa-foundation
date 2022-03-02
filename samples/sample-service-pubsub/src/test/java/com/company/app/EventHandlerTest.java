@@ -2,7 +2,7 @@ package com.company.app;
 
 import com.company.app.core.Echo;
 import com.company.app.core.Ping;
-import io.soffa.foundation.core.context.TenantContextHolder;
+import io.soffa.foundation.core.context.TenantHolder;
 import io.soffa.foundation.core.messages.MessageFactory;
 import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.pubsub.MessageHandler;
@@ -35,7 +35,7 @@ public class EventHandlerTest {
         double pingCount = getCounterValue(ping);
         double echoCount = getCounterValue(Echo.class.getName());
 
-        TenantContextHolder.use("T1", (t1) -> {
+        TenantHolder.use("T1", () -> {
             handler.handle(MessageFactory.create(ping)); // automatic tenant
             handler.handle(MessageFactory.create(echo, "Hello"));
             handler.handle(MessageFactory.create(ping));

@@ -1,6 +1,10 @@
+## 1.9.17 (Mars 02, 2022)  
+
+* Fix tenant propagation
+* Explicit tenant switching
+
 ## 1.9.16 (Mars 01, 2022)  
 
-* `@WithTenantContext`
 * Improvements and stability
 
 ## 1.9.9 (February 24, 2022)  

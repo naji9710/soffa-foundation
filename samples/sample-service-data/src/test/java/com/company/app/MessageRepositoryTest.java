@@ -1,7 +1,7 @@
 package com.company.app;
 
 import com.company.app.gateways.MessageRepository;
-import io.soffa.foundation.core.context.TenantContextHolder;
+import io.soffa.foundation.core.context.TenantHolder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,11 +18,11 @@ public class MessageRepositoryTest {
 
     @Test
     public void testConfig() {
-        TenantContextHolder.set("T1");
+        TenantHolder.set("T1");
         assertTrue(messages.count() >= 0);
-        TenantContextHolder.set("T2");
+        TenantHolder.set("T2");
         assertTrue(messages.count() >= 0);
-        TenantContextHolder.clear();
+        TenantHolder.clear();
         assertTrue(messages.count() >= 0);
 
     }

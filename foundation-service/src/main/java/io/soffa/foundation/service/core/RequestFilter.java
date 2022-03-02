@@ -8,7 +8,7 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.context.DefaultRequestContext;
 import io.soffa.foundation.core.context.RequestContextHolder;
-import io.soffa.foundation.core.context.TenantContextHolder;
+import io.soffa.foundation.core.context.TenantHolder;
 import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.errors.ErrorUtil;
 import lombok.NoArgsConstructor;
@@ -44,12 +44,16 @@ public class RequestFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) {
 
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("===================== Serving request: %s %s =====================", request.getMethod(), request.getRequestURI());
+        }
+
         RequestContext context = new DefaultRequestContext();
 
         lookupHeader(request, "X-TenantId", "X-Tenant").ifPresent(value -> {
             LOG.debug("Tenant found in context", value);
             context.setTenantId(value);
-            TenantContextHolder.set(value);
+            TenantHolder.set(value);
         });
         lookupHeader(request, "X-Application", "X-ApplicationName", "X-ApplicationId", "X-App").ifPresent(context::setApplicationName);
         lookupHeader(request, "X-TraceId", "X-Trace-Id", "X-RequestId", "X-Request-Id").ifPresent(context::setTraceId);
@@ -90,12 +94,11 @@ public class RequestFilter extends OncePerRequestFilter {
 
         try {
             RequestContextHolder.set(context);
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Serving request: %s %s", request.getMethod(), request.getRequestURI());
-            }
+            TenantHolder.set(context.getTenantId());
             chain.doFilter(request, response);
         } finally {
             RequestContextHolder.clear();
+            TenantHolder.clear();
         }
     }
 
