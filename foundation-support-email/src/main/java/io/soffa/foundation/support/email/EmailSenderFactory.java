@@ -2,12 +2,12 @@ package io.soffa.foundation.support.email;
 
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.commons.UrlInfo;
+import io.soffa.foundation.errors.ConfigurationException;
+import io.soffa.foundation.errors.NotImplementedException;
 import io.soffa.foundation.support.email.adapters.FakeEmailSender;
 import io.soffa.foundation.support.email.adapters.SendgridEmailSender;
 import io.soffa.foundation.support.email.adapters.SmtpEmailSender;
 import io.soffa.foundation.support.email.model.MailerConfig;
-import io.soffa.foundation.errors.ConfigurationException;
-import io.soffa.foundation.errors.NotImplementedException;
 
 import java.util.Objects;
 

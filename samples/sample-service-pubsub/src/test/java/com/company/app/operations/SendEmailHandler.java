@@ -1,8 +1,8 @@
 package com.company.app.operations;
 
+import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.support.email.model.Email;
 import io.soffa.foundation.support.email.model.EmailAck;
-import io.soffa.foundation.core.RequestContext;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.stereotype.Component;
 

@@ -10,7 +10,7 @@ public class ObjectModel {
 
     @JsonProperty("_object")
     private String object;
-    @JsonProperty("_metadata")
+
     private Map<String, Object> metadata;
 
     private ObjectModel() {

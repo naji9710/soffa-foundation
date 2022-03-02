@@ -73,12 +73,14 @@ public final class DBHelper {
         lqb.setResourceLoader(RL);
         Map<String, String> changeLogParams = new HashMap<>();
 
+        changeLogParams.put("prefix", "");
         changeLogParams.put("table_prefix", "");
         changeLogParams.put("tables_prefix", "");
         changeLogParams.put("tablePrefix", "");
         changeLogParams.put("tablesPrefix", "");
 
         if (TextUtil.isNotEmpty(tablesPrefix)) {
+            changeLogParams.put("prefix", tablesPrefix);
             changeLogParams.put("table_prefix", tablesPrefix);
             changeLogParams.put("tables_prefix", tablesPrefix);
             changeLogParams.put("tablePrefix", tablesPrefix);

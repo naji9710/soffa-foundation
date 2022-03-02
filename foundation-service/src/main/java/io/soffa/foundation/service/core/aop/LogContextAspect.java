@@ -9,8 +9,6 @@ import lombok.SneakyThrows;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -22,7 +20,6 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class LogContextAspect {
 
-    private final ExpressionParser epl = new SpelExpressionParser();
     public static final Logger LOG = Logger.get(LogContextAspect.class);
 
     @SneakyThrows

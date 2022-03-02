@@ -1,11 +1,14 @@
 package io.soffa.foundation.commons;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.introspect.Annotated;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.MapLikeType;
@@ -24,7 +27,21 @@ final class ObjectFactory {
     private ObjectFactory() {
     }
 
+    private static class IgnoreJacksonAccessAnnotations extends JacksonAnnotationIntrospector {
+
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public JsonProperty.Access findPropertyAccess(Annotated m) {
+            return JsonProperty.Access.AUTO;
+        }
+    }
+
     static ObjectMapper create(ObjectMapper mapper) {
+        return create(mapper, false);
+    }
+
+    static ObjectMapper create(ObjectMapper mapper, boolean ignoreAccessAnnotations) {
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addDeserializer(Date.class, new DateDeserializers.DateDeserializer() {
             @Override
@@ -43,6 +60,9 @@ final class ObjectFactory {
         mapper.registerModule(simpleModule);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        if (ignoreAccessAnnotations) {
+            mapper.setAnnotationIntrospector(new IgnoreJacksonAccessAnnotations());
+        }
         return mapper;
     }
 

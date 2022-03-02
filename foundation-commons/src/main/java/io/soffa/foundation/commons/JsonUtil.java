@@ -14,7 +14,9 @@ import java.util.Map;
 
 public final class JsonUtil {
 
-    private static final ObjectMapper MAPPER = ObjectFactory.create(new ObjectMapper());
+    private static final ObjectMapper MAPPER = ObjectFactory.create(new ObjectMapper(), false);
+    private static final ObjectMapper MAPPER_FULL_ACCESS = ObjectFactory.create(new ObjectMapper(), true);
+
 
     private JsonUtil() {
     }
@@ -56,8 +58,16 @@ public final class JsonUtil {
         return ObjectFactory.convert(MAPPER, input, type);
     }
 
+    public static <T> T convertIgnoreAccess(Object input, Class<T> type) {
+        return ObjectFactory.convert(MAPPER_FULL_ACCESS, input, type);
+    }
+
     public static String serialize(Object src) {
         return ObjectFactory.serialize(MAPPER, src);
+    }
+
+    public static String serializeIgnoreAccess(Object src) {
+        return ObjectFactory.serialize(MAPPER_FULL_ACCESS, src);
     }
 
     public static void serializeToFile(Object content, File file) {
@@ -95,6 +105,10 @@ public final class JsonUtil {
 
     public static Map<String, Object> toMap(Object input) {
         return toMap(input, Object.class);
+    }
+
+    public static Map<String, Object> toMapFullAccess(Object input) {
+        return ObjectFactory.toMap(MAPPER_FULL_ACCESS, input, Object.class);
     }
 
     public static <E> Map<String, E> toMap(Object input, Class<E> valueClass) {

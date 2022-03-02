@@ -11,10 +11,10 @@ import com.sendgrid.helpers.mail.objects.Personalization;
 import io.soffa.foundation.commons.HttpStatus;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
-import io.soffa.foundation.support.email.EmailSender;
-import io.soffa.foundation.support.email.model.EmailAck;
 import io.soffa.foundation.core.models.EmailAddress;
 import io.soffa.foundation.errors.TechnicalException;
+import io.soffa.foundation.support.email.EmailSender;
+import io.soffa.foundation.support.email.model.EmailAck;
 import lombok.SneakyThrows;
 
 import java.util.List;

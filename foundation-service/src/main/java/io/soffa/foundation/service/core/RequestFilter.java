@@ -8,8 +8,7 @@ import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.RequestContext;
 import io.soffa.foundation.core.context.DefaultRequestContext;
 import io.soffa.foundation.core.context.RequestContextHolder;
-import io.soffa.foundation.core.context.RequestContextUtil;
-import io.soffa.foundation.core.metrics.MetricsRegistry;
+import io.soffa.foundation.core.context.TenantContextHolder;
 import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.errors.ErrorUtil;
 import lombok.NoArgsConstructor;
@@ -18,35 +17,28 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-
-import static io.soffa.foundation.core.CoreMetrics.HTTP_REQUEST;
 
 @NoArgsConstructor
 public class RequestFilter extends OncePerRequestFilter {
 
     private static final Logger LOG = Logger.get(RequestFilter.class);
     private PlatformAuthManager authManager;
-    private MetricsRegistry metricsRegistry;
 
-    public RequestFilter(PlatformAuthManager authManager,
-                         MetricsRegistry metricsRegistry) {
+    public RequestFilter(PlatformAuthManager authManager) {
         super();
         this.authManager = authManager;
-        this.metricsRegistry = metricsRegistry;
+        // this.metricsRegistry = metricsRegistry;
     }
 
+    @SneakyThrows
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
@@ -57,15 +49,15 @@ public class RequestFilter extends OncePerRequestFilter {
         lookupHeader(request, "X-TenantId", "X-Tenant").ifPresent(value -> {
             LOG.debug("Tenant found in context", value);
             context.setTenantId(value);
+            TenantContextHolder.set(value);
         });
         lookupHeader(request, "X-Application", "X-ApplicationName", "X-ApplicationId", "X-App").ifPresent(context::setApplicationName);
         lookupHeader(request, "X-TraceId", "X-Trace-Id", "X-RequestId", "X-Request-Id").ifPresent(context::setTraceId);
         lookupHeader(request, "X-SpanId", "X-Span-Id", "X-CorrelationId", "X-Correlation-Id").ifPresent(context::setSpanId);
+        processTracing(context);
 
-        SecurityContextHolder.getContext().setAuthentication(
-            new AnonymousAuthenticationToken("guest", context,
-                Collections.singletonList(new SimpleGrantedAuthority("guest")))
-        );
+        RequestContextHolder.set(context);
+
         AtomicBoolean proceed = new AtomicBoolean(true);
         //noinspection Convert2Lambda
         lookupHeader(request, HttpHeaders.AUTHORIZATION, "X-JWT-Assertion", "X-JWT-Assertions").ifPresent(new Consumer<String>() {
@@ -74,7 +66,7 @@ public class RequestFilter extends OncePerRequestFilter {
             public void accept(String value) {
                 try {
                     authManager.handle(context, value);
-                }catch (Exception e) {
+                } catch (Exception e) {
                     proceed.set(false);
                     int statusCode = ErrorUtil.resolveErrorCode(e);
                     if (statusCode > -1) {
@@ -82,9 +74,9 @@ public class RequestFilter extends OncePerRequestFilter {
                         response.sendError(statusCode, JsonUtil.serialize(ImmutableMap.of(
                             "message", e.getMessage()
                         )));
-                    }else if (e instanceof AccessDeniedException) {
+                    } else if (e instanceof AccessDeniedException) {
                         response.sendError(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
-                    }else {
+                    } else {
                         LOG.error(e);
                         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage());
                     }
@@ -96,21 +88,15 @@ public class RequestFilter extends OncePerRequestFilter {
             return;
         }
 
-        //noinspection Convert2Lambda
-        metricsRegistry.timed(HTTP_REQUEST, RequestContextUtil.tagify(context, ImmutableMap.of("uri", request.getRequestURI())),
-            new Runnable() {
-                @SneakyThrows
-                @Override
-                public void run() {
-                    try {
-                        processTracing(context);
-                        RequestContextHolder.set(context);
-                        chain.doFilter(request, response);
-                    } finally {
-                        RequestContextHolder.clear();
-                    }
-                }
-            });
+        try {
+            RequestContextHolder.set(context);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Serving request: %s %s", request.getMethod(), request.getRequestURI());
+            }
+            chain.doFilter(request, response);
+        } finally {
+            RequestContextHolder.clear();
+        }
     }
 
     private void processTracing(RequestContext context) {

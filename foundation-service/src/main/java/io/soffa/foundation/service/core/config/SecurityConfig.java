@@ -1,6 +1,5 @@
 package io.soffa.foundation.service.core.config;
 
-import io.soffa.foundation.core.metrics.MetricsRegistry;
 import io.soffa.foundation.core.security.PlatformAuthManager;
 import io.soffa.foundation.service.core.RequestFilter;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,15 +18,12 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PlatformAuthManager authManager;
-    private final MetricsRegistry metricsRegistry;
     private final String openApiAccess;
 
     public SecurityConfig(
-        @Value("${app.openapi.access:permitAll}") String openApiAccess,
-        MetricsRegistry metricsRegistry, PlatformAuthManager authManager
+        @Value("${app.openapi.access:permitAll}") String openApiAccess, PlatformAuthManager authManager
     ) {
         super();
-        this.metricsRegistry = metricsRegistry;
         this.authManager = authManager;
         this.openApiAccess = openApiAccess;
     }
@@ -59,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/actuator/**").permitAll()
             .antMatchers("/**").permitAll()
             .and().addFilterBefore(
-                new RequestFilter(authManager, metricsRegistry),
+                new RequestFilter(authManager),
                 UsernamePasswordAuthenticationFilter.class
             );
     }

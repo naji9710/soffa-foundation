@@ -1,3 +1,8 @@
+## 1.9.16 (Mars 01, 2022)  
+
+* `@WithTenantContext`
+* Improvements and stability
+
 ## 1.9.9 (February 24, 2022)  
 
 * `foundation-support-email` 

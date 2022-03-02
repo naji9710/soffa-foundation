@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface RequestContext {
-
     String TENANT_ID = "X-TenantId";
     String APPLICATION = "X-Application";
     String TRACE_ID = "X-TraceId";

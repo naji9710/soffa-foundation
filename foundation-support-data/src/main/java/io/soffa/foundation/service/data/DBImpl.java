@@ -5,7 +5,7 @@ import io.soffa.foundation.commons.EventBus;
 import io.soffa.foundation.commons.Logger;
 import io.soffa.foundation.commons.TextUtil;
 import io.soffa.foundation.core.TenantsLoader;
-import io.soffa.foundation.core.context.RequestContextHolder;
+import io.soffa.foundation.core.context.TenantContextHolder;
 import io.soffa.foundation.core.db.DB;
 import io.soffa.foundation.core.db.DataSourceConfig;
 import io.soffa.foundation.core.db.DataSourceProperties;
@@ -140,11 +140,12 @@ public final class DBImpl extends AbstractDataSource implements ApplicationListe
         if (!registry.containsKey(lookupKey)) {
             throw new InvalidTenantException("%s is not a valid database link", lookupKey);
         }
+        LOG.debug("Using datasource: %s", lookupKey);
         return registry.get(lookupKey).getDataSource();
     }
 
     private Object determineCurrentLookupKey() {
-        String linkId = RequestContextHolder.getTenant().orElse(null);
+        String linkId = TenantContextHolder.get().orElse(null);
         if (linkId == null) {
             if (registry.containsKey(TenantId.DEFAULT_VALUE)) {
                 return TenantId.DEFAULT_VALUE;
